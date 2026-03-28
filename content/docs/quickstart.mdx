@@ -1,0 +1,42 @@
+---
+title: Quickstart
+description: Launch the engine, connect from the SDK, and run your first query.
+---
+
+# Quickstart
+
+This repo is organized around three surfaces:
+
+1. Marketing on `/`
+2. Docs on `/docs`
+3. Platform UI on `/platform`
+
+## Local-first path
+
+```bash
+cargo build --release
+```
+
+Point the SDK at the local binary:
+
+```python
+from aletheia import AletheiaClient
+
+client = AletheiaClient.from_local(auto_start=True)
+client.ingest(entity_id="user-123", text="I prefer pourover coffee.")
+hits = client.query("What coffee do I prefer?", entity_id="user-123")
+```
+
+## Cloud path
+
+Create an API key in the platform dashboard, then switch constructors:
+
+```python
+client = AletheiaClient.from_cloud(
+    "https://api.aletheia.dev",
+    api_key="tm_live_xxx",
+)
+```
+
+The goal is to keep the developer surface stable while the runtime mode changes.
+
