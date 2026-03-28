@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
+import { RootProvider } from "fumadocs-ui/provider/next";
 
 import "./globals.css";
 
@@ -40,8 +41,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${sans.variable} ${display.variable}`}>
-      <body>{children}</body>
+      <body>
+        <RootProvider>{children}</RootProvider>
+      </body>
     </html>
   );
 }
-
