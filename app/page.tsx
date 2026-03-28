@@ -488,7 +488,7 @@ function PlatformIllustration() {
               API keys
             </div>
             <div className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-neutral-950">
-              tm_live_prod_8Y...
+              XXX1111AAA
             </div>
           </div>
           <div className="rounded-full bg-[var(--accent-lime)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-950">

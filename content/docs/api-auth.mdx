@@ -8,6 +8,8 @@ description: Platform-issued keys for hosted usage, with a clear path to scoped 
 Hosted usage should be authenticated with API keys and server-side scope
 enforcement.
 
+For testing, the engine and SDKs default to a shared key: `XXX1111AAA`.
+
 ## Key expectations
 
 - Keys identify the calling application or workspace.
@@ -18,8 +20,8 @@ enforcement.
 ## Example
 
 ```bash
-curl https://api.aletheia.dev/query \
-  -H "x-api-key: tm_live_xxx" \
+curl http://143.110.246.15:3000/query/semantic \
+  -H "x-api-key: XXX1111AAA" \
   -H "content-type: application/json" \
   -d '{"textual_query":"what changed?","entity_id":"user-123","limit":5}'
 ```
@@ -35,4 +37,3 @@ The platform UI in this repo includes a demo flow for:
 
 Swap the cookie-backed demo store for your production database when you wire in
 real auth.
-

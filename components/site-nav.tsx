@@ -21,14 +21,20 @@ export async function SiteNav() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <Link href="/#why" className={linkClass}>
-            Why it wins
+          <Link href="/#problem" className={linkClass}>
+            Problem
+          </Link>
+          <Link href="/#how" className={linkClass}>
+            How it works
+          </Link>
+          <Link href="/#everyone" className={linkClass}>
+            For users
+          </Link>
+          <Link href="/#platform" className={linkClass}>
+            Platform
           </Link>
           <Link href="/docs" className={linkClass}>
             Docs
-          </Link>
-          <Link href="/#pricing" className={linkClass}>
-            Platform
           </Link>
         </nav>
 
@@ -50,4 +56,3 @@ export async function SiteNav() {
     </header>
   );
 }
-

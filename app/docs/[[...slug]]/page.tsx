@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { ComponentType } from "react";
 import {
   DocsBody,
   DocsDescription,
@@ -27,13 +28,22 @@ export default async function DocPage({ params }: DocPageProps) {
     notFound();
   }
 
-  const MDX = page.data.body;
+  const pageData = page.data as unknown as {
+    title: string;
+    description?: string;
+    full?: boolean;
+    toc?: any;
+    body: ComponentType<{
+      components?: ReturnType<typeof useMDXComponents>;
+    }>;
+  };
+  const MDX = pageData.body;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
-      <DocsTitle>{page.data.title}</DocsTitle>
-      {page.data.description ? (
-        <DocsDescription>{page.data.description}</DocsDescription>
+    <DocsPage toc={pageData.toc as any} full={pageData.full}>
+      <DocsTitle>{pageData.title}</DocsTitle>
+      {pageData.description ? (
+        <DocsDescription>{pageData.description}</DocsDescription>
       ) : null}
       <DocsBody>
         <MDX components={useMDXComponents({})} />
@@ -41,4 +51,3 @@ export default async function DocPage({ params }: DocPageProps) {
     </DocsPage>
   );
 }
-

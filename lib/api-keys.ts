@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 
 const API_KEYS_COOKIE = "aletheia_api_keys";
+export const DEFAULT_TEST_API_KEY = "XXX1111AAA";
+export const DEFAULT_TEST_API_KEY_ID = "aletheia-default-test-key";
 
 export type ApiKeyRecord = {
   id: string;
@@ -20,6 +22,18 @@ const cookieBase = {
   secure: process.env.NODE_ENV === "production",
   maxAge: 60 * 60 * 24 * 30
 };
+
+function defaultApiKeyRecord(): ApiKeyRecord {
+  return {
+    id: DEFAULT_TEST_API_KEY_ID,
+    name: "Shared testing key",
+    token: DEFAULT_TEST_API_KEY,
+    preview: previewToken(DEFAULT_TEST_API_KEY),
+    createdAt: "2026-03-28T00:00:00.000Z",
+    lastUsed: "Ready for smoke tests",
+    scope: "read:memories write:memories"
+  };
+}
 
 function makeToken() {
   return `tm_live_${randomUUID().replace(/-/g, "")}${randomUUID()
@@ -42,22 +56,32 @@ function parseKeys(raw: string | undefined): ApiKeyRecord[] {
   }
 }
 
+function withoutDefaultKey(keys: ApiKeyRecord[]): ApiKeyRecord[] {
+  return keys.filter(
+    (key) => key.id !== DEFAULT_TEST_API_KEY_ID && key.token !== DEFAULT_TEST_API_KEY
+  );
+}
+
+function withDefaultKey(keys: ApiKeyRecord[]): ApiKeyRecord[] {
+  return [defaultApiKeyRecord(), ...withoutDefaultKey(keys)].slice(0, 6);
+}
+
 async function persistKeys(keys: ApiKeyRecord[]) {
   const store = await cookies();
-  store.set(API_KEYS_COOKIE, JSON.stringify(keys), cookieBase);
+  store.set(API_KEYS_COOKIE, JSON.stringify(withoutDefaultKey(keys)), cookieBase);
 }
 
 export async function getApiKeys() {
   const store = await cookies();
-  return parseKeys(store.get(API_KEYS_COOKIE)?.value);
+  return withDefaultKey(parseKeys(store.get(API_KEYS_COOKIE)?.value));
 }
 
 export async function createApiKey(name: string) {
   const label = name.trim() || "Default production key";
   const token = makeToken();
-  const keys = await getApiKeys();
+  const keys = withoutDefaultKey(await getApiKeys());
 
-  const nextKeys: ApiKeyRecord[] = [
+  const nextKeys = withDefaultKey([
     {
       id: randomUUID(),
       name: label,
@@ -68,13 +92,12 @@ export async function createApiKey(name: string) {
       scope: "read:memories write:memories"
     },
     ...keys
-  ].slice(0, 6);
+  ]);
 
   await persistKeys(nextKeys);
 }
 
 export async function revokeApiKey(id: string) {
-  const keys = await getApiKeys();
+  const keys = withoutDefaultKey(await getApiKeys());
   await persistKeys(keys.filter((key) => key.id !== id));
 }
-

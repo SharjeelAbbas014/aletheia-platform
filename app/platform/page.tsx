@@ -1,14 +1,18 @@
 import { createApiKeyAction, revokeApiKeyAction } from "./actions";
 
 import { SiteNav } from "@/components/site-nav";
-import { getApiKeys } from "@/lib/api-keys";
+import {
+  DEFAULT_TEST_API_KEY,
+  DEFAULT_TEST_API_KEY_ID,
+  getApiKeys
+} from "@/lib/api-keys";
 import { getCurrentUser, requireAuth } from "@/lib/auth";
 
 export default async function PlatformPage() {
   await requireAuth();
   const user = await getCurrentUser();
   const keys = await getApiKeys();
-  const codeToken = keys[0]?.token ?? "tm_live_xxxxxxxxxxxxxxxxxxxxxx";
+  const codeToken = keys[0]?.token ?? DEFAULT_TEST_API_KEY;
 
   return (
     <main>
@@ -65,7 +69,7 @@ export default async function PlatformPage() {
                   Mode
                 </div>
                 <div className="mt-3 text-sm font-semibold text-neutral-900">
-                  demo auth, cookie persistence
+                  built-in test key + cookie extras
                 </div>
               </div>
             </div>
@@ -79,7 +83,7 @@ export default async function PlatformPage() {
               <code>{`from aletheia import AletheiaClient
 
 client = AletheiaClient.from_cloud(
-    "https://api.aletheia.dev",
+    "http://143.110.246.15:3000",
     api_key="${codeToken}",
 )
 
@@ -148,19 +152,30 @@ results = client.query(
                       <h2 className="text-lg font-semibold text-neutral-950">
                         {key.name}
                       </h2>
+                      {key.id === DEFAULT_TEST_API_KEY_ID ? (
+                        <div className="mt-2 inline-flex rounded-full bg-neutral-950 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
+                          Built-in test key
+                        </div>
+                      ) : null}
                       <div className="mt-2 font-mono text-sm text-neutral-700">
                         {key.token}
                       </div>
                     </div>
-                    <form action={revokeApiKeyAction}>
-                      <input type="hidden" name="id" value={key.id} />
-                      <button
-                        type="submit"
-                        className="rounded-full border border-neutral-900/12 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:border-neutral-900/28"
-                      >
-                        Revoke
-                      </button>
-                    </form>
+                    {key.id === DEFAULT_TEST_API_KEY_ID ? (
+                      <span className="rounded-full border border-neutral-900/12 px-4 py-2 text-sm font-semibold text-neutral-500">
+                        Always available
+                      </span>
+                    ) : (
+                      <form action={revokeApiKeyAction}>
+                        <input type="hidden" name="id" value={key.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-neutral-900/12 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:border-neutral-900/28"
+                        >
+                          Revoke
+                        </button>
+                      </form>
+                    )}
                   </div>
 
                   <div className="mt-5 grid gap-3 text-sm text-neutral-700 sm:grid-cols-3">
@@ -194,4 +209,3 @@ results = client.query(
     </main>
   );
 }
-
