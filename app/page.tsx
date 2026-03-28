@@ -69,19 +69,22 @@ const memoryLayers = [
 
 const crossModelMoments = [
   {
-    model: "Claude Code",
-    prompt: 'Use pnpm for this repo. I do not want npm commands in the workflow.',
-    result: "Aletheia stores the preference as shared memory."
+    model: "ChatGPT",
+    prompt: "I bought a white Mercedes. What should I do first?",
+    result:
+      "Aletheia stores the purchase, the car details, and the immediate next-step context."
   },
   {
-    model: "ChatGPT",
-    prompt: "Write the install and setup commands for the same project.",
-    result: "The assistant recalls pnpm and answers consistently."
+    model: "Claude",
+    prompt: "Make me a checklist for the first week with the car I just bought.",
+    result:
+      "The next model can continue from the Mercedes purchase without asking the user to restate it."
   },
   {
     model: "Gemini or Grok",
-    prompt: "Generate onboarding notes for the team using this stack.",
-    result: "The same memory comes back again because the backend is shared."
+    prompt: "What paperwork, insurance, and accessories should I think about next?",
+    result:
+      "The follow-up stays grounded in the same car context because the backend memory is shared."
   }
 ];
 
@@ -150,7 +153,7 @@ function SectionHeader({
 
 function HeroIllustration() {
   return (
-    <div className="illustration-shell dark-panel relative min-h-[560px] overflow-hidden rounded-[2.25rem] p-6">
+    <div className="dark-panel relative min-h-[560px] overflow-hidden rounded-[2.25rem] p-6">
       <div className="ambient-grid absolute inset-0 opacity-20" />
       <div className="spot-glow absolute left-8 top-12 h-28 w-28 rounded-full bg-[var(--accent-lime)]" />
       <div className="spot-glow absolute bottom-14 right-12 h-32 w-32 rounded-full bg-[var(--accent-teal)]" />
@@ -217,7 +220,7 @@ function HeroIllustration() {
         </div>
       </div>
 
-      <div className="story-card float-medium absolute left-6 top-28 w-40 rounded-[1.6rem] border border-white/10 bg-white/7 p-4 text-white">
+      <div className="signal-card float-medium absolute left-6 top-28 w-40 rounded-[1.6rem] p-4 text-white">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           Input stream
         </div>
@@ -229,7 +232,7 @@ function HeroIllustration() {
         </div>
       </div>
 
-      <div className="story-card float-fast absolute bottom-16 left-12 w-44 rounded-[1.6rem] border border-white/10 bg-white/7 p-4 text-white">
+      <div className="signal-card float-fast absolute bottom-16 left-12 w-44 rounded-[1.6rem] p-4 text-white">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           Runtime signal
         </div>
@@ -250,7 +253,7 @@ function HeroIllustration() {
         </div>
       </div>
 
-      <div className="story-card float-slow absolute right-10 top-[48%] w-44 rounded-[1.6rem] border border-white/10 bg-white/7 p-4 text-white">
+      <div className="signal-card float-slow absolute right-10 top-[48%] w-44 rounded-[1.6rem] p-4 text-white">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           Answer shaping
         </div>
@@ -262,7 +265,7 @@ function HeroIllustration() {
         </div>
       </div>
 
-      <div className="story-card absolute bottom-24 right-8 w-[15rem] rounded-[1.6rem] border border-white/10 bg-white/7 p-4 text-white">
+      <div className="signal-card absolute bottom-24 right-8 w-[15rem] rounded-[1.6rem] p-4 text-white">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           Memory layers
         </div>
@@ -421,10 +424,11 @@ function RepairIllustration() {
 
 function SharedMemoryIllustration() {
   return (
-    <div className="illustration-shell dark-panel relative min-h-[520px] overflow-hidden rounded-[2.25rem] p-6 text-white">
-      <div className="ambient-grid absolute inset-0 opacity-15" />
+    <div className="dark-panel relative min-h-[540px] overflow-hidden rounded-[2.25rem] p-6 text-white">
+      <div className="ambient-grid absolute inset-0 opacity-12" />
       <div className="spot-glow absolute left-16 top-10 h-28 w-28 rounded-full bg-[var(--accent-lime)]" />
       <div className="spot-glow absolute bottom-10 right-16 h-28 w-28 rounded-full bg-[var(--accent-teal)]" />
+      <div className="spot-glow absolute right-20 top-24 h-24 w-24 rounded-full bg-[var(--accent-orange)]" />
       <div className="foundation-plane absolute inset-5 rounded-[2rem]" />
 
       <svg
@@ -461,53 +465,82 @@ function SharedMemoryIllustration() {
         />
       </svg>
 
-      <div className="story-card float-medium absolute left-6 top-10 w-44 rounded-[1.6rem] border border-white/10 bg-white/7 p-4">
-        <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
-          Claude Code
-        </div>
-        <div className="mt-2 text-lg font-semibold">
-          "Use pnpm for this repo."
-        </div>
+      <div className="absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+        one purchase, multiple follow-up conversations
       </div>
 
-      <div className="story-card float-fast absolute right-6 top-12 w-44 rounded-[1.6rem] border border-white/10 bg-white/7 p-4">
+      <div className="signal-card float-medium absolute left-6 top-16 w-44 rounded-[1.6rem] p-4">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           ChatGPT
         </div>
         <div className="mt-2 text-lg font-semibold">
-          "Install with pnpm and keep scripts consistent."
+          "I bought a white Mercedes. What should I do first?"
+        </div>
+        <div className="mt-3 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs leading-5 text-white/70">
+          Saves: vehicle type, color, ownership event, immediate help request.
         </div>
       </div>
 
-      <div className="story-card float-fast absolute bottom-10 left-8 w-44 rounded-[1.6rem] border border-white/10 bg-white/7 p-4">
+      <div className="signal-card float-fast absolute right-6 top-[4.5rem] w-44 rounded-[1.6rem] p-4">
+        <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
+          Claude
+        </div>
+        <div className="mt-2 text-lg font-semibold">
+          "Make me a checklist for the first week with the car."
+        </div>
+        <div className="mt-3 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs leading-5 text-white/70">
+          Recalls the Mercedes purchase without asking the user to repeat it.
+        </div>
+      </div>
+
+      <div className="terminal-shell absolute left-1/2 top-1/2 w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-[1.7rem] p-4 text-white">
+        <div className="flex items-center gap-2">
+          <span className="terminal-dot bg-[var(--accent-orange)]" />
+          <span className="terminal-dot bg-[var(--accent-lime)]" />
+          <span className="terminal-dot bg-[var(--accent-teal)]" />
+          <div className="ml-auto text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45">
+            shared memory record
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2 font-mono text-[12px] leading-6 text-white/74">
+          <div>asset: white Mercedes</div>
+          <div>event: new purchase</div>
+          <div>next step intent: first-week checklist</div>
+          <div>related asks: insurance, paperwork, accessories</div>
+        </div>
+      </div>
+
+      <div className="pulse-soft glow-core absolute left-1/2 top-1/2 flex h-40 w-40 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full text-center">
+        <div className="text-[11px] uppercase tracking-[0.26em] text-white/55">
+          Shared memory
+        </div>
+        <div className="display mt-2 max-w-[7rem] text-2xl font-semibold leading-tight">
+          one user, same context
+        </div>
+      </div>
+
+      <div className="signal-card float-fast absolute bottom-[6.5rem] left-8 w-44 rounded-[1.6rem] p-4">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           Gemini
         </div>
         <div className="mt-2 text-lg font-semibold">
-          "The onboarding guide should use pnpm too."
+          "What paperwork and insurance should I handle next?"
+        </div>
+        <div className="mt-3 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs leading-5 text-white/70">
+          Extends the same car purchase thread into administrative guidance.
         </div>
       </div>
 
-      <div className="story-card float-medium absolute bottom-12 right-8 w-44 rounded-[1.6rem] border border-white/10 bg-white/7 p-4">
+      <div className="signal-card float-medium absolute bottom-[7rem] right-8 w-44 rounded-[1.6rem] p-4">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           Grok
         </div>
         <div className="mt-2 text-lg font-semibold">
-          "The preference survives because the memory backend is shared."
+          "What accessories fit the same white Mercedes?"
         </div>
-      </div>
-
-      <div className="pulse-soft glow-core absolute left-1/2 top-1/2 flex h-44 w-44 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full text-center">
-        <div className="text-[11px] uppercase tracking-[0.26em] text-white/55">
-          Shared memory
+        <div className="mt-3 rounded-xl border border-white/10 bg-white/6 px-3 py-2 text-xs leading-5 text-white/70">
+          The color and vehicle context survive into later recommendation queries.
         </div>
-        <div className="display mt-2 max-w-[8rem] text-2xl font-semibold leading-tight">
-          one user, one long-term context
-        </div>
-      </div>
-
-      <div className="absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
-        same entity id, same backend, same memory
       </div>
 
       <div className="terminal-shell absolute inset-x-8 bottom-6 rounded-[1.5rem] p-4 text-white">
@@ -515,9 +548,9 @@ function SharedMemoryIllustration() {
           What the user experiences
         </div>
         <div className="mt-3 grid gap-2 text-sm leading-6 text-white/72 md:grid-cols-3">
-          <div>Set a preference in Claude Code.</div>
-          <div>Ask the same project question in ChatGPT.</div>
-          <div>Gemini or Grok still retrieves the same rule later.</div>
+          <div>Tell one model you bought a white Mercedes.</div>
+          <div>Ask the next model for a first-week checklist.</div>
+          <div>Later models can still answer car-related follow-ups without reset.</div>
         </div>
       </div>
     </div>
@@ -929,10 +962,11 @@ export default function HomePage() {
                 Example
               </div>
               <p className="mt-3 text-base leading-7 text-neutral-700">
-                If a user tells Claude Code that this repo must use pnpm, then
-                later asks ChatGPT for setup commands, the second assistant can
-                still answer with pnpm because both assistants query the same
-                memory backend.
+                If a user asks ChatGPT, &quot;I bought a white Mercedes. What should I
+                do first?&quot;, then later asks Claude or Gemini for a checklist,
+                paperwork, insurance, or accessory advice, the next assistant can
+                continue from the same purchase context because all of them query
+                the same memory backend.
               </p>
             </div>
           </div>

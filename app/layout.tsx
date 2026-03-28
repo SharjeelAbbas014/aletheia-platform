@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
 import { RootProvider } from "fumadocs-ui/provider/next";
+import "fumadocs-ui/style.css";
 
 import "./globals.css";
 
