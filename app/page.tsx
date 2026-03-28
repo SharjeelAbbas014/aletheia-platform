@@ -105,7 +105,7 @@ export default function HomePage() {
                 <div>
                   <div className="text-sm text-white/60">Memory pipeline</div>
                   <div className="display mt-2 text-3xl font-semibold tracking-[-0.05em]">
-                    ingest -> distill -> rerank -> answer
+                    {"ingest -> distill -> rerank -> answer"}
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
