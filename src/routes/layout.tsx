@@ -1,5 +1,5 @@
 import { Slot, component$ } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
+import { routeLoader$, useLocation } from "@builder.io/qwik-city";
 
 import { SiteNav } from "~/components/site-nav";
 import { getCurrentUser, isAuthenticated } from "~/lib/auth";
@@ -15,10 +15,14 @@ export const useSession = routeLoader$(({ cookie }) => {
 
 export default component$(() => {
   const session = useSession();
+  const location = useLocation();
+  const showSiteNav = location.url.pathname !== "/";
 
   return (
     <>
-      <SiteNav authenticated={session.value.authenticated} />
+      {showSiteNav ? (
+        <SiteNav authenticated={session.value.authenticated} />
+      ) : null}
       <Slot />
     </>
   );

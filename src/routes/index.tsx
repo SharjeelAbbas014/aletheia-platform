@@ -1,535 +1,955 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 
-const heroStats = [
-  { label: "Stores", value: "facts, preferences, summaries" },
-  { label: "Works with", value: "Claude, ChatGPT, Gemini, Grok" },
-  { label: "Runs", value: "local for dev, cloud for prod" },
-  { label: "Feels like", value: "one memory behind every assistant" }
-];
+const tailwindConfigScript = `
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        surface: "#0a0a0b",
+        "surface-container": "#141417",
+        "surface-container-high": "#1c1c21",
+        primary: "#6366f1",
+        secondary: "#818cf8",
+        tertiary: "#94a3b8",
+        "on-surface": "#f8fafc",
+        "outline-variant": "#2d2d35"
+      },
+      fontFamily: {
+        headline: ["Inter"],
+        body: ["Inter"],
+        mono: ["JetBrains Mono"]
+      },
+      borderRadius: {
+        DEFAULT: "0.375rem",
+        lg: "0.5rem",
+        xl: "1rem",
+        full: "9999px"
+      },
+      animation: {
+        float: "float 6s ease-in-out infinite",
+        "fade-in-up": "fadeInUp 0.8s ease-out forwards",
+        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "flow-line": "flowLine 3s linear infinite"
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-20px)" }
+        },
+        fadeInUp: {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" }
+        },
+        flowLine: {
+          "0%": { strokeDashoffset: "100" },
+          "100%": { strokeDashoffset: "0" }
+        }
+      }
+    }
+  }
+};
+`;
 
-const failureModes = [
+const landingStyles = `
+.landing-v2 {
+  background: #0a0a0b;
+}
+
+.landing-v2 .glass-panel {
+  background: rgba(20, 20, 23, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-v2 .obsidian-gradient {
+  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+}
+
+.landing-v2 .text-glow {
+  text-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+.landing-v2 .scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-v2 .scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.landing-v2 .distillation-path {
+  stroke-dasharray: 10;
+  animation: flow-line 2s linear infinite;
+}
+
+.landing-v2 ::selection {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2d2d35;
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-v2 .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .landing-v2 .animate-float,
+  .landing-v2 .animate-fade-in-up,
+  .landing-v2 .animate-pulse-slow,
+  .landing-v2 .animate-pulse,
+  .landing-v2 .distillation-path {
+    animation: none !important;
+  }
+}
+`;
+
+const memoryGapCards = [
   {
-    title: "Great first chat, bad second chat",
-    body:
-      "The demo looks magical, then the assistant asks the same question again because nothing durable was actually saved."
+    title: "Standard Vector DB",
+    icon: "layers_clear",
+    iconWrapClass: "bg-red-500/20",
+    iconClass: "text-red-400",
+    panelClass: "",
+    items: [
+      {
+        title: "Static Snapshot",
+        body:
+          "Retrieves data from 2 years ago exactly like data from 2 minutes ago.",
+        icon: "close",
+        iconClass: "text-red-500"
+      },
+      {
+        title: "Context Blind",
+        body:
+          "Simply matches keywords. It does not know the difference between a wish and a fact.",
+        icon: "close",
+        iconClass: "text-red-500"
+      },
+      {
+        title: "Bloated Storage",
+        body:
+          "Stores every uh and um instead of the core truth of the conversation.",
+        icon: "close",
+        iconClass: "text-red-500"
+      }
+    ]
   },
   {
-    title: "Yesterday's truth will not leave",
-    body:
-      "A preference changes, a plan shifts, a customer moves, and the old version still sneaks back into the answer."
-  },
-  {
-    title: "Every tool has amnesia",
-    body:
-      "You teach one model your tone, your rules, or your customer context, then the next tool walks in like it never met you."
+    title: "Aletheia Memory Engine",
+    icon: "psychology",
+    iconWrapClass: "bg-primary/20",
+    iconClass: "text-primary",
+    panelClass:
+      "border-primary/40 shadow-[0_0_50px_rgba(99,102,241,0.1)]",
+    items: [
+      {
+        title: "Temporal Awareness",
+        body:
+          "Understands the arrow of time. Newer facts naturally supersede obsolete ones.",
+        icon: "check_circle",
+        iconClass: "text-primary"
+      },
+      {
+        title: "Truth Extraction",
+        body:
+          "Distills 1,000 words into 3 verified semantic facts. Efficiency by design.",
+        icon: "check_circle",
+        iconClass: "text-primary"
+      },
+      {
+        title: "Active Reasoning",
+        body:
+          "Connects the dots between conversations to build a coherent world-view.",
+        icon: "check_circle",
+        iconClass: "text-primary"
+      }
+    ]
   }
 ];
 
-const repairSteps = [
+const distillationDetails = [
   {
-    step: "01",
-    title: "Save the moments that matter",
+    icon: "schedule",
+    title: "Time-Awareness",
     body:
-      "Turns, facts, preferences, and decisions land in one memory layer instead of disappearing inside separate chats."
+      "I used to love coffee, but now I only drink tea. Aletheia does not hallucinate your old preferences. It updates your profile in real time."
   },
   {
-    step: "02",
-    title: "Fetch the right thing fast",
+    icon: "filter_center_focus",
+    title: "Fact Distillation",
     body:
-      "Aletheia mixes semantic search, keyword search, reranking, and time signals so the useful detail wins."
-  },
-  {
-    step: "03",
-    title: "Let memory change its mind",
-    body:
-      "New facts can replace old ones, summaries can compact long threads, and stale context can finally stop haunting the reply."
+      "Our engine automatically discards greetings and filler, keeping only the high-value semantic facts that actually matter for personalization."
   }
 ];
 
-const technicalAdvantages = [
+const userFlowCards = [
   {
-    label: "Rust where it counts",
-    body:
-      "The engine is built for fast retrieval and predictable latency, not a pile of glue scripts pretending to be infrastructure."
+    date: "The First Spark (May 12)",
+    quote: "Hey! I just bought a white Mercedes! What should I do first?",
+    summary:
+      "GPT-4o detects: User Ownership → Vehicle: Mercedes (White)",
+    icon: "chat_bubble",
+    iconWrapClass: "bg-primary/20",
+    iconClass: "text-primary",
+    borderClass: "border-l-4 border-l-primary/30",
+    delay: ""
   },
   {
-    label: "Local-first workflow",
-    body:
-      "Run it on your machine while you prototype, test, and debug before you ever touch hosted infrastructure."
+    date: "Aletheia Ingests",
+    quote: "Fact Integration",
+    summary: "",
+    icon: "psychology",
+    iconWrapClass: "bg-primary",
+    iconClass: "text-white",
+    borderClass:
+      "border-primary/40 shadow-[0_20px_40px_rgba(0,0,0,0.3)]",
+    delay: "150ms",
+    facts: ["Fact: Owns Mercedes", "Context: Initial Purchase"]
   },
   {
-    label: "One API, less drama",
-    body:
-      "Your SDKs and apps talk to one HTTP contract instead of learning a new shape for every environment."
-  },
-  {
-    label: "Model-agnostic memory",
-    body:
-      "OpenAI, Anthropic, Google, xAI, or your own stack can all read from the same memory source."
+    date: "3 Months Later (Aug 20)",
+    quote: "What was that maintenance tip for my car?",
+    summary:
+      'Claude 3.5 recalls: "For your white Mercedes, I recommend..."',
+    icon: "auto_awesome",
+    iconWrapClass: "bg-indigo-500/20",
+    iconClass: "text-indigo-400",
+    borderClass: "border-l-4 border-l-indigo-400/30",
+    delay: "300ms"
   }
 ];
 
-const crossModelMoments = [
+const uniqueEdges = [
   {
-    model: "ChatGPT",
-    prompt: "I always want aisle seats, unless it is an overnight flight.",
-    result:
-      "Aletheia stores the preference with the exception instead of flattening it into one fuzzy note."
-  },
-  {
-    model: "Claude",
-    prompt: "Plan my trip to Lisbon next month.",
-    result:
-      "The next model can use the aisle-seat rule without asking the user to repeat it."
-  },
-  {
-    model: "Gemini or Grok",
-    prompt: "Make me a packing list and travel checklist.",
-    result:
-      "The follow-up stays grounded in the same trip and preference context across tools."
-  }
-];
-
-const controlPlaneCards = [
-  {
-    label: "Story",
+    icon: "all_inclusive",
+    title: "Multi-Model Continuity",
     body:
-      "Say what the product does in plain English, with enough proof to make an engineer and a buyer both keep scrolling."
+      "Memory that follows the user, not the model. Switch from GPT-4 to Claude to Llama and Aletheia keeps the brain intact across every integration.",
+    delay: ""
   },
   {
-    label: "Docs",
+    icon: "published_with_changes",
+    title: "Fact Supersession",
     body:
-      "Move people from interesting to I can wire this up today without sending them on a documentation scavenger hunt."
+      "When life changes, Aletheia knows. If a user moves from NYC to LA, the old fact is marked as superseded so stale context stops leaking into answers.",
+    delay: "150ms"
   },
   {
-    label: "Access",
+    icon: "bolt",
+    title: "Zero-Config Performance",
     body:
-      "Handle logins, demo keys, and the first API call in one clean front door."
+      "Built with Rust as a single compiled binary. Deployment is fast and recall latency stays in the sub-10ms range without orchestration drama.",
+    delay: "300ms"
   }
 ];
 
-const heroHighlights = [
-  "Semantic + keyword retrieval",
-  "Time-aware ranking",
-  "Cross-model context",
-  "Local to cloud"
-];
-
-const heroSignals = [
+const engineSpecs = [
   {
-    label: "Traveler update",
-    value: "Use SMS for confirmations"
+    icon: "memory",
+    title: "Coded in Rust",
+    body:
+      "Ultimate memory safety and blazing-fast execution. No garbage collection pauses, just low-level performance where it matters."
   },
   {
-    label: "Exception rule",
-    value: "Aisle seat, except overnight flights"
+    icon: "deployed_code",
+    title: "Single Binary Deployment",
+    body:
+      "No complex Docker chains. One file, zero configuration, instant memory synchronization across your stack."
+  },
+  {
+    icon: "speed",
+    title: "Sub-10ms Latency",
+    body:
+      "Human-like recall speeds that keep up with your fastest LLM workflows without turning memory into the bottleneck."
   }
 ];
 
-const heroRankings = [
-  {
-    label: "SMS preference",
-    score: "98%"
-  },
-  {
-    label: "Trip to Lisbon",
-    score: "92%"
-  },
-  {
-    label: "Old email thread",
-    score: "34%"
-  }
+const platformLinks = [
+  { label: "Memory Lattice", href: "/#memory" },
+  { label: "Vector Store", href: "/docs/local-engine" },
+  { label: "Rust SDK", href: "/docs/quickstart" },
+  { label: "Integrations", href: "/docs/api-auth" }
+];
+
+const companyLinks = [
+  { label: "Privacy First", href: "/docs/security" },
+  { label: "Security Audit", href: "/docs/security" },
+  { label: "Open Source", href: "/docs" },
+  { label: "Contact", href: "/login" }
 ];
 
 export default component$(() => {
-  const mainRef = useSignal<HTMLElement>();
+  const pageRef = useSignal<HTMLElement>();
 
   useVisibleTask$(({ cleanup }) => {
-    const root = mainRef.value;
+    const root = pageRef.value;
 
     if (!root) {
       return;
     }
 
-    const revealTargets = Array.from(
-      root.querySelectorAll<HTMLElement>("[data-reveal]")
+    const revealItems = Array.from(
+      root.querySelectorAll<HTMLElement>(".scroll-reveal")
     );
-    const trackedSections = Array.from(
-      root.querySelectorAll<HTMLElement>("[data-track]")
-    );
-    const heroSection = root.querySelector<HTMLElement>(".hero-section");
-
-    revealTargets.forEach((target, index) => {
-      target.style.setProperty("--reveal-order", `${index % 7}`);
-    });
-
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
     if (prefersReducedMotion) {
-      revealTargets.forEach((target) => target.classList.add("is-visible"));
-      root.style.setProperty("--hero-progress", "0");
-
-      trackedSections.forEach((section) => {
-        section.style.setProperty("--section-progress", "0.5");
-      });
-
+      revealItems.forEach((item) => item.classList.add("visible"));
       return;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            (entry.target as HTMLElement).classList.add("is-visible");
+            (entry.target as HTMLElement).classList.add("visible");
           }
-        }
+        });
       },
       {
-        threshold: 0.18,
-        rootMargin: "0px 0px -8% 0px"
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px"
       }
     );
 
-    revealTargets.forEach((target) => observer.observe(target));
-
-    let frame = 0;
-
-    const updateProgress = () => {
-      frame = 0;
-
-      const viewportHeight = window.innerHeight || 1;
-
-      if (heroSection) {
-        const heroRect = heroSection.getBoundingClientRect();
-        const heroProgress = Math.max(
-          0,
-          Math.min(1, -heroRect.top / Math.max(heroRect.height * 0.75, 1))
-        );
-
-        root.style.setProperty("--hero-progress", heroProgress.toFixed(3));
-      }
-
-      trackedSections.forEach((section) => {
-        const rect = section.getBoundingClientRect();
-        const progress = Math.max(
-          0,
-          Math.min(1, (viewportHeight - rect.top) / (viewportHeight + rect.height))
-        );
-
-        section.style.setProperty("--section-progress", progress.toFixed(3));
-      });
-    };
-
-    const queueUpdate = () => {
-      if (!frame) {
-        frame = window.requestAnimationFrame(updateProgress);
-      }
-    };
-
-    updateProgress();
-    window.addEventListener("scroll", queueUpdate, { passive: true });
-    window.addEventListener("resize", queueUpdate);
+    revealItems.forEach((item) => observer.observe(item));
 
     cleanup(() => {
       observer.disconnect();
-
-      if (frame) {
-        window.cancelAnimationFrame(frame);
-      }
-
-      window.removeEventListener("scroll", queueUpdate);
-      window.removeEventListener("resize", queueUpdate);
     });
   });
 
   return (
-    <main ref={mainRef} class="landing-page">
-      <section class="hero-section section-tone-lime" data-track>
-        <div class="shell hero-grid">
-          <div>
-            <div class="eyebrow" data-reveal>
-              Memory for AI that should stop asking the same thing twice
-            </div>
-            <h1 class="hero-title" data-reveal>
-              AI that remembers the useful stuff, forgets the junk, and picks
-              up where the last model left off.
-            </h1>
-            <p class="hero-copy" data-reveal>
-              Most AI feels brilliant for one conversation and weirdly needy by
-              the next. Aletheia gives your product a memory worth having: it
-              stores what matters, updates what changed, and brings back the
-              right context whether the next reply comes from Claude, ChatGPT,
-              Gemini, Grok, or your own agent stack.
-            </p>
+    <div ref={pageRef} class="landing-v2 bg-surface text-on-surface font-body">
+      <header class="fixed top-0 z-50 flex h-20 w-full items-center justify-between border-b border-outline-variant/10 bg-surface/80 px-8 backdrop-blur-md">
+        <div class="flex items-center gap-12">
+          <Link
+            href="/"
+            class="font-headline text-2xl font-black uppercase tracking-tighter text-on-surface"
+          >
+            ALETHEIA
+          </Link>
+          <nav class="hidden items-center gap-8 md:flex">
+            <a
+              class="text-sm font-medium text-on-surface/90 transition-colors hover:text-primary"
+              href="#memory"
+            >
+              Memory Lattice
+            </a>
+            <a
+              class="text-sm font-medium text-on-surface/60 transition-colors hover:text-on-surface"
+              href="#tech"
+            >
+              The Engine
+            </a>
+            <Link
+              class="text-sm font-medium text-on-surface/60 transition-colors hover:text-on-surface"
+              href="/docs/security"
+            >
+              Truth Registry
+            </Link>
+          </nav>
+        </div>
 
-            <div class="button-row" data-reveal>
-              <Link href="/docs" class="button button-dark">
-                See the quickstart
-              </Link>
-              <Link href="/login" class="button button-ghost">
-                Try the demo
-              </Link>
-            </div>
+        <div class="flex items-center gap-6">
+          <Link
+            href="/login"
+            class="hidden text-sm font-semibold transition-colors hover:text-primary sm:block"
+          >
+            Login
+          </Link>
+          <Link
+            href="/login"
+            class="obsidian-gradient rounded-full px-5 py-2.5 text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105"
+          >
+            Start Free
+          </Link>
+        </div>
+      </header>
 
-            <div class="hero-pill-row" data-reveal>
-              {heroHighlights.map((item) => (
-                <span key={item} class="pill hero-pill">
-                  {item}
+      <main class="pt-20">
+        <section class="relative flex min-h-[95vh] items-center overflow-hidden px-6">
+          <div class="absolute inset-0 z-0">
+            <div class="absolute left-[-25%] top-1/4 h-[600px] w-[600px] animate-pulse-slow rounded-full bg-primary/20 blur-[120px]" />
+            <div class="absolute bottom-0 right-[-25%] h-[500px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]" />
+          </div>
+
+          <div class="container mx-auto relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+            <div class="animate-fade-in-up">
+              <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5">
+                <span class="h-2 w-2 animate-ping rounded-full bg-primary" />
+                <span class="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+                  Protocol v2.0: The Sentient Monolith
                 </span>
-              ))}
-            </div>
-
-            <div class="scroll-cue" data-reveal>
-              <span class="scroll-cue-dot" />
-              Scroll a little. The page does the remembering too.
-            </div>
-
-            <div class="stats-grid" data-reveal>
-              {heroStats.map((item) => (
-                <article key={item.label} class="card metric-card">
-                  <div class="metric-label">{item.label}</div>
-                  <div class="metric-value">{item.value}</div>
-                </article>
-              ))}
-            </div>
-          </div>
-
-          <div class="dark-card hero-visual" data-reveal>
-            <div class="hero-glow hero-glow-lime" />
-            <div class="hero-glow hero-glow-teal" />
-            <div class="hero-gridlines" />
-            <div class="hero-scene-grid">
-              <div class="floating-panel hero-stream-card">
-                <div class="floating-title">Fresh signal</div>
-                <div class="hero-event-list">
-                  {heroSignals.map((item) => (
-                    <div key={item.label} class="hero-event-row">
-                      <span>{item.label}</span>
-                      <strong>{item.value}</strong>
-                    </div>
-                  ))}
-                </div>
               </div>
 
-              <div class="hero-orbit">
-                <div class="hero-ring hero-ring-one" />
-                <div class="hero-ring hero-ring-two" />
-                <div class="hero-core-label">Aletheia core</div>
-                <div class="hero-core-title">memory that keeps up</div>
-                <p class="hero-core-copy">
-                  Signal in, useful context out, no repeated onboarding.
-                </p>
-              </div>
+              <h1 class="mb-8 text-6xl font-black leading-[0.95] tracking-tight md:text-8xl">
+                AGENTS <br />
+                THAT <span class="text-glow italic text-primary">REMEMBER.</span>
+              </h1>
 
-              <div class="floating-panel hero-rank-card">
-                <div class="floating-title">What comes back</div>
-                <div class="hero-rank-list">
-                  {heroRankings.map((item) => (
-                    <div key={item.label} class="hero-rank-item">
-                      <div class="hero-rank-copy">
-                        <span>{item.label}</span>
-                        <strong>{item.score}</strong>
+              <p class="mb-10 max-w-xl text-xl leading-relaxed text-tertiary">
+                Stop treating every chat like a first date. Aletheia gives your
+                AI a persistent, evolving brain, a cognitive architecture that
+                learns who your users are one interaction at a time.
+              </p>
+
+              <div class="flex flex-wrap gap-5">
+                <Link
+                  href="/docs/quickstart"
+                  class="obsidian-gradient flex items-center gap-3 rounded-xl px-10 py-5 text-lg font-bold text-white transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] active:scale-95"
+                >
+                  Truth Disclosed
+                  <span class="material-symbols-outlined">bolt</span>
+                </Link>
+                <Link
+                  href="/login"
+                  class="glass-panel rounded-xl px-10 py-5 text-lg font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95"
+                >
+                  Watch Demo
+                </Link>
+              </div>
+            </div>
+
+            <div class="hidden justify-center lg:flex">
+              <div class="relative h-[550px] w-[450px] animate-float">
+                <div class="glass-panel group absolute inset-0 overflow-hidden rounded-3xl border-primary/20 shadow-2xl">
+                  <img
+                    class="h-full w-full object-cover opacity-40 mix-blend-screen transition-transform duration-[10s] group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDP6aftP-Z-45zUJ7ikYh5-rv2UZviCj-xVzUKXgrar8B2FmWXde2meuVMHfEpCjUuTqWFvXpk2EShWB8_5_umYPRdG_kAqBXTkYs8okoD-KOxbtJ3aUS4nOT9wUXIXlncUMVqFJAXt5IMnbVCZoAD450qlVPyGV7tx3QNfyhDtGenSH_OV01Z2tcoUVChuhYymWBf_QIQYXFKrf2VG77Kphqz9nr51LpGzn0a8wBrgvXMxj7hQQMzn28lGZOV_V_cv46wOy38KhGPr"
+                    alt="Abstract futuristic light sculpture"
+                  />
+                  <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-surface to-transparent" />
+                  <div class="absolute bottom-8 left-8 right-8">
+                    <div class="glass-panel rounded-xl border-primary/30 p-6">
+                      <div class="mb-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                        Active Memory Node
                       </div>
-                      <div class="hero-rank-bar">
-                        <span style={{ width: item.score }} />
+                      <div class="mb-3 text-sm font-medium">
+                        Memory Lattice: 100% Coherent
+                      </div>
+                      <div class="h-1 w-full overflow-hidden rounded-full bg-white/10">
+                        <div class="h-full w-[88%] bg-primary shadow-[0_0_10px_#6366f1]" />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div class="floating-panel hero-store-card">
-                <div class="floating-title">What sticks</div>
-                <div class="hero-memory-grid">
-                  <span class="chip hero-memory-chip">facts</span>
-                  <span class="chip hero-memory-chip">preferences</span>
-                  <span class="chip hero-memory-chip">summaries</span>
-                  <span class="chip hero-memory-chip">recent moments</span>
-                </div>
-                <p class="accent-line">Result: send the SMS version, not the stale email one.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="problem" class="section section-tone-orange" data-track>
-        <div class="shell">
-          <div class="section-intro" data-reveal>
-            <div class="eyebrow">Why memory breaks</div>
-            <h2>Most AI feels smart until the follow-up question.</h2>
-            <p>
-              Bad memory is not just forgetting. It is dragging old facts back
-              into the room, missing the detail that matters, and making every
-              new session start from zero.
-            </p>
-          </div>
-
-          <div class="three-up">
-            {failureModes.map((mode) => (
-              <article key={mode.title} class="card feature-card" data-reveal>
-                <h3>{mode.title}</h3>
-                <p>{mode.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="how" class="section section-tone-teal" data-track>
-        <div class="shell">
-          <div class="section-intro" data-reveal>
-            <div class="eyebrow">How Aletheia works</div>
-            <h2>Keep the important bits. Bring them back fast. Update them when reality changes.</h2>
-            <p>
-              That is the product. Aletheia turns messy conversation history
-              into usable memory so agents stay helpful without dragging an
-              entire transcript around forever.
-            </p>
-          </div>
-
-          <div class="three-up step-grid">
-            {repairSteps.map((step) => (
-              <article key={step.step} class="card step-card" data-reveal>
-                <div class="step-id">{step.step}</div>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="tech" class="section section-tone-lime" data-track>
-        <div class="shell two-column">
-          <div>
-            <div class="section-intro section-intro-left" data-reveal>
-              <div class="eyebrow">Why developers like it</div>
-              <h2>Built for teams that want durable memory, not another AI science project.</h2>
-              <p>
-                Run it locally while you build. Ship the same memory layer in
-                production. Keep the API stable even while the models around it
-                change every other week.
-              </p>
-            </div>
-            <div class="two-up">
-              {technicalAdvantages.map((item) => (
-                <article key={item.label} class="card feature-card" data-reveal>
-                  <h3>{item.label}</h3>
-                  <p>{item.body}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-
-          <div class="dark-card stack-card" data-reveal>
-            <div class="terminal-label">one memory layer, one API</div>
-            <pre class="code-window">
-              <code>{`$ aletheia start --port 3000
-memory online • local mode ready
-store facts • query context • ship the same API in cloud`}</code>
-            </pre>
-            <div class="chip-row">
-              <span class="chip">Python SDK</span>
-              <span class="chip">Node SDK</span>
-              <span class="chip">Agent apps</span>
-              <span class="chip">Internal copilots</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-tone-orange" data-track>
-        <div class="shell two-column">
-          <div>
-            <div class="section-intro section-intro-left" data-reveal>
-              <div class="eyebrow">What users feel</div>
-              <h2>The magic is simple: the next assistant already knows the backstory.</h2>
-              <p>
-                Users do not care about your retrieval pipeline. They care that
-                the assistant remembers the aisle-seat rule, the product
-                preference, the customer note, or the new deadline without being
-                told all over again.
-              </p>
-            </div>
-            <div class="stack-list">
-              {crossModelMoments.map((moment, index) => (
-                <article key={moment.model} class="card story-card" data-reveal>
-                  <div class="story-heading">
-                    <span class="story-count">{index + 1}</span>
-                    <h3>{moment.model}</h3>
                   </div>
-                  <p class="story-quote">{moment.prompt}</p>
-                  <p>{moment.result}</p>
-                </article>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="memory-gap"
+          class="border-y border-outline-variant/10 bg-surface-container-high/20 px-6 py-32"
+        >
+          <div class="container mx-auto">
+            <div class="scroll-reveal mx-auto mb-20 max-w-3xl text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                The Cognition Problem
+              </h2>
+              <h3 class="mb-6 text-4xl font-black tracking-tight md:text-5xl">
+                Standard RAG is{" "}
+                <span class="italic text-tertiary">amnesiac.</span>
+              </h3>
+              <p class="text-lg text-tertiary">
+                Vector databases are giant warehouses of static text. They find
+                words, but they do not understand life. They lose context,
+                ignore the passage of time, and drown in their own noise.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-12 lg:grid-cols-2">
+              {memoryGapCards.map((card, cardIndex) => (
+                <div
+                  key={card.title}
+                  class={`glass-panel scroll-reveal rounded-3xl p-10 ${card.panelClass}`}
+                  style={{
+                    transitionDelay: cardIndex === 1 ? "150ms" : undefined
+                  }}
+                >
+                  <div class="mb-8 flex items-center gap-4">
+                    <div
+                      class={`flex h-10 w-10 items-center justify-center rounded-full ${card.iconWrapClass}`}
+                    >
+                      <span
+                        class={`material-symbols-outlined ${card.iconClass}`}
+                      >
+                        {card.icon}
+                      </span>
+                    </div>
+                    <h4 class="text-xl font-bold">{card.title}</h4>
+                  </div>
+
+                  <ul class="space-y-6">
+                    {card.items.map((item) => (
+                      <li key={item.title} class="flex gap-4">
+                        <span
+                          class={`material-symbols-outlined shrink-0 ${item.iconClass}`}
+                        >
+                          {item.icon}
+                        </span>
+                        <div>
+                          <span class="mb-1 block font-bold">{item.title}</span>
+                          <p class="text-sm text-tertiary">{item.body}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
             </div>
           </div>
+        </section>
 
-          <div class="dark-card stack-card" data-reveal>
-            <div class="terminal-label">shared memory record</div>
-            <pre class="code-window">
-              <code>{`preference: aisle seat
-exception: overnight flights
-trip: Lisbon next month
-next asks: itinerary, packing list, reminder checklist`}</code>
-            </pre>
-            <p class="subtle-copy">
-              Tell one assistant the travel preference. Ask the next one to plan
-              the trip. Ask another for the packing list. It still feels like
-              one conversation.
-            </p>
+        <section class="overflow-hidden px-6 py-32">
+          <div class="container mx-auto">
+            <div class="grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
+              <div class="scroll-reveal">
+                <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                  The Distillation Loop
+                </h2>
+                <h3 class="mb-8 text-4xl font-black leading-tight md:text-5xl">
+                  We do not store text.
+                  <br />
+                  We extract <span class="italic text-primary">truth.</span>
+                </h3>
+                <p class="mb-8 text-lg text-tertiary">
+                  Raw chat logs are noise. Aletheia acts as a cognitive filter,
+                  distilling human rambling into a clean, queryable lattice of
+                  facts.
+                </p>
+
+                <div class="space-y-8">
+                  {distillationDetails.map((item) => (
+                    <div key={item.title} class="flex items-start gap-6">
+                      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                        <span class="material-symbols-outlined text-primary">
+                          {item.icon}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 class="mb-2 font-bold">{item.title}</h4>
+                        <p class="text-sm text-tertiary">{item.body}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div
+                class="glass-panel scroll-reveal relative rounded-3xl border-primary/20 p-8 lg:p-12"
+                style={{ transitionDelay: "200ms" }}
+              >
+                <div class="flex flex-col items-center gap-10">
+                  <div class="group flex w-full items-center justify-between">
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-4 font-mono text-xs">
+                      "Hey! I just bought a white Mercedes!"
+                    </div>
+                    <span class="material-symbols-outlined animate-pulse text-primary">
+                      arrow_forward
+                    </span>
+                    <div class="rounded-full border border-primary/40 bg-primary/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
+                      Raw Chat
+                    </div>
+                  </div>
+
+                  <div class="flex w-full flex-col items-center border-y border-outline-variant/20 py-8">
+                    <div class="obsidian-gradient mb-4 flex h-20 w-20 items-center justify-center rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.5)]">
+                      <span class="material-symbols-outlined text-4xl text-white">
+                        settings_input_component
+                      </span>
+                    </div>
+                    <div class="text-sm font-bold uppercase tracking-widest">
+                      Distillation Engine
+                    </div>
+                    <div class="mt-2 font-mono text-[10px] text-tertiary">
+                      Running: Rust Semantic Kernel v2
+                    </div>
+                  </div>
+
+                  <div class="w-full space-y-3">
+                    <div class="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 p-3">
+                      <span class="material-symbols-outlined text-sm text-green-400">
+                        verified
+                      </span>
+                      <span class="font-mono text-xs">
+                        Semantic Fact: User owns White Mercedes
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 opacity-60">
+                      <span class="material-symbols-outlined text-sm text-primary">
+                        database
+                      </span>
+                      <span class="font-mono text-xs">
+                        Committed to Long-Term Memory
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="platform" class="section section-last section-tone-teal" data-track>
-        <div class="shell">
-          <div class="platform-panel" data-reveal>
-            <div class="section-intro section-intro-left platform-copy" data-reveal>
-              <div class="eyebrow eyebrow-dark">Platform</div>
-              <h2>Your pitch, docs, and key management should live in the same front door.</h2>
-              <p>
-                If someone is ready to try the product, do not send them
-                through three different websites and a mystery dashboard.
-                Aletheia gives you one place to explain the value, teach the
-                setup, and hand over access.
+        <section id="memory" class="bg-surface-container/30 px-6 py-32">
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-20 max-w-2xl">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                The Human Touch
+              </h2>
+              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
+                One brain,
+                <br />
+                infinite applications.
+              </h3>
+              <p class="mt-6 text-tertiary">
+                Our White Mercedes engine ensures your user's identity is not
+                locked inside a single chat window.
               </p>
-              <div class="button-row">
-                <Link href="/login" class="button button-lime">
-                  Get a demo key
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+              {userFlowCards.map((card) => (
+                <div
+                  key={card.date}
+                  class={`glass-panel scroll-reveal rounded-2xl p-8 ${card.borderClass}`}
+                  style={{
+                    transitionDelay: card.delay || undefined
+                  }}
+                >
+                  <div
+                    class={`mb-6 flex h-12 w-12 items-center justify-center rounded-lg ${card.iconWrapClass}`}
+                  >
+                    <span
+                      class={`material-symbols-outlined ${card.iconClass}`}
+                    >
+                      {card.icon}
+                    </span>
+                  </div>
+
+                  <div
+                    class={`mb-3 font-mono text-xs uppercase tracking-wider ${
+                      card.date === "Aletheia Ingests"
+                        ? "text-primary"
+                        : "text-tertiary"
+                    }`}
+                  >
+                    {card.date}
+                  </div>
+
+                  <p
+                    class={`mb-6 text-lg leading-relaxed ${
+                      card.facts
+                        ? "font-bold"
+                        : "font-medium italic text-on-surface/90"
+                    }`}
+                  >
+                    {card.quote}
+                  </p>
+
+                  {card.facts ? (
+                    <div class="space-y-3">
+                      {card.facts.map((fact) => (
+                        <div
+                          key={fact}
+                          class="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
+                        >
+                          <span class="material-symbols-outlined text-sm text-green-400">
+                            check_circle
+                          </span>
+                          <span class="font-mono text-xs">{fact}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <div class="mb-6 h-[1px] w-full bg-outline-variant/20" />
+                      <p class="font-mono text-sm text-tertiary">
+                        {card.summary.includes("recalls:") ? (
+                          <>
+                            Claude 3.5 recalls:{" "}
+                            <span class="text-indigo-400">
+                              "For your white Mercedes, I recommend..."
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            GPT-4o detects:{" "}
+                            <span class="text-primary">
+                              User Ownership → Vehicle: Mercedes (White)
+                            </span>
+                          </>
+                        )}
+                      </p>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section class="px-6 py-32">
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-20 text-center">
+              <h2 class="mb-6 text-4xl font-black md:text-5xl">
+                Our Unique <span class="italic text-primary">Edge.</span>
+              </h2>
+              <p class="mx-auto max-w-xl text-tertiary">
+                Engineered for builders who need more than just a place to dump
+                text files.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+              {uniqueEdges.map((item) => (
+                <div
+                  key={item.title}
+                  class="glass-panel scroll-reveal rounded-3xl border-t-2 border-primary/20 p-10"
+                  style={{
+                    transitionDelay: item.delay || undefined
+                  }}
+                >
+                  <span class="material-symbols-outlined mb-6 text-4xl text-primary">
+                    {item.icon}
+                  </span>
+                  <h4 class="mb-4 text-xl font-bold">{item.title}</h4>
+                  <p class="text-sm leading-relaxed text-tertiary">
+                    {item.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="tech"
+          class="bg-surface-container-high/40 px-6 py-32"
+        >
+          <div class="container mx-auto">
+            <div class="grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
+              <div class="scroll-reveal">
+                <h2 class="mb-8 text-4xl font-black leading-tight md:text-5xl">
+                  Built for the
+                  <br />
+                  <span class="italic text-primary">next decade</span> of AI.
+                </h2>
+                <p class="mb-12 text-lg text-tertiary">
+                  We did not just build a wrapper. We built a high-performance
+                  memory kernel from the ground up for safety and scale.
+                </p>
+
+                <div class="space-y-8">
+                  {engineSpecs.map((spec) => (
+                    <div key={spec.title} class="flex gap-6">
+                      <div class="glass-panel flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
+                        <span class="material-symbols-outlined text-3xl text-primary">
+                          {spec.icon}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 class="mb-1 text-xl font-bold">{spec.title}</h4>
+                        <p class="text-sm leading-relaxed text-tertiary">
+                          {spec.body}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div class="scroll-reveal relative">
+                <div class="glass-panel group relative aspect-square overflow-hidden rounded-3xl p-1">
+                  <img
+                    class="h-full w-full rounded-2xl object-cover opacity-60 grayscale transition-all duration-1000 group-hover:grayscale-0"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjCFYsvGHWRN6ZMdb3rSxu-5-TbzvmphPPq2CTrpoY68mJFfOKFGHT6QAU4hY98Ub0ZVpIemS2cMuBW8waunO0p-FEJvWj0cUi5l10SEsLRNA0KAXDLX1xmrW9nJ3ZPjAhl01HZAsK8OA7vhm0yILCD_BOEYcD5ROfB_KapjrZZcAWMWurONAAcY8zBycar_q1DBJ02JmClKbfUXOmp34Sp8DUjX4xTEh2Kqz0DmyPaX4u1KnEQPnxNchGfnB5lqgKbTgsHOqnHAgX"
+                    alt="Close up of abstract circuit board with blue neon highlights"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center">
+                      <div class="mb-2 text-6xl font-black tracking-tighter text-white">
+                        0.008s
+                      </div>
+                      <div class="font-mono text-sm uppercase tracking-[0.3em] text-primary">
+                        Average Recall
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="px-6 py-32">
+          <div class="container mx-auto">
+            <div
+              id="cta"
+              class="glass-panel relative overflow-hidden rounded-[2rem] border-primary/20 p-12 text-center md:p-24"
+            >
+              <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+              <h2 class="relative z-10 mb-8 text-5xl font-black tracking-tight md:text-7xl">
+                UPGRADE TO
+                <br />
+                <span class="italic text-primary">TRUTH.</span>
+              </h2>
+              <p class="relative z-10 mx-auto mb-12 max-w-2xl text-xl leading-relaxed text-tertiary">
+                Join the next generation of engineers building agents that
+                actually understand their users. Start your disclosure today and
+                let your AI finally <span class="text-on-surface">remember</span>.
+              </p>
+              <div class="relative z-10 flex flex-col justify-center gap-6 sm:flex-row">
+                <Link
+                  href="/login"
+                  class="obsidian-gradient rounded-xl px-12 py-5 text-lg font-black uppercase tracking-wider text-white shadow-xl shadow-primary/30 transition-transform hover:scale-105"
+                >
+                  Initialize Engine
                 </Link>
-                <Link href="/docs/quickstart" class="button button-outline-light">
-                  Read the quickstart
+                <Link
+                  href="/docs"
+                  class="glass-panel rounded-xl px-12 py-5 text-lg font-bold uppercase tracking-wider text-on-surface transition-colors hover:bg-surface-container-high"
+                >
+                  Book a Workshop
                 </Link>
               </div>
             </div>
+          </div>
+        </section>
+      </main>
 
-            <div class="three-up platform-grid">
-              {controlPlaneCards.map((card) => (
-                <article key={card.label} class="platform-card" data-reveal>
-                  <div class="metric-label metric-label-dark">{card.label}</div>
-                  <p>{card.body}</p>
-                </article>
-              ))}
+      <footer class="border-t border-outline-variant/10 bg-surface px-8 py-20">
+        <div class="container mx-auto grid grid-cols-1 gap-12 md:grid-cols-4">
+          <div class="col-span-1 md:col-span-2">
+            <span class="mb-6 block text-2xl font-black uppercase tracking-tighter text-on-surface">
+              ALETHEIA
+            </span>
+            <p class="mb-8 max-w-sm text-sm leading-relaxed text-tertiary">
+              The persistent memory layer for advanced AI agents. Built for
+              humans, powered by Rust, dedicated to the truth.
+            </p>
+            <div class="flex gap-4">
+              <Link
+                href="/docs"
+                class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
+              >
+                <span class="material-symbols-outlined text-sm">hub</span>
+              </Link>
+              <Link
+                href="/platform"
+                class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
+              >
+                <span class="material-symbols-outlined text-sm">terminal</span>
+              </Link>
             </div>
           </div>
+
+          <div>
+            <h4 class="mb-6 text-sm font-bold uppercase tracking-widest text-primary">
+              Platform
+            </h4>
+            <ul class="space-y-4 text-sm text-tertiary">
+              {platformLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    class="transition-colors hover:text-on-surface"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="mb-6 text-sm font-bold uppercase tracking-widest text-primary">
+              Company
+            </h4>
+            <ul class="space-y-4 text-sm text-tertiary">
+              {companyLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    class="transition-colors hover:text-on-surface"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </section>
-    </main>
+
+        <div class="container mx-auto mt-20 border-t border-outline-variant/5 pt-8 text-center font-mono text-[10px] uppercase tracking-widest text-tertiary/50">
+          © 2024 Aletheia Systems. All human memories preserved. Truth disclosed.
+        </div>
+      </footer>
+    </div>
   );
 });
 
 export const head: DocumentHead = {
-  title: "Aletheia | AI Memory That Actually Sticks",
+  title: "ALETHEIA | Agents That Remember",
   meta: [
     {
       name: "description",
       content:
-        "Give your AI a memory worth having. Aletheia stores what matters, updates what changed, and keeps context moving across models."
+        "Aletheia is the persistent memory layer for AI agents that need temporal awareness, truth extraction, and continuity across models."
+    }
+  ],
+  links: [
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+    },
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    }
+  ],
+  styles: [
+    {
+      key: "landing-template-styles",
+      style: landingStyles
+    }
+  ],
+  scripts: [
+    {
+      key: "tailwind-cdn",
+      props: {
+        src: "https://cdn.tailwindcss.com?plugins=forms,container-queries"
+      }
+    },
+    {
+      key: "tailwind-config",
+      props: {
+        id: "tailwind-config"
+      },
+      script: tailwindConfigScript
     }
   ]
 };
