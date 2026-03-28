@@ -1,24 +1,13 @@
-# Aletheia Platform
+# Aletheia Platform Qwik
 
-Product repo for:
+Qwik rewrite of the original `aletheia-platform` Next.js app.
 
-- the marketing landing page
-- developer docs
-- the hosted platform shell where users log in and create API keys
+## Includes
 
-## Stack
-
-- Next.js App Router
-- Tailwind CSS 4
-- Fumadocs for docs
-- Cookie-backed demo auth and API-key storage to keep the shell clickable without external infra
-
-## Local development
-
-```bash
-npm install
-npm run dev
-```
+- Marketing landing page on `/`
+- Documentation surface on `/docs`
+- Demo login on `/login`
+- Cookie-backed API key dashboard on `/platform`
 
 ## Demo login
 
@@ -30,9 +19,16 @@ Override them with:
 - `ALETHEIA_DEMO_EMAIL`
 - `ALETHEIA_DEMO_PASSWORD`
 
-## What to productionize next
+## Run locally
 
-1. Replace demo cookies with your real auth provider.
-2. Move API keys from cookies into a database-backed control plane.
-3. Point the code snippets and docs at the deployed engine and SDK packages.
-4. Add billing, usage analytics, and audit log views.
+```bash
+npm install
+npm run dev
+```
+
+## Production build
+
+```bash
+npm run build
+npm run serve
+```
