@@ -103,6 +103,29 @@ const controlPlaneCards = [
   }
 ];
 
+const technicalAdvantages = [
+  {
+    label: "Built in Rust",
+    body:
+      "The engine is compiled for predictable latency, lower overhead, and a cleaner operational path than a pile of scripting services."
+  },
+  {
+    label: "One binary locally",
+    body:
+      "The SDK can launch one engine sidecar for local mode, which keeps installs lighter and testing much easier."
+  },
+  {
+    label: "One HTTP contract",
+    body:
+      "Python, Node, and provider bridges all talk to the same ingest and query surface instead of learning different runtimes."
+  },
+  {
+    label: "Same API in cloud",
+    body:
+      "Move from a local binary to the hosted path without changing the mental model, signatures, or memory behavior."
+  }
+];
+
 function SectionHeader({
   kicker,
   title,
@@ -131,6 +154,7 @@ function HeroIllustration() {
       <div className="ambient-grid absolute inset-0 opacity-20" />
       <div className="spot-glow absolute left-8 top-12 h-28 w-28 rounded-full bg-[var(--accent-lime)]" />
       <div className="spot-glow absolute bottom-14 right-12 h-32 w-32 rounded-full bg-[var(--accent-teal)]" />
+      <div className="foundation-plane absolute inset-5 rounded-[2rem]" />
 
       <svg
         viewBox="0 0 520 420"
@@ -177,6 +201,22 @@ function HeroIllustration() {
         ))}
       </div>
 
+      <div className="terminal-shell absolute right-6 top-20 w-[13.5rem] rounded-[1.6rem] p-4 text-white">
+        <div className="flex items-center gap-2">
+          <span className="terminal-dot bg-[var(--accent-orange)]" />
+          <span className="terminal-dot bg-[var(--accent-lime)]" />
+          <span className="terminal-dot bg-[var(--accent-teal)]" />
+          <div className="ml-auto text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45">
+            memory trace
+          </div>
+        </div>
+        <div className="mt-4 space-y-2 font-mono text-[12px] leading-6 text-white/74">
+          <div>query: user coffee preference</div>
+          <div>rank: semantic + lexical + rerank</div>
+          <div className="text-[var(--accent-lime)]">result: pourover, still current</div>
+        </div>
+      </div>
+
       <div className="story-card float-medium absolute left-6 top-28 w-40 rounded-[1.6rem] border border-white/10 bg-white/7 p-4 text-white">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           Input stream
@@ -210,7 +250,7 @@ function HeroIllustration() {
         </div>
       </div>
 
-      <div className="story-card float-slow absolute right-6 top-36 w-44 rounded-[1.6rem] border border-white/10 bg-white/7 p-4 text-white">
+      <div className="story-card float-slow absolute right-10 top-[48%] w-44 rounded-[1.6rem] border border-white/10 bg-white/7 p-4 text-white">
         <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
           Answer shaping
         </div>
@@ -219,6 +259,22 @@ function HeroIllustration() {
         </div>
         <div className="mt-3 text-sm leading-6 text-white/68">
           The output reflects what changed, not just what was said first.
+        </div>
+      </div>
+
+      <div className="story-card absolute bottom-24 right-8 w-[15rem] rounded-[1.6rem] border border-white/10 bg-white/7 p-4 text-white">
+        <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
+          Memory layers
+        </div>
+        <div className="mt-3 grid gap-2">
+          {["episodic", "facts", "summaries", "graph links"].map((label) => (
+            <div
+              key={label}
+              className="rounded-full border border-white/10 bg-black/18 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/74"
+            >
+              {label}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -369,6 +425,7 @@ function SharedMemoryIllustration() {
       <div className="ambient-grid absolute inset-0 opacity-15" />
       <div className="spot-glow absolute left-16 top-10 h-28 w-28 rounded-full bg-[var(--accent-lime)]" />
       <div className="spot-glow absolute bottom-10 right-16 h-28 w-28 rounded-full bg-[var(--accent-teal)]" />
+      <div className="foundation-plane absolute inset-5 rounded-[2rem]" />
 
       <svg
         viewBox="0 0 520 420"
@@ -451,6 +508,141 @@ function SharedMemoryIllustration() {
 
       <div className="absolute left-1/2 top-6 -translate-x-1/2 rounded-full bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
         same entity id, same backend, same memory
+      </div>
+
+      <div className="terminal-shell absolute inset-x-8 bottom-6 rounded-[1.5rem] p-4 text-white">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">
+          What the user experiences
+        </div>
+        <div className="mt-3 grid gap-2 text-sm leading-6 text-white/72 md:grid-cols-3">
+          <div>Set a preference in Claude Code.</div>
+          <div>Ask the same project question in ChatGPT.</div>
+          <div>Gemini or Grok still retrieves the same rule later.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TechIllustration() {
+  return (
+    <div className="dark-panel relative min-h-[540px] overflow-hidden rounded-[2.5rem] p-6 text-white">
+      <div className="ambient-grid absolute inset-0 opacity-10" />
+      <div className="spot-glow absolute left-10 top-10 h-28 w-28 rounded-full bg-[var(--accent-orange)]" />
+      <div className="spot-glow absolute bottom-8 right-12 h-28 w-28 rounded-full bg-[var(--accent-lime)]" />
+      <div className="foundation-plane absolute inset-5 rounded-[2rem]" />
+
+      <svg
+        viewBox="0 0 560 420"
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="tech-beam" x1="0" y1="0" x2="560" y2="0">
+            <stop offset="0%" stopColor="#59d5c5" stopOpacity="0.16" />
+            <stop offset="48%" stopColor="#d5ff49" stopOpacity="1" />
+            <stop offset="100%" stopColor="#ff9156" stopOpacity="0.22" />
+          </linearGradient>
+        </defs>
+        <path
+          className="signal-path"
+          stroke="url(#tech-beam)"
+          d="M118 156 C 176 156, 210 182, 280 210"
+        />
+        <path
+          className="signal-path"
+          stroke="url(#tech-beam)"
+          d="M444 156 C 390 156, 354 182, 280 210"
+        />
+        <path
+          className="signal-path"
+          stroke="url(#tech-beam)"
+          d="M138 318 C 194 292, 224 252, 280 210"
+        />
+        <path
+          className="signal-path"
+          stroke="url(#tech-beam)"
+          d="M420 318 C 364 290, 336 250, 280 210"
+        />
+      </svg>
+
+      <div className="terminal-shell absolute inset-x-6 top-6 rounded-[1.75rem] p-5">
+        <div className="flex items-center gap-2">
+          <span className="terminal-dot bg-[var(--accent-orange)]" />
+          <span className="terminal-dot bg-[var(--accent-lime)]" />
+          <span className="terminal-dot bg-[var(--accent-teal)]" />
+          <div className="ml-auto rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/55">
+            one binary path
+          </div>
+        </div>
+        <div className="mt-4 font-mono text-[12px] leading-6 text-white/76">
+          <div>$ ./aletheia-engine --port 3000</div>
+          <div className="text-[var(--accent-lime)]">engine ready • auth locked • rust runtime active</div>
+          <div>surface: ingest • query • version • health</div>
+        </div>
+      </div>
+
+      <div className="tech-node absolute left-8 top-[8.5rem] w-36">
+        <div className="text-[11px] uppercase tracking-[0.22em] text-white/48">
+          SDK
+        </div>
+        <div className="mt-2 text-xl font-semibold">Python</div>
+        <div className="mt-2 text-sm leading-6 text-white/68">
+          Local launcher or cloud client, same methods.
+        </div>
+      </div>
+
+      <div className="tech-node absolute right-8 top-[8.5rem] w-36">
+        <div className="text-[11px] uppercase tracking-[0.22em] text-white/48">
+          SDK
+        </div>
+        <div className="mt-2 text-xl font-semibold">Node</div>
+        <div className="mt-2 text-sm leading-6 text-white/68">
+          Same HTTP contract, same memory semantics.
+        </div>
+      </div>
+
+      <div className="tech-node absolute bottom-[5.5rem] left-10 w-40">
+        <div className="text-[11px] uppercase tracking-[0.22em] text-white/48">
+          Providers
+        </div>
+        <div className="mt-2 text-xl font-semibold">OpenAI + Claude</div>
+        <div className="mt-2 text-sm leading-6 text-white/68">
+          Shared entity ID means shared memory.
+        </div>
+      </div>
+
+      <div className="tech-node absolute bottom-[5.5rem] right-10 w-40">
+        <div className="text-[11px] uppercase tracking-[0.22em] text-white/48">
+          Providers
+        </div>
+        <div className="mt-2 text-xl font-semibold">Gemini + Grok</div>
+        <div className="mt-2 text-sm leading-6 text-white/68">
+          Same backend, same retrieval behavior.
+        </div>
+      </div>
+
+      <div className="pulse-soft glow-core absolute left-1/2 top-[52%] flex h-48 w-48 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-[2rem] text-center">
+        <div className="text-[11px] uppercase tracking-[0.26em] text-white/55">
+          Rust core
+        </div>
+        <div className="display mt-2 max-w-[9rem] text-3xl font-semibold leading-tight">
+          one engine, one API
+        </div>
+        <div className="mt-3 rounded-full bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/72">
+          local or cloud
+        </div>
+      </div>
+
+      <div className="absolute inset-x-8 bottom-6 grid gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70 md:grid-cols-4">
+        {["signed binary", "loopback local", "http surface", "provider bridges"].map((item) => (
+          <div
+            key={item}
+            className="rounded-full border border-white/10 bg-black/20 px-3 py-2 text-center"
+          >
+            {item}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -655,6 +847,47 @@ export default function HomePage() {
 
         <div className="mt-8">
           <RepairIllustration />
+        </div>
+      </section>
+
+      <section id="tech" className="mx-auto max-w-7xl px-6 py-10 lg:px-10 lg:py-20">
+        <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
+          <div>
+            <SectionHeader
+              kicker="Tech details"
+              title="Fast because the engine is compiled, simple because local mode is one binary."
+              body="Aletheia is built around a Rust runtime with one HTTP surface. That gives you a local sidecar path that is easy to ship, and a hosted path that keeps the same SDK shape when you scale up."
+            />
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {technicalAdvantages.map((item) => (
+                <article
+                  key={item.label}
+                  className="glass-panel motion-card rounded-[1.8rem] px-5 py-5"
+                >
+                  <h3 className="display text-2xl font-semibold tracking-[-0.04em] text-neutral-950">
+                    {item.label}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-neutral-700">
+                    {item.body}
+                  </p>
+                </article>
+              ))}
+            </div>
+
+            <div className="story-card mt-6 rounded-[1.9rem] px-5 py-5">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
+                Why this matters
+              </div>
+              <p className="mt-3 text-base leading-7 text-neutral-700">
+                Developers get a lighter local setup, teams get one stable API,
+                and hosted deployment becomes a packaging problem instead of a
+                total rewrite.
+              </p>
+            </div>
+          </div>
+
+          <TechIllustration />
         </div>
       </section>
 

@@ -27,6 +27,9 @@ export async function SiteNav() {
           <Link href="/#how" className={linkClass}>
             How it works
           </Link>
+          <Link href="/#tech" className={linkClass}>
+            Tech
+          </Link>
           <Link href="/#everyone" className={linkClass}>
             For users
           </Link>
