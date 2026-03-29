@@ -1,7 +1,7 @@
 import { Slot, component$ } from "@builder.io/qwik";
 import { routeLoader$, useLocation } from "@builder.io/qwik-city";
 
-import { SiteNav } from "~/components/site-nav";
+import { Header } from "~/components/Header";
 import { getCurrentUser, isAuthenticated } from "~/lib/auth";
 
 export const useSession = routeLoader$(({ cookie }) => {
@@ -16,14 +16,16 @@ export const useSession = routeLoader$(({ cookie }) => {
 export default component$(() => {
   const session = useSession();
   const location = useLocation();
-  const showSiteNav = location.url.pathname !== "/";
+  const isLoginPage = location.url.pathname === "/login/";
 
   return (
     <>
-      {showSiteNav ? (
-        <SiteNav authenticated={session.value.authenticated} />
-      ) : null}
-      <Slot />
+      {!isLoginPage && <Header authenticated={session.value.authenticated} />}
+      <div class={isLoginPage ? "" : "pt-16"}>
+        <Slot />
+      </div>
     </>
   );
 });
+
+

@@ -1,5 +1,7 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { commonHeadLinks, commonHeadScripts } from "~/constants/theme";
+
 
 const tailwindConfigScript = `
 tailwind.config = {
@@ -342,53 +344,8 @@ export default component$(() => {
 
   return (
     <div ref={pageRef} class="landing-v2 bg-surface text-on-surface font-body">
-      <header class="fixed top-0 z-50 flex h-20 w-full items-center justify-between border-b border-outline-variant/10 bg-surface/80 px-8 backdrop-blur-md">
-        <div class="flex items-center gap-12">
-          <Link
-            href="/"
-            class="font-headline text-2xl font-black uppercase tracking-tighter text-on-surface"
-          >
-            ALETHEIA
-          </Link>
-          <nav class="hidden items-center gap-8 md:flex">
-            <a
-              class="text-sm font-medium text-on-surface/90 transition-colors hover:text-primary"
-              href="#memory"
-            >
-              Memory Lattice
-            </a>
-            <a
-              class="text-sm font-medium text-on-surface/60 transition-colors hover:text-on-surface"
-              href="#tech"
-            >
-              The Engine
-            </a>
-            <Link
-              class="text-sm font-medium text-on-surface/60 transition-colors hover:text-on-surface"
-              href="/docs/security"
-            >
-              Truth Registry
-            </Link>
-          </nav>
-        </div>
+      <main class="pt-4">
 
-        <div class="flex items-center gap-6">
-          <Link
-            href="/login"
-            class="hidden text-sm font-semibold transition-colors hover:text-primary sm:block"
-          >
-            Login
-          </Link>
-          <Link
-            href="/login"
-            class="obsidian-gradient rounded-full px-5 py-2.5 text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105"
-          >
-            Start Free
-          </Link>
-        </div>
-      </header>
-
-      <main class="pt-20">
         <section class="relative flex min-h-[95vh] items-center overflow-hidden px-6">
           <div class="absolute inset-0 z-0">
             <div class="absolute left-[-25%] top-1/4 h-[600px] w-[600px] animate-pulse-slow rounded-full bg-primary/20 blur-[120px]" />
@@ -921,35 +878,12 @@ export const head: DocumentHead = {
         "Aletheia is the persistent memory layer for AI agents that need temporal awareness, truth extraction, and continuity across models."
     }
   ],
-  links: [
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
-    },
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-    }
-  ],
+  links: commonHeadLinks,
   styles: [
     {
       key: "landing-template-styles",
       style: landingStyles
     }
   ],
-  scripts: [
-    {
-      key: "tailwind-cdn",
-      props: {
-        src: "https://cdn.tailwindcss.com?plugins=forms,container-queries"
-      }
-    },
-    {
-      key: "tailwind-config",
-      props: {
-        id: "tailwind-config"
-      },
-      script: tailwindConfigScript
-    }
-  ]
+  scripts: commonHeadScripts
 };
