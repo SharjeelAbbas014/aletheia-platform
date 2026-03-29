@@ -384,37 +384,6 @@ const engineSpecs = [
   }
 ];
 
-const proofMetrics = [
-  {
-    value: "6",
-    label: "Retrieval layers",
-    detail:
-      "Semantic ANN, BM25 lexical, cross-rerank, rank fusion, temporal decay, and fact supersession.",
-    icon: "layers"
-  },
-  {
-    value: "23",
-    label: "Detailed docs pages",
-    detail:
-      "Architecture, APIs, SDKs, operations, and benchmarking guidance shipped for production teams.",
-    icon: "menu_book"
-  },
-  {
-    value: "<10ms",
-    label: "Recall target",
-    detail:
-      "Rust-native execution keeps memory recall fast enough for interactive agents and copilots.",
-    icon: "speed"
-  },
-  {
-    value: "3",
-    label: "Model families bridged",
-    detail:
-      "Continuity across GPT, Claude, and Llama stacks without rebuilding user context from scratch.",
-    icon: "all_inclusive"
-  }
-];
-
 const shippedPillars = [
   {
     title: "Retrieval Brain",
@@ -1065,46 +1034,6 @@ export default component$(() => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="border-y border-outline-variant/10 bg-surface-container/20 px-6 py-28">
-          <div class="container mx-auto">
-            <div class="scroll-reveal mb-16 text-center">
-              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
-                Proof of Build
-              </h2>
-              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
-                What We Have Already <span class="italic text-primary">Shipped.</span>
-              </h3>
-              <p class="mx-auto mt-6 max-w-3xl text-tertiary">
-                This is not a concept deck. The engine, APIs, SDK surfaces, and docs stack are
-                built and integrated end-to-end.
-              </p>
-            </div>
-
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              {proofMetrics.map((metric, index) => (
-                <article
-                  key={metric.label}
-                  class="glass-panel scroll-reveal tilt-panel rounded-2xl border border-primary/15 p-7"
-                  data-tilt
-                  style={{ transitionDelay: `${index * 90}ms` }}
-                >
-                  <div class="flex items-center justify-between">
-                    <span class="material-symbols-outlined text-2xl text-primary">
-                      {metric.icon}
-                    </span>
-                    <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-tertiary/80">
-                      Live
-                    </span>
-                  </div>
-                  <p class="mt-6 text-4xl font-black tracking-tight text-on-surface">{metric.value}</p>
-                  <p class="mt-1 text-sm font-semibold text-primary">{metric.label}</p>
-                  <p class="mt-4 text-xs leading-relaxed text-tertiary">{metric.detail}</p>
-                </article>
-              ))}
             </div>
           </div>
         </section>
