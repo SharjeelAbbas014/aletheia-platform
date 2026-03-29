@@ -57,6 +57,83 @@ tailwind.config = {
 const landingStyles = `
 .landing-v2 {
   background: #0a0a0b;
+  --mouse-x: 52%;
+  --mouse-y: 42%;
+  --scroll-progress: 0;
+  --hero-progress: 0;
+}
+
+.landing-v2 .progress-rail {
+  position: fixed;
+  left: 0;
+  top: 4rem;
+  z-index: 45;
+  width: 100%;
+  height: 2px;
+  pointer-events: none;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.landing-v2 .progress-rail::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #6366f1 0%, #67e8f9 65%, #d946ef 100%);
+  transform-origin: left center;
+  transform: scaleX(var(--scroll-progress));
+  transition: transform 120ms linear;
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.55);
+}
+
+.landing-v2 .interactive-aurora {
+  position: absolute;
+  inset: -16%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(26px) saturate(130%);
+  background:
+    radial-gradient(320px circle at var(--mouse-x) var(--mouse-y), rgba(99, 102, 241, 0.34), transparent 64%),
+    radial-gradient(440px circle at calc(100% - var(--mouse-x)) calc(110% - var(--mouse-y)), rgba(103, 232, 249, 0.24), transparent 66%);
+  opacity: calc(0.45 + (var(--hero-progress) * 0.4));
+  transition: opacity 260ms ease;
+}
+
+.landing-v2 .hero-orb-left {
+  transform: translate3d(calc(var(--hero-progress) * -28px), calc(var(--hero-progress) * -36px), 0);
+}
+
+.landing-v2 .hero-orb-right {
+  transform: translate3d(calc(var(--hero-progress) * 34px), calc(var(--hero-progress) * 24px), 0);
+}
+
+.landing-v2 .tilt-panel {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition:
+    transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 280ms ease,
+    border-color 220ms ease;
+}
+
+.landing-v2 .tilt-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  background: radial-gradient(
+    circle at var(--glare-x, 50%) var(--glare-y, 0%),
+    rgba(255, 255, 255, 0.24),
+    transparent 52%
+  );
+  transition: opacity 180ms ease;
+}
+
+.landing-v2 .tilt-panel[data-tilting="true"]::before {
+  opacity: 1;
 }
 
 .landing-v2 .glass-panel {
@@ -112,6 +189,28 @@ const landingStyles = `
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  .landing-v2 .interactive-aurora {
+    display: none;
+  }
+
+  .landing-v2 .progress-rail::after {
+    transition: none;
+  }
+
+  .landing-v2 .tilt-panel {
+    transform: none !important;
+    transition: none;
+  }
+
+  .landing-v2 .tilt-panel::before {
+    display: none;
+  }
+
+  .landing-v2 .hero-orb-left,
+  .landing-v2 .hero-orb-right {
+    transform: none;
   }
 
   .landing-v2 .animate-float,
@@ -285,6 +384,117 @@ const engineSpecs = [
   }
 ];
 
+const proofMetrics = [
+  {
+    value: "6",
+    label: "Retrieval layers",
+    detail:
+      "Semantic ANN, BM25 lexical, cross-rerank, rank fusion, temporal decay, and fact supersession.",
+    icon: "layers"
+  },
+  {
+    value: "23",
+    label: "Detailed docs pages",
+    detail:
+      "Architecture, APIs, SDKs, operations, and benchmarking guidance shipped for production teams.",
+    icon: "menu_book"
+  },
+  {
+    value: "<10ms",
+    label: "Recall target",
+    detail:
+      "Rust-native execution keeps memory recall fast enough for interactive agents and copilots.",
+    icon: "speed"
+  },
+  {
+    value: "3",
+    label: "Model families bridged",
+    detail:
+      "Continuity across GPT, Claude, and Llama stacks without rebuilding user context from scratch.",
+    icon: "all_inclusive"
+  }
+];
+
+const shippedPillars = [
+  {
+    title: "Retrieval Brain",
+    icon: "travel_explore",
+    body:
+      "Hybrid retrieval keeps exact tokens and semantic intent in the same decision path so answers stay grounded.",
+    capabilities: [
+      "Vector + lexical candidate generation",
+      "Cross-encoder precision pass",
+      "Rank fusion for stable top-k"
+    ]
+  },
+  {
+    title: "Temporal Truth",
+    icon: "schedule",
+    body:
+      "The engine models memory as something that changes over time, not a static bag of embeddings.",
+    capabilities: [
+      "Kind-aware TTL and decay",
+      "Fact supersession and invalidation",
+      "Time-windowed query mode"
+    ]
+  },
+  {
+    title: "Developer Surfaces",
+    icon: "terminal",
+    body:
+      "SDK and HTTP entry points are designed to keep local-first workflows aligned with hosted deployments.",
+    capabilities: [
+      "Python and JavaScript SDK paths",
+      "Auth + key lifecycle support",
+      "Clear ingest/query contracts"
+    ]
+  },
+  {
+    title: "Ops Readiness",
+    icon: "deployed_code",
+    body:
+      "The system includes practical controls for measurement, tuning, and safe production rollout.",
+    capabilities: [
+      "Benchmark harness integration",
+      "Observability and diagnostics",
+      "Single-binary deployment model"
+    ]
+  }
+];
+
+const deliveryTrack = [
+  {
+    phase: "Phase 01",
+    icon: "upload",
+    title: "Ingest and Distill",
+    body:
+      "Raw events are normalized, deduplicated, and expanded into durable memories with lineage.",
+    checkpoints: ["Companion memories", "Dedup table", "Graph relationships"]
+  },
+  {
+    phase: "Phase 02",
+    icon: "hub",
+    title: "Retrieve and Rerank",
+    body:
+      "Semantic and lexical candidates are fused, reranked, then filtered by temporal policy before response.",
+    checkpoints: ["HNSW + BM25", "Cross-rerank", "RRF + policy filters"]
+  },
+  {
+    phase: "Phase 03",
+    icon: "rocket_launch",
+    title: "Ship and Operate",
+    body:
+      "Teams deploy one memory engine surface from local bench runs to hosted multi-tenant workloads.",
+    checkpoints: ["SDK parity", "Benchmarked quality", "Operational playbooks"]
+  }
+];
+
+const runtimeSnapshot = `engine: temporal_memory
+routes: /ingest /query/semantic /query/temporal /memory
+indexes: hnsw + bm25 + graph lineage
+policy: ttl + decay + supersession
+sdk: python + javascript`;
+
 const platformLinks = [
   { label: "Memory Lattice", href: "/#memory" },
   { label: "Vector Store", href: "/docs/local-engine" },
@@ -312,14 +522,58 @@ export default component$(() => {
     const revealItems = Array.from(
       root.querySelectorAll<HTMLElement>(".scroll-reveal")
     );
+    const tiltPanels = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-tilt]")
+    );
+    const heroSection = root.querySelector<HTMLElement>("[data-hero]");
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
+    const supportsHover = window.matchMedia("(hover: hover)").matches;
+
+    const clamp = (value: number, min: number, max: number) =>
+      Math.min(max, Math.max(min, value));
+
+    const updateScrollProgress = () => {
+      const doc = document.documentElement;
+      const scrollTop = window.scrollY || doc.scrollTop;
+      const maxScroll = Math.max(doc.scrollHeight - window.innerHeight, 1);
+      root.style.setProperty("--scroll-progress", (scrollTop / maxScroll).toFixed(4));
+
+      if (!heroSection) {
+        return;
+      }
+
+      const heroRect = heroSection.getBoundingClientRect();
+      const rawProgress =
+        (window.innerHeight - heroRect.top) /
+        (window.innerHeight + heroRect.height);
+      root.style.setProperty("--hero-progress", clamp(rawProgress, 0, 1).toFixed(4));
+    };
+
+    const updatePointer = (clientX: number, clientY: number) => {
+      if (!heroSection) {
+        return;
+      }
+
+      const rect = heroSection.getBoundingClientRect();
+      if (clientY < rect.top - 80 || clientY > rect.bottom + 80) {
+        return;
+      }
+
+      const x = ((clientX - rect.left) / rect.width) * 100;
+      const y = ((clientY - rect.top) / rect.height) * 100;
+      root.style.setProperty("--mouse-x", `${clamp(x, 0, 100).toFixed(2)}%`);
+      root.style.setProperty("--mouse-y", `${clamp(y, 0, 100).toFixed(2)}%`);
+    };
 
     if (prefersReducedMotion) {
       revealItems.forEach((item) => item.classList.add("visible"));
+      updateScrollProgress();
       return;
     }
+
+    updateScrollProgress();
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -337,19 +591,69 @@ export default component$(() => {
 
     revealItems.forEach((item) => observer.observe(item));
 
+    const removePanelListeners: Array<() => void> = [];
+
+    if (supportsHover) {
+      tiltPanels.forEach((panel) => {
+        const onPointerMove = (event: PointerEvent) => {
+          const rect = panel.getBoundingClientRect();
+          const px = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100);
+          const py = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100);
+          const rotateY = (px - 50) * 0.12;
+          const rotateX = (50 - py) * 0.12;
+
+          panel.dataset.tilting = "true";
+          panel.style.setProperty("--glare-x", `${px.toFixed(2)}%`);
+          panel.style.setProperty("--glare-y", `${py.toFixed(2)}%`);
+          panel.style.transform = `perspective(1100px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px)`;
+        };
+
+        const resetPanel = () => {
+          panel.dataset.tilting = "false";
+          panel.style.transform = "perspective(1100px) rotateX(0deg) rotateY(0deg) translateY(0)";
+        };
+
+        panel.addEventListener("pointermove", onPointerMove);
+        panel.addEventListener("pointerleave", resetPanel);
+
+        removePanelListeners.push(() => {
+          panel.removeEventListener("pointermove", onPointerMove);
+          panel.removeEventListener("pointerleave", resetPanel);
+        });
+      });
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      updatePointer(event.clientX, event.clientY);
+    };
+
+    const onScroll = () => {
+      updateScrollProgress();
+    };
+
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
     cleanup(() => {
       observer.disconnect();
+      removePanelListeners.forEach((remove) => remove());
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
     });
   });
 
   return (
     <div ref={pageRef} class="landing-v2 bg-surface text-on-surface font-body">
+      <div aria-hidden="true" class="progress-rail" />
       <main class="pt-4">
 
-        <section class="relative flex min-h-[95vh] items-center overflow-hidden px-6">
+        <section data-hero class="relative flex min-h-[95vh] items-center overflow-hidden px-6">
           <div class="absolute inset-0 z-0">
-            <div class="absolute left-[-25%] top-1/4 h-[600px] w-[600px] animate-pulse-slow rounded-full bg-primary/20 blur-[120px]" />
-            <div class="absolute bottom-0 right-[-25%] h-[500px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]" />
+            <div class="interactive-aurora" />
+            <div class="hero-orb-left absolute left-[-25%] top-1/4 h-[600px] w-[600px] animate-pulse-slow rounded-full bg-primary/20 blur-[120px]" />
+            <div class="hero-orb-right absolute bottom-0 right-[-25%] h-[500px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]" />
           </div>
 
           <div class="container mx-auto relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
@@ -441,7 +745,8 @@ export default component$(() => {
               {memoryGapCards.map((card, cardIndex) => (
                 <div
                   key={card.title}
-                  class={`glass-panel scroll-reveal rounded-3xl p-10 ${card.panelClass}`}
+                  class={`glass-panel scroll-reveal tilt-panel rounded-3xl p-10 ${card.panelClass}`}
+                  data-tilt
                   style={{
                     transitionDelay: cardIndex === 1 ? "150ms" : undefined
                   }}
@@ -591,7 +896,8 @@ export default component$(() => {
               {userFlowCards.map((card) => (
                 <div
                   key={card.date}
-                  class={`glass-panel scroll-reveal rounded-2xl p-8 ${card.borderClass}`}
+                  class={`glass-panel scroll-reveal tilt-panel rounded-2xl p-8 ${card.borderClass}`}
+                  data-tilt
                   style={{
                     transitionDelay: card.delay || undefined
                   }}
@@ -684,7 +990,8 @@ export default component$(() => {
               {uniqueEdges.map((item) => (
                 <div
                   key={item.title}
-                  class="glass-panel scroll-reveal rounded-3xl border-t-2 border-primary/20 p-10"
+                  class="glass-panel scroll-reveal tilt-panel rounded-3xl border-t-2 border-primary/20 p-10"
+                  data-tilt
                   style={{
                     transitionDelay: item.delay || undefined
                   }}
@@ -739,7 +1046,7 @@ export default component$(() => {
               </div>
 
               <div class="scroll-reveal relative">
-                <div class="glass-panel group relative aspect-square overflow-hidden rounded-3xl p-1">
+                <div class="glass-panel group tilt-panel relative aspect-square overflow-hidden rounded-3xl p-1" data-tilt>
                   <img
                     class="h-full w-full rounded-2xl object-cover opacity-60 grayscale transition-all duration-1000 group-hover:grayscale-0"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjCFYsvGHWRN6ZMdb3rSxu-5-TbzvmphPPq2CTrpoY68mJFfOKFGHT6QAU4hY98Ub0ZVpIemS2cMuBW8waunO0p-FEJvWj0cUi5l10SEsLRNA0KAXDLX1xmrW9nJ3ZPjAhl01HZAsK8OA7vhm0yILCD_BOEYcD5ROfB_KapjrZZcAWMWurONAAcY8zBycar_q1DBJ02JmClKbfUXOmp34Sp8DUjX4xTEh2Kqz0DmyPaX4u1KnEQPnxNchGfnB5lqgKbTgsHOqnHAgX"
@@ -758,6 +1065,167 @@ export default component$(() => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="border-y border-outline-variant/10 bg-surface-container/20 px-6 py-28">
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-16 text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                Proof of Build
+              </h2>
+              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
+                What We Have Already <span class="italic text-primary">Shipped.</span>
+              </h3>
+              <p class="mx-auto mt-6 max-w-3xl text-tertiary">
+                This is not a concept deck. The engine, APIs, SDK surfaces, and docs stack are
+                built and integrated end-to-end.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {proofMetrics.map((metric, index) => (
+                <article
+                  key={metric.label}
+                  class="glass-panel scroll-reveal tilt-panel rounded-2xl border border-primary/15 p-7"
+                  data-tilt
+                  style={{ transitionDelay: `${index * 90}ms` }}
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="material-symbols-outlined text-2xl text-primary">
+                      {metric.icon}
+                    </span>
+                    <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-tertiary/80">
+                      Live
+                    </span>
+                  </div>
+                  <p class="mt-6 text-4xl font-black tracking-tight text-on-surface">{metric.value}</p>
+                  <p class="mt-1 text-sm font-semibold text-primary">{metric.label}</p>
+                  <p class="mt-4 text-xs leading-relaxed text-tertiary">{metric.detail}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section class="px-6 py-32">
+          <div class="container mx-auto">
+            <div class="mb-16 grid grid-cols-1 gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+              <div class="scroll-reveal">
+                <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                  Platform Surface
+                </h2>
+                <h3 class="text-4xl font-black leading-tight md:text-5xl">
+                  Built as a complete
+                  <br />
+                  <span class="italic text-primary">memory stack.</span>
+                </h3>
+                <p class="mt-6 max-w-2xl text-tertiary">
+                  Every layer from ingest semantics to production operations is implemented with one
+                  cohesive design system and runtime story.
+                </p>
+
+                <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {shippedPillars.map((pillar, index) => (
+                    <article
+                      key={pillar.title}
+                      class="glass-panel scroll-reveal tilt-panel rounded-2xl border border-outline-variant/20 p-6"
+                      data-tilt
+                      style={{ transitionDelay: `${index * 100}ms` }}
+                    >
+                      <span class="material-symbols-outlined mb-4 text-3xl text-primary">
+                        {pillar.icon}
+                      </span>
+                      <h4 class="mb-3 text-xl font-bold">{pillar.title}</h4>
+                      <p class="mb-5 text-sm leading-relaxed text-tertiary">{pillar.body}</p>
+                      <ul class="space-y-2">
+                        {pillar.capabilities.map((capability) => (
+                          <li key={capability} class="flex items-start gap-2 text-xs text-on-surface/90">
+                            <span class="material-symbols-outlined mt-[1px] text-sm text-primary">
+                              check_circle
+                            </span>
+                            <span>{capability}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <aside
+                class="glass-panel scroll-reveal tilt-panel relative overflow-hidden rounded-3xl border border-primary/20 p-8"
+                data-tilt
+                style={{ transitionDelay: "180ms" }}
+              >
+                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+                <p class="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+                  Runtime Snapshot
+                </p>
+                <h4 class="mt-4 text-2xl font-black tracking-tight">Current Build Profile</h4>
+                <p class="mt-3 text-sm leading-relaxed text-tertiary">
+                  Aletheia is shipping as an integrated memory platform, not isolated feature demos.
+                </p>
+                <pre class="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-surface p-4 font-mono text-xs leading-6 text-secondary">{runtimeSnapshot}</pre>
+                <div class="mt-5 flex flex-wrap gap-2">
+                  <span class="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-primary">
+                    production-minded
+                  </span>
+                  <span class="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-tertiary">
+                    local-first
+                  </span>
+                  <span class="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-tertiary">
+                    model-agnostic
+                  </span>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-surface-container-high/35 px-6 py-32">
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-14 max-w-3xl">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                Delivery Path
+              </h2>
+              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
+                From prototype to
+                <span class="italic text-primary"> production memory.</span>
+              </h3>
+              <p class="mt-6 text-tertiary">
+                The product has a clear progression: ingest fidelity, retrieval intelligence, and
+                operational reliability.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+              {deliveryTrack.map((step, index) => (
+                <article
+                  key={step.phase}
+                  class="glass-panel scroll-reveal tilt-panel rounded-3xl border border-outline-variant/20 p-8"
+                  data-tilt
+                  style={{ transitionDelay: `${index * 120}ms` }}
+                >
+                  <div class="mb-5 flex items-center justify-between">
+                    <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
+                      {step.phase}
+                    </span>
+                    <span class="material-symbols-outlined text-2xl text-primary">{step.icon}</span>
+                  </div>
+                  <h4 class="mb-3 text-2xl font-black tracking-tight">{step.title}</h4>
+                  <p class="mb-5 text-sm leading-relaxed text-tertiary">{step.body}</p>
+                  <ul class="space-y-2">
+                    {step.checkpoints.map((checkpoint) => (
+                      <li key={checkpoint} class="flex items-center gap-2 text-xs text-on-surface/90">
+                        <span class="material-symbols-outlined text-sm text-primary">arrow_right_alt</span>
+                        <span>{checkpoint}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
             </div>
           </div>
         </section>

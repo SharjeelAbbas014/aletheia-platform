@@ -43,18 +43,6 @@ export const Header = component$<HeaderProps>(({ authenticated }) => {
             >
               Console
             </Link>
-            <Link
-              href="/docs/api-auth"
-              class="text-tertiary transition-colors duration-200 hover:text-on-surface"
-            >
-              API
-            </Link>
-            <a
-              href="#"
-              class="text-tertiary transition-colors duration-200 hover:text-on-surface"
-            >
-              Status
-            </a>
           </nav>
         </div>
 
