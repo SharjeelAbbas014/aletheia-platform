@@ -5,6 +5,7 @@ import {
 } from "@builder.io/qwik-city";
 
 import { RouterHead } from "./components/router-head/router-head";
+import { commonHeadLinks, commonHeadScripts } from "./constants/theme";
 import "./global.css";
 
 export default component$(() => {
@@ -16,6 +17,16 @@ export default component$(() => {
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
+        {commonHeadLinks.map((link) => (
+          <link key={`global-link-${link.rel}-${link.href}`} {...link} />
+        ))}
+        {commonHeadScripts.map((script) => (
+          <script
+            key={`global-script-${script.key}`}
+            {...script.props}
+            dangerouslySetInnerHTML={script.script}
+          />
+        ))}
         <RouterHead />
       </head>
       <body lang="en">

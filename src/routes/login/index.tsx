@@ -15,8 +15,6 @@ import {
   validateCredentials
 } from "~/lib/auth";
 
-import { commonHeadLinks, commonHeadScripts } from "~/constants/theme";
-
 export const useLoginPageData = routeLoader$(() => {
   return {
     demoEmail: DEMO_EMAIL,
@@ -177,8 +175,5 @@ export const head: DocumentHead = {
       name: "description",
       content: "Initialize access to the Aletheia monolith."
     }
-  ],
-  links: commonHeadLinks,
-  scripts: commonHeadScripts
+  ]
 };
-

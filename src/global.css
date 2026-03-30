@@ -11,8 +11,8 @@
   --tertiary: #b9c8de;
   --outline-variant: #464554;
   --error: #ffb4ab;
-  --font-body: "Manrope", "Avenir Next", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Sora", "Manrope", "Avenir Next", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Manrope", -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Sora", "Manrope", -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
 }
 
 * {

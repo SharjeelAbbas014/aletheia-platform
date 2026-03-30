@@ -1,5 +1,4 @@
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { commonHeadLinks, commonHeadScripts } from "~/constants/theme";
 
 export interface DocsNavItem {
   href: string;
@@ -222,8 +221,6 @@ export function createHead(title: string, description: string): DocumentHead {
         name: "description",
         content: description
       }
-    ],
-    links: commonHeadLinks,
-    scripts: commonHeadScripts
+    ]
   };
 }

@@ -4,7 +4,6 @@ import {
   routeLoader$
 } from "@builder.io/qwik-city";
 
-import { commonHeadLinks, commonHeadScripts } from "~/constants/theme";
 import { detailedDocsBySlug } from "~/lib/docs-content";
 
 export const useDocsPage = routeLoader$(({ params, status }) => {
@@ -90,9 +89,7 @@ export const head: DocumentHead = ({ resolveValue }) => {
           name: "description",
           content: "Requested docs page was not found."
         }
-      ],
-      links: commonHeadLinks,
-      scripts: commonHeadScripts
+      ]
     };
   }
 
@@ -103,8 +100,6 @@ export const head: DocumentHead = ({ resolveValue }) => {
         name: "description",
         content: page.description
       }
-    ],
-    links: commonHeadLinks,
-    scripts: commonHeadScripts
+    ]
   };
 };

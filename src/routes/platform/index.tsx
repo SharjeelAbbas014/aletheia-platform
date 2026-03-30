@@ -16,7 +16,6 @@ import {
   revokeApiKey
 } from "~/lib/api-keys";
 import { requireAuth } from "~/lib/auth";
-import { commonHeadLinks, commonHeadScripts } from "~/constants/theme";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -265,8 +264,5 @@ export const head: DocumentHead = {
       name: "description",
       content: "Developer console for the Aletheia engine."
     }
-  ],
-  links: commonHeadLinks,
-  scripts: commonHeadScripts
+  ]
 };
-

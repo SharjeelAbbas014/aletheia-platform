@@ -1,58 +1,5 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
-import { commonHeadLinks, commonHeadScripts } from "~/constants/theme";
-
-
-const tailwindConfigScript = `
-tailwind.config = {
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        surface: "#0a0a0b",
-        "surface-container": "#141417",
-        "surface-container-high": "#1c1c21",
-        primary: "#6366f1",
-        secondary: "#818cf8",
-        tertiary: "#94a3b8",
-        "on-surface": "#f8fafc",
-        "outline-variant": "#2d2d35"
-      },
-      fontFamily: {
-        headline: ["Sora"],
-        body: ["Manrope"],
-        mono: ["JetBrains Mono"]
-      },
-      borderRadius: {
-        DEFAULT: "0.375rem",
-        lg: "0.5rem",
-        xl: "1rem",
-        full: "9999px"
-      },
-      animation: {
-        float: "float 6s ease-in-out infinite",
-        "fade-in-up": "fadeInUp 0.8s ease-out forwards",
-        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "flow-line": "flowLine 3s linear infinite"
-      },
-      keyframes: {
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-20px)" }
-        },
-        fadeInUp: {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" }
-        },
-        flowLine: {
-          "0%": { strokeDashoffset: "100" },
-          "100%": { strokeDashoffset: "0" }
-        }
-      }
-    }
-  }
-};
-`;
 
 const landingStyles = `
 .landing-v2 {
@@ -1278,12 +1225,10 @@ export const head: DocumentHead = {
         "Aletheia is the persistent memory layer for AI agents that need temporal awareness, truth extraction, and continuity across models."
     }
   ],
-  links: commonHeadLinks,
   styles: [
     {
       key: "landing-template-styles",
       style: landingStyles
     }
-  ],
-  scripts: commonHeadScripts
+  ]
 };

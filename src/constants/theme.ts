@@ -71,7 +71,7 @@ export const tailwindConfigScript = `
 tailwind.config = ${JSON.stringify(tailwindConfig)};
 `;
 
-export const googleFontsLink = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=optional";
+export const googleFontsLink = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap";
 export const materialSymbolsLink = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap";
 export const tailwindCdnScript = "https://cdn.tailwindcss.com?plugins=forms,container-queries";
 
@@ -84,12 +84,12 @@ export const commonHeadLinks = [
 
 export const commonHeadScripts = [
   {
-    key: "tailwind-cdn",
-    props: { src: tailwindCdnScript }
-  },
-  {
     key: "tailwind-config",
     props: { id: "tailwind-config" },
     script: tailwindConfigScript
+  },
+  {
+    key: "tailwind-cdn",
+    props: { src: tailwindCdnScript }
   }
 ];
