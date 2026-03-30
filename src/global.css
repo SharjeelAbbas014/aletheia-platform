@@ -1599,6 +1599,7 @@ pre {
 .docs-prose li {
   margin: 0.4rem 0;
   line-height: 1.75;
+  color: rgba(215, 223, 240, 0.92);
 }
 
 .docs-prose code {

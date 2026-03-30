@@ -667,8 +667,11 @@ export default component$(() => {
                 <div class="glass-panel group absolute inset-0 overflow-hidden rounded-3xl border-primary/20 shadow-2xl">
                   <img
                     class="h-full w-full object-cover opacity-40 mix-blend-screen transition-transform duration-[10s] group-hover:scale-110"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDP6aftP-Z-45zUJ7ikYh5-rv2UZviCj-xVzUKXgrar8B2FmWXde2meuVMHfEpCjUuTqWFvXpk2EShWB8_5_umYPRdG_kAqBXTkYs8okoD-KOxbtJ3aUS4nOT9wUXIXlncUMVqFJAXt5IMnbVCZoAD450qlVPyGV7tx3QNfyhDtGenSH_OV01Z2tcoUVChuhYymWBf_QIQYXFKrf2VG77Kphqz9nr51LpGzn0a8wBrgvXMxj7hQQMzn28lGZOV_V_cv46wOy38KhGPr"
-                    alt="Abstract futuristic light sculpture"
+                    src="/hero-cube.png"
+                    alt="Glowing translucent cube memory core"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
                   />
                   <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-surface to-transparent" />
                   <div class="absolute bottom-8 left-8 right-8">
