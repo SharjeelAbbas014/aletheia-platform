@@ -1777,6 +1777,12 @@ pre {
   color: rgba(171, 184, 210, 0.76);
 }
 
+.docs-right-private-note a {
+  color: #8edfff;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
 @media (max-width: 1380px) {
   .docs-shell {
     grid-template-columns: 19.5rem minmax(0, 1fr);

@@ -1,6 +1,7 @@
 import { Slot, component$ } from "@builder.io/qwik";
 import { Link, type RequestHandler, useLocation } from "@builder.io/qwik-city";
 
+import { CONTACT_EMAIL, CONTACT_MAILTO } from "~/constants/contact";
 import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
 import { setPublicEdgeCache } from "~/lib/cache";
 import { docsNavigation } from "~/lib/docs";
@@ -106,6 +107,12 @@ export default component$(() => {
             <Link href="/docs/architecture" class="docs-right-card-link">
               Start Here
             </Link>
+            <p class="docs-right-private-note">
+              Contact:{" "}
+              <a href={CONTACT_MAILTO} target="_blank" rel="noreferrer">
+                {CONTACT_EMAIL}
+              </a>
+            </p>
           </div>
 
           <div class="docs-right-card">

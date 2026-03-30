@@ -1,5 +1,6 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { Link, type DocumentHead, type RequestHandler } from "@builder.io/qwik-city";
+import { CALENDLY_30_MIN_URL, CONTACT_EMAIL, CONTACT_MAILTO } from "~/constants/contact";
 import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
 import { setPublicEdgeCache } from "~/lib/cache";
 
@@ -424,7 +425,7 @@ const companyLinks = [
   { label: "Privacy First", href: "/docs/security" },
   { label: "Security Audit", href: "/docs/security" },
   { label: "Open Source", href: "/docs" },
-  { label: "Contact", href: "/login" }
+  { label: "Contact", href: CONTACT_MAILTO }
 ];
 
 export const onRequest: RequestHandler = (event) => {
@@ -1139,6 +1140,40 @@ export default component$(() => {
           </div>
         </section>
 
+        <section id="calendly" class="px-6 py-24">
+          <div class="container mx-auto">
+            <div class="glass-panel scroll-reveal rounded-3xl border border-primary/20 p-8 md:p-12">
+              <p class="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+                Book A Session
+              </p>
+              <h3 class="mt-4 text-4xl font-black tracking-tight md:text-5xl">
+                Schedule a 30-minute
+                <span class="italic text-primary"> Aletheia walkthrough.</span>
+              </h3>
+              <p class="mt-4 max-w-2xl text-tertiary">
+                Discuss architecture, integration strategy, and production rollout for your memory stack.
+              </p>
+              <div class="mt-8 flex flex-col gap-4 sm:flex-row">
+                <a
+                  href={CALENDLY_30_MIN_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  class="obsidian-gradient inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-xl shadow-primary/20 transition-transform hover:scale-[1.02]"
+                >
+                  Open Calendly
+                  <span class="material-symbols-outlined text-base">open_in_new</span>
+                </a>
+                <a
+                  href={CONTACT_MAILTO}
+                  class="glass-panel inline-flex items-center justify-center rounded-xl px-8 py-4 text-sm font-bold uppercase tracking-[0.16em] text-on-surface transition-colors hover:bg-surface-container-high"
+                >
+                  Email Instead
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="px-6 py-32">
           <div class="container mx-auto">
             <div
@@ -1163,12 +1198,14 @@ export default component$(() => {
                 >
                   Initialize Engine
                 </Link>
-                <Link
-                  href="/docs"
+                <a
+                  href={CALENDLY_30_MIN_URL}
+                  target="_blank"
+                  rel="noreferrer"
                   class="glass-panel rounded-xl px-12 py-5 text-lg font-bold uppercase tracking-wider text-on-surface transition-colors hover:bg-surface-container-high"
                 >
                   Book a Workshop
-                </Link>
+                </a>
               </div>
             </div>
           </div>
@@ -1184,6 +1221,12 @@ export default component$(() => {
             <p class="mb-8 max-w-sm text-sm leading-relaxed text-tertiary">
               The persistent memory layer for advanced AI agents. Built for
               humans, powered by Rust, dedicated to the truth.
+            </p>
+            <p class="mb-6 text-sm text-tertiary">
+              Contact:{" "}
+              <a href={CONTACT_MAILTO} class="text-primary hover:underline">
+                {CONTACT_EMAIL}
+              </a>
             </p>
             <div class="flex gap-4">
               <Link

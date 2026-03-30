@@ -17,6 +17,7 @@ import {
   revokeApiKey
 } from "~/lib/api-keys";
 import { requireAuth } from "~/lib/auth";
+import { CONTACT_MAILTO } from "~/constants/contact";
 import { setPrivateNoStore } from "~/lib/cache";
 
 function formatDate(value: string) {
@@ -252,9 +253,12 @@ results = client.recall(
             <div class="rounded-2xl bg-primary-container p-8 text-on-primary-container">
               <h3 class="font-black text-xl mb-2">Need a dedicated host?</h3>
               <p class="text-sm opacity-80 leading-relaxed">Scale your agent memory layer with private VPC clusters and sub-millisecond sync.</p>
-              <button class="mt-6 w-full rounded-lg bg-on-primary-container py-3 text-sm font-bold text-primary-container shadow-xl transition-transform active:scale-95">
+              <a
+                href={CONTACT_MAILTO}
+                class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-on-primary-container py-3 text-sm font-bold text-primary-container shadow-xl transition-transform active:scale-95"
+              >
                 Contact Sales
-              </button>
+              </a>
             </div>
           </aside>
         </div>
