@@ -1282,7 +1282,7 @@ export default component$(() => {
         </div>
 
         <div class="container mx-auto mt-20 border-t border-outline-variant/5 pt-8 text-center font-mono text-[10px] uppercase tracking-widest text-tertiary/50">
-          © 2024 Aletheia Systems. All human memories preserved. Truth disclosed.
+          © 2026 Aletheia Systems. All human memories preserved. Truth disclosed.
         </div>
       </footer>
     </div>
