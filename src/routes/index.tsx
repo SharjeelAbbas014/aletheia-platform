@@ -358,7 +358,7 @@ const uniqueEdges = [
     icon: "bolt",
     title: "Zero-Config Performance",
     body:
-      "Built with Rust as a single compiled binary. Deployment is fast and recall latency stays in the sub-10ms range without orchestration drama.",
+      "Built with Rust as a single compiled binary. Deployment is fast and recall latency stays in the sub-100ms range without orchestration drama.",
     delay: "300ms"
   }
 ];
@@ -378,7 +378,7 @@ const engineSpecs = [
   },
   {
     icon: "speed",
-    title: "Sub-10ms Latency",
+    title: "Sub-100ms Latency",
     body:
       "Human-like recall speeds that keep up with your fastest LLM workflows without turning memory into the bottleneck."
   }
@@ -1025,7 +1025,7 @@ export default component$(() => {
                   <div class="absolute inset-0 flex items-center justify-center">
                     <div class="text-center">
                       <div class="mb-2 text-6xl font-black tracking-tighter text-white">
-                        0.008s
+                        &lt;100ms
                       </div>
                       <div class="font-mono text-sm uppercase tracking-[0.3em] text-primary">
                         Average Recall
