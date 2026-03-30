@@ -27,7 +27,7 @@ export const detailedDocsPages: DocsPage[] = [
     eyebrow: "Setup",
     title: "Install Aletheia",
     lead:
-      "Set up the temporal memory engine locally with predictable binaries, model downloads, and SDK wiring.",
+      "Set up the Aletheia engine locally with predictable binaries, model downloads, and SDK wiring.",
     description:
       "Installation guide for Aletheia including prerequisites, build flow, and first health check.",
     sections: [
@@ -50,7 +50,7 @@ export const detailedDocsPages: DocsPage[] = [
           "The release build gives realistic performance for retrieval and reranking tests. Development builds are fine for functional checks but not for latency decisions."
         ],
         steps: [
-          "Clone the monorepo and open `temporal_memory`.",
+          "Clone the monorepo and open `Aletheia`.",
           "Build release binary with Cargo.",
           "Start the API server on loopback.",
           "Call `/health` before sending ingest/query traffic."
@@ -60,7 +60,7 @@ export const detailedDocsPages: DocsPage[] = [
             label: "Build and run",
             language: "bash",
             code: `cargo build --release
-./target/release/temporal_memory --bind 127.0.0.1:3000 --data-dir ./.tm-data`
+./target/release/aletheia --bind 127.0.0.1:3000 --data-dir ./.tm-data`
           }
         ]
       },
@@ -88,7 +88,7 @@ export const detailedDocsPages: DocsPage[] = [
     lead:
       "Understand the core memory concepts before tuning retrieval or shipping integrations.",
     description:
-      "Conceptual overview of temporal memory, companion memories, and hybrid retrieval behavior.",
+      "Conceptual overview of Aletheia memory, companion memories, and hybrid retrieval behavior.",
     sections: [
       {
         heading: "Memory is multi-representation",
@@ -315,7 +315,7 @@ user-42::session-7::1000003   # summary companion`
     eyebrow: "Pipeline",
     title: "Ingestion Pipeline",
     lead:
-      "Ingestion transforms raw events into durable, queryable temporal memory with deduplication and lineage.",
+      "Ingestion transforms raw events into durable, queryable Aletheia memory with deduplication and lineage.",
     description:
       "Step-by-step ingest pipeline including embedding, dedup, indexing, and graph updates.",
     sections: [
@@ -905,7 +905,7 @@ for item in batch:
             code: `docker run --rm -p 3000:3000 \\
   -v /srv/aletheia-data:/data \\
   -e ALETHEIA_DATA_DIR=/data \\
-  ghcr.io/aletheia/temporal-memory:latest`
+  ghcr.io/aletheia/aletheia:latest`
           }
         ]
       }
@@ -1054,7 +1054,7 @@ for item in batch:
     lead:
       "A quick reference for recurring Aletheia terms in docs, APIs, and benchmarking.",
     description:
-      "Glossary of temporal memory and retrieval terminology.",
+      "Glossary of Aletheia and retrieval terminology.",
     sections: [
       {
         heading: "Core terms",

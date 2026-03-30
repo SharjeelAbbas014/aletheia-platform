@@ -1,8 +1,13 @@
 import { Slot, component$ } from "@builder.io/qwik";
-import { Link, useLocation } from "@builder.io/qwik-city";
+import { Link, type RequestHandler, useLocation } from "@builder.io/qwik-city";
 
 import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
+import { setPublicEdgeCache } from "~/lib/cache";
 import { docsNavigation } from "~/lib/docs";
+
+export const onRequest: RequestHandler = (event) => {
+  setPublicEdgeCache(event);
+};
 
 export default component$(() => {
   const location = useLocation();
@@ -31,7 +36,7 @@ export default component$(() => {
             </div>
             <div>
               <p class="docs-brand-title">Docs</p>
-              <p class="docs-brand-subtitle">Temporal Memory Guide</p>
+              <p class="docs-brand-subtitle">Aletheia Guide</p>
             </div>
           </div>
 

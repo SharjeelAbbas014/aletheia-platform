@@ -32,7 +32,7 @@ export default component$(() => {
       <ol>
         <li>Explicit binary path</li>
         <li>Environment variable override</li>
-        <li>Repo-local <code>target/release/temporal_memory</code></li>
+        <li>Repo-local <code>target/release/aletheia</code></li>
         <li>Cached binary in the local SDK cache</li>
         <li>Manifest-driven download</li>
       </ol>

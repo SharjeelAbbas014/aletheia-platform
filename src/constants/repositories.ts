@@ -35,4 +35,4 @@ export const publicRepositoryLinks: PublicRepository[] = [
 ];
 
 export const privateRepositoryNote =
-  "Core temporal engine repository is private.";
+  "Core engine repository is private: Aletheia (https://github.com/SharjeelAbbas014/Aletheia).";

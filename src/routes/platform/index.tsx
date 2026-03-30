@@ -4,6 +4,7 @@ import {
   Link,
   routeAction$,
   routeLoader$,
+  type RequestHandler,
   type DocumentHead
 } from "@builder.io/qwik-city";
 
@@ -16,6 +17,7 @@ import {
   revokeApiKey
 } from "~/lib/api-keys";
 import { requireAuth } from "~/lib/auth";
+import { setPrivateNoStore } from "~/lib/cache";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -33,6 +35,10 @@ export const usePlatformData = routeLoader$((event) => {
     keys
   };
 });
+
+export const onRequest: RequestHandler = (event) => {
+  setPrivateNoStore(event);
+};
 
 export const useCreateApiKeyAction = routeAction$(async (data, event) => {
   requireAuth(event);

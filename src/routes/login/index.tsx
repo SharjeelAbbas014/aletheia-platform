@@ -3,10 +3,10 @@ import {
   Form,
   routeAction$,
   routeLoader$,
+  type RequestHandler,
   type DocumentHead
 } from "@builder.io/qwik-city";
 
-import { useSession } from "../layout";
 import {
   DEMO_EMAIL,
   DEMO_PASSWORD,
@@ -14,6 +14,7 @@ import {
   isAuthenticated,
   validateCredentials
 } from "~/lib/auth";
+import { setPrivateNoStore } from "~/lib/cache";
 
 export const useLoginPageData = routeLoader$(() => {
   return {
@@ -42,6 +43,10 @@ export const useAuthGuard = routeLoader$((event) => {
     throw event.redirect(302, "/platform");
   }
 });
+
+export const onRequest: RequestHandler = (event) => {
+  setPrivateNoStore(event);
+};
 
 export default component$(() => {
   useAuthGuard();

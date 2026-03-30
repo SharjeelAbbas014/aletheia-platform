@@ -1,8 +1,10 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 
 import { clearSession } from "~/lib/auth";
+import { setPrivateNoStore } from "~/lib/cache";
 
-export const onPost: RequestHandler = ({ cookie, redirect }) => {
-  clearSession(cookie);
-  throw redirect(302, "/login");
+export const onPost: RequestHandler = (event) => {
+  setPrivateNoStore(event);
+  clearSession(event.cookie);
+  throw event.redirect(302, "/login");
 };

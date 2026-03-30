@@ -1,11 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
 
-interface HeaderProps {
-  authenticated?: boolean;
-}
-
-export const Header = component$<HeaderProps>(({ authenticated }) => {
+export const Header = component$(() => {
   const location = useLocation();
   const pathname = location.url.pathname;
 
@@ -47,21 +43,12 @@ export const Header = component$<HeaderProps>(({ authenticated }) => {
         </div>
 
         <div class="flex items-center gap-3">
-          {authenticated ? (
-            <Link
-              href="/platform"
-              class="rounded-lg border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary transition-all hover:bg-primary/20"
-            >
-              Console
-            </Link>
-          ) : (
-            <Link
-              href="/login"
-              class="rounded-lg border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary transition-all hover:bg-primary/20"
-            >
-              Log in
-            </Link>
-          )}
+          <Link
+            href={isConsole ? "/platform" : "/login"}
+            class="rounded-lg border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary transition-all hover:bg-primary/20"
+          >
+            {isConsole ? "Console" : "Log in"}
+          </Link>
         </div>
       </div>
     </header>

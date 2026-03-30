@@ -1,6 +1,7 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { Link, type DocumentHead, type RequestHandler } from "@builder.io/qwik-city";
 import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
+import { setPublicEdgeCache } from "~/lib/cache";
 
 const landingStyles = `
 .landing-v2 {
@@ -406,7 +407,7 @@ const deliveryTrack = [
   }
 ];
 
-const runtimeSnapshot = `engine: temporal_memory
+const runtimeSnapshot = `engine: Aletheia
 routes: /ingest /query/semantic /query/temporal /memory
 indexes: hnsw + bm25 + graph lineage
 policy: ttl + decay + supersession
@@ -425,6 +426,10 @@ const companyLinks = [
   { label: "Open Source", href: "/docs" },
   { label: "Contact", href: "/login" }
 ];
+
+export const onRequest: RequestHandler = (event) => {
+  setPublicEdgeCache(event);
+};
 
 export default component$(() => {
   const pageRef = useSignal<HTMLElement>();
