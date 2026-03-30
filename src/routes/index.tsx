@@ -581,16 +581,19 @@ export default component$(() => {
 
           <div class="container mx-auto relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
             <div class="animate-fade-in-up">
-              <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5">
-                <span class="h-2 w-2 animate-ping rounded-full bg-primary" />
-                <span class="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+              <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-300/35 bg-emerald-400/10 px-4 py-1.5">
+                <span class="relative inline-flex h-2.5 w-2.5">
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
+                  <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,0.95)]" />
+                </span>
+                <span class="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-300">
                   Protocol v2.0: The Sentient Monolith
                 </span>
               </div>
 
               <h1 class="mb-8 text-6xl font-black leading-[0.95] tracking-tight md:text-8xl">
                 AGENTS <br />
-                THAT <span class="text-glow italic text-primary">REMEMBER.</span>
+                THAT <span class="italic text-[#7df9ff] [text-shadow:0_0_16px_rgba(125,249,255,0.45)]">REMEMBER.</span>
               </h1>
 
               <p class="mb-10 max-w-xl text-xl leading-relaxed text-tertiary">
@@ -619,14 +622,19 @@ export default component$(() => {
             <div class="hidden justify-center lg:flex">
               <div class="relative h-[550px] w-[450px] animate-float">
                 <div class="glass-panel group absolute inset-0 overflow-hidden rounded-3xl border-primary/20 shadow-2xl">
-                  <img
-                    class="h-full w-full object-cover opacity-40 mix-blend-screen transition-transform duration-[10s] group-hover:scale-110"
-                    src="/hero-cube.png"
-                    alt="Glowing translucent cube memory core"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
-                  />
+                  <picture class="block h-full w-full">
+                    <source srcset="/hero-cube.webp" type="image/webp" />
+                    <img
+                      class="h-full w-full object-cover opacity-40 mix-blend-screen transition-transform duration-[10s] group-hover:scale-110"
+                      src="/hero-cube.png"
+                      alt="Glowing translucent cube memory core"
+                      width={512}
+                      height={512}
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
+                    />
+                  </picture>
                   <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-surface to-transparent" />
                   <div class="absolute bottom-8 left-8 right-8">
                     <div class="glass-panel rounded-xl border-primary/30 p-6">

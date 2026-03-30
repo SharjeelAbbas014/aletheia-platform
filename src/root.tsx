@@ -1,14 +1,19 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useVisibleTask$ } from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet
 } from "@builder.io/qwik-city";
+import { inject } from "@vercel/analytics";
 
 import { RouterHead } from "./components/router-head/router-head";
 import { commonHeadLinks, commonHeadScripts } from "./constants/theme";
 import "./global.css";
 
 export default component$(() => {
+  useVisibleTask$(() => {
+    inject({ framework: "qwik" });
+  });
+
   return (
     <QwikCityProvider>
       <head>
