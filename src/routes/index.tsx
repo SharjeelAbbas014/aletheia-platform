@@ -983,7 +983,7 @@ export default component$(() => {
                 <div class="glass-panel group tilt-panel relative aspect-square overflow-hidden rounded-3xl p-1" data-tilt>
                   <img
                     class="h-full w-full rounded-2xl object-cover opacity-60 grayscale transition-all duration-1000 group-hover:grayscale-0"
-                    src="/screen.png"
+                    src="/next-decade-ai.webp"
                     alt="Close up of abstract circuit board with blue neon highlights"
                     loading="lazy"
                     decoding="async"
