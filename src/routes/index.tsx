@@ -975,8 +975,10 @@ export default component$(() => {
                 <div class="glass-panel group tilt-panel relative aspect-square overflow-hidden rounded-3xl p-1" data-tilt>
                   <img
                     class="h-full w-full rounded-2xl object-cover opacity-60 grayscale transition-all duration-1000 group-hover:grayscale-0"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjCFYsvGHWRN6ZMdb3rSxu-5-TbzvmphPPq2CTrpoY68mJFfOKFGHT6QAU4hY98Ub0ZVpIemS2cMuBW8waunO0p-FEJvWj0cUi5l10SEsLRNA0KAXDLX1xmrW9nJ3ZPjAhl01HZAsK8OA7vhm0yILCD_BOEYcD5ROfB_KapjrZZcAWMWurONAAcY8zBycar_q1DBJ02JmClKbfUXOmp34Sp8DUjX4xTEh2Kqz0DmyPaX4u1KnEQPnxNchGfnB5lqgKbTgsHOqnHAgX"
+                    src="/screen.png"
                     alt="Close up of abstract circuit board with blue neon highlights"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
                   <div class="absolute inset-0 flex items-center justify-center">

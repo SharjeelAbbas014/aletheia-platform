@@ -17,7 +17,7 @@ export const Header = component$(() => {
             class="inline-flex items-center gap-2 font-headline text-xl font-bold tracking-tighter text-[#E5E2E3]"
           >
             <img
-              src="/logo-no-bg.png"
+              src="/logo-64.png"
               alt="Aletheia logo"
               class="h-8 w-8 rounded object-contain"
               loading="eager"

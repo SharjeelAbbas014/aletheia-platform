@@ -34,7 +34,7 @@ export default component$(() => {
           <div class="docs-brand">
             <div class="docs-brand-icon">
               <img
-                src="/icon-no-bg.png"
+                src="/icon-64.png"
                 alt="Aletheia icon"
                 width={32}
                 height={32}

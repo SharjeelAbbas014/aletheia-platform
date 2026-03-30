@@ -72,7 +72,7 @@ tailwind.config = ${JSON.stringify(tailwindConfig)};
 `;
 
 export const googleFontsLink = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap";
-export const materialSymbolsLink = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap";
+export const materialSymbolsLink = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=all_inclusive,api,arrow_forward,arrow_right_alt,auto_awesome,bar_chart,bolt,build,category,chat_bubble,check_circle,close,code,dashboard,database,dataset,delete,deployed_code,filter_center_focus,history,hub,key,layers_clear,memory,open_in_new,psychology,published_with_changes,rocket_launch,schedule,settings_input_component,speed,tag,terminal,text_snippet,travel_explore,upload,verified,verified_user,vpn_key&display=swap";
 export const tailwindCdnScript = "https://cdn.tailwindcss.com?plugins=forms,container-queries";
 
 export const commonHeadLinks = [

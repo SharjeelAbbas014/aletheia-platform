@@ -5,6 +5,10 @@ import Root from "./root";
 export default function (opts: RenderToStreamOptions) {
   return renderToStream(<Root />, {
     ...opts,
-    containerTagName: "html"
+    containerTagName: "html",
+    containerAttributes: {
+      lang: "en",
+      ...opts.containerAttributes
+    }
   });
 }
