@@ -19,8 +19,8 @@ tailwind.config = {
         "outline-variant": "#2d2d35"
       },
       fontFamily: {
-        headline: ["Inter"],
-        body: ["Inter"],
+        headline: ["Sora"],
+        body: ["Manrope"],
         mono: ["JetBrains Mono"]
       },
       borderRadius: {

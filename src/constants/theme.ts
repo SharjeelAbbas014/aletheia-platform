@@ -52,9 +52,9 @@ export const tailwindConfig = {
         "on-surface": "#e5e2e3"
       },
       fontFamily: {
-        headline: ["Inter"],
-        body: ["Inter"],
-        label: ["Inter"],
+        headline: ["Sora"],
+        body: ["Manrope"],
+        label: ["Manrope"],
         mono: ["JetBrains Mono"]
       },
       borderRadius: {
@@ -71,7 +71,7 @@ export const tailwindConfigScript = `
 tailwind.config = ${JSON.stringify(tailwindConfig)};
 `;
 
-export const googleFontsLink = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=optional";
+export const googleFontsLink = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=optional";
 export const materialSymbolsLink = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap";
 export const tailwindCdnScript = "https://cdn.tailwindcss.com?plugins=forms,container-queries";
 

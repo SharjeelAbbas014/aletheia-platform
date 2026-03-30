@@ -11,6 +11,8 @@
   --tertiary: #b9c8de;
   --outline-variant: #464554;
   --error: #ffb4ab;
+  --font-body: "Manrope", "Avenir Next", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Sora", "Manrope", "Avenir Next", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -27,7 +29,7 @@ body {
   min-height: 100vh;
   background-color: var(--background);
   color: var(--on-surface);
-  font-family: "Inter", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 
@@ -162,7 +164,7 @@ pre {
 }
 
 .brand-word {
-  font-family: "Inter", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -340,7 +342,7 @@ pre {
 .dashboard-header h1,
 .docs-article h1 {
   margin: 0;
-  font-family: "Inter", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-display);
   line-height: 0.98;
   letter-spacing: -0.05em;
 }
@@ -596,7 +598,7 @@ pre {
 .hero-core-title {
   max-width: 10rem;
   margin-top: 0.75rem;
-  font-family: "Inter", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.1;
@@ -775,7 +777,7 @@ pre {
 .docs-article h3,
 .page-card h1,
 .dashboard-header h1 {
-  font-family: "Inter", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-display);
   letter-spacing: -0.04em;
 }
 
@@ -1425,7 +1427,7 @@ pre {
 
 .docs-brand-title {
   margin: 0;
-  font-family: "Inter", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.08rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1540,7 +1542,7 @@ pre {
 }
 
 .docs-prose {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-body);
   color: rgba(234, 239, 250, 0.9);
 }
 
@@ -1554,7 +1556,7 @@ pre {
 .docs-prose h1,
 .docs-prose h2,
 .docs-prose h3 {
-  font-family: "Inter", "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-display);
   color: #f4f7ff;
   letter-spacing: -0.03em;
   line-height: 1.15;
