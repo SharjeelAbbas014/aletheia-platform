@@ -33,7 +33,14 @@ export default component$(() => {
         <div class="docs-shell-left-inner">
           <div class="docs-brand">
             <div class="docs-brand-icon">
-              <span class="material-symbols-outlined">terminal</span>
+              <img
+                src="/icon-no-bg.png"
+                alt="Aletheia icon"
+                width={32}
+                height={32}
+                loading="eager"
+                decoding="async"
+              />
             </div>
             <div>
               <p class="docs-brand-title">Docs</p>

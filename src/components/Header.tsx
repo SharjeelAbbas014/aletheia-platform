@@ -14,9 +14,16 @@ export const Header = component$(() => {
         <div class="flex items-center gap-8">
           <Link
             href="/"
-            class="font-headline text-xl font-bold tracking-tighter text-[#E5E2E3]"
+            class="inline-flex items-center gap-2 font-headline text-xl font-bold tracking-tighter text-[#E5E2E3]"
           >
-            Aletheia
+            <img
+              src="/logo-no-bg.png"
+              alt="Aletheia logo"
+              class="h-8 w-8 rounded object-contain"
+              loading="eager"
+              decoding="async"
+            />
+            <span>Aletheia</span>
           </Link>
           <nav class="hidden items-center gap-6 md:flex">
             <Link

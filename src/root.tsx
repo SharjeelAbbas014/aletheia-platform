@@ -17,6 +17,11 @@ export default component$(() => {
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
+        <link rel="icon" href="/icon.png" type="image/png" sizes="32x32" />
+        <link rel="shortcut icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+        <meta property="og:image" content="/logo-no-bg.png" />
+        <meta name="twitter:image" content="/logo-no-bg.png" />
         {commonHeadLinks.map((link) => (
           <link key={`global-link-${link.rel}-${link.href}`} {...link} />
         ))}

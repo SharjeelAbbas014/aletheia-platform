@@ -1432,6 +1432,12 @@ pre {
   box-shadow: 0 12px 30px rgba(76, 86, 255, 0.36);
 }
 
+.docs-brand-icon img {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+}
+
 .docs-brand-title {
   margin: 0;
   font-family: var(--font-display);
