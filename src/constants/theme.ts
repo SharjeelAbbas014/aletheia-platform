@@ -71,11 +71,13 @@ export const tailwindConfigScript = `
 tailwind.config = ${JSON.stringify(tailwindConfig)};
 `;
 
-export const googleFontsLink = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap";
+export const googleFontsLink = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=optional";
 export const materialSymbolsLink = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap";
 export const tailwindCdnScript = "https://cdn.tailwindcss.com?plugins=forms,container-queries";
 
 export const commonHeadLinks = [
+  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+  { rel: "preconnect", href: "https://fonts.gstatic.com" },
   { rel: "stylesheet", href: googleFontsLink },
   { rel: "stylesheet", href: materialSymbolsLink }
 ];
