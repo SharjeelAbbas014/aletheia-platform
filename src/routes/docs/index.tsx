@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 
+import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
 import { createHead } from "~/lib/docs";
 
 export default component$(() => {
@@ -55,6 +56,19 @@ export default component$(() => {
         Signed binaries, scoped auth, release manifests, and
         compatibility-aware SDKs are treated as part of the product surface.
       </p>
+
+      <h2>Repositories</h2>
+      <p>Public repositories for platform, SDK, and model adapter surfaces:</p>
+      <ul>
+        {publicRepositoryLinks.map((repo) => (
+          <li key={repo.href}>
+            <a href={repo.href} target="_blank" rel="noreferrer">
+              {repo.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p>{privateRepositoryNote}</p>
     </>
   );
 });

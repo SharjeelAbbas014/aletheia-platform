@@ -1,5 +1,6 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
 
 const landingStyles = `
 .landing-v2 {
@@ -1057,6 +1058,30 @@ export default component$(() => {
                   <span class="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-tertiary">
                     model-agnostic
                   </span>
+                </div>
+
+                <div class="mt-6 rounded-xl border border-outline-variant/20 bg-surface-container-high/40 p-4">
+                  <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                    Public Repositories
+                  </p>
+                  <ul class="mt-3 space-y-2">
+                    {publicRepositoryLinks.map((repo) => (
+                      <li key={repo.href}>
+                        <a
+                          href={repo.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          class="flex items-center justify-between rounded-lg border border-white/10 bg-surface/80 px-3 py-2 text-xs text-on-surface transition-colors hover:border-primary/40 hover:bg-surface-container-high"
+                        >
+                          <span>{repo.label}</span>
+                          <span class="material-symbols-outlined text-sm text-primary">
+                            open_in_new
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <p class="mt-3 text-[11px] text-tertiary">{privateRepositoryNote}</p>
                 </div>
               </aside>
             </div>

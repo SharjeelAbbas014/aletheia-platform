@@ -13,7 +13,7 @@ export const Header = component$<HeaderProps>(({ authenticated }) => {
   const isConsole = pathname.startsWith("/platform");
 
   return (
-    <header class="fixed top-0 z-50 h-16 w-full border-b border-outline-variant/15 bg-background font-body text-sm tracking-tight shadow-[0px_24px_48px_rgba(0,0,0,0.8)] antialiased">
+    <header class="app-topbar fixed top-0 z-50 h-16 w-full font-body text-sm tracking-tight shadow-[0px_24px_48px_rgba(0,0,0,0.8)] antialiased">
       <div class="flex h-full w-full items-center justify-between px-6">
         <div class="flex items-center gap-8">
           <Link

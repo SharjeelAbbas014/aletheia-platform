@@ -1,6 +1,7 @@
 import { Slot, component$ } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
 
+import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
 import { docsNavigation } from "~/lib/docs";
 
 export default component$(() => {
@@ -100,6 +101,28 @@ export default component$(() => {
             <Link href="/docs/architecture" class="docs-right-card-link">
               Start Here
             </Link>
+          </div>
+
+          <div class="docs-right-card">
+            <p class="docs-right-card-title">Public Repositories</p>
+            <p class="docs-right-card-copy">
+              Platform, SDK, and model adapter repositories.
+            </p>
+            <div class="docs-repo-links">
+              {publicRepositoryLinks.map((repo) => (
+                <a
+                  key={repo.href}
+                  href={repo.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  class="docs-repo-link"
+                >
+                  <span>{repo.label}</span>
+                  <span class="material-symbols-outlined">open_in_new</span>
+                </a>
+              ))}
+            </div>
+            <p class="docs-right-private-note">{privateRepositoryNote}</p>
           </div>
         </div>
       </aside>
