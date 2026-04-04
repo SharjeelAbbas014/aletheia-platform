@@ -42,5 +42,6 @@ export default component$(() => {
 
 export const head = createHead(
   "Security Model | Aletheia",
-  "How to think about hosted access, tenant scope, and auditability."
+  "How to think about hosted access, tenant scope, and auditability.",
+  "/docs/security"
 );

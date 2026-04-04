@@ -53,5 +53,6 @@ hits = client.query("What coffee do I prefer?", entity_id="user-123")`}</code>
 
 export const head = createHead(
   "Quickstart | Aletheia",
-  "Launch the engine, connect from the SDK, and run your first query."
+  "Launch the engine, connect from the SDK, and run your first query.",
+  "/docs/quickstart"
 );

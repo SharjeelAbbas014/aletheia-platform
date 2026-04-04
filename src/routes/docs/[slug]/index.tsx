@@ -1,10 +1,11 @@
 import { component$ } from "@builder.io/qwik";
 import {
-  type DocumentHead,
+  type DocumentHeadProps,
   routeLoader$
 } from "@builder.io/qwik-city";
 
 import { detailedDocsBySlug } from "~/lib/docs-content";
+import { buildSeoHead } from "~/lib/seo";
 
 export const useDocsPage = routeLoader$(({ params, status }) => {
   const page = detailedDocsBySlug[params.slug];
@@ -78,28 +79,21 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = ({ resolveValue }) => {
+export const head = ({ resolveValue }: DocumentHeadProps) => {
   const page = resolveValue(useDocsPage);
 
   if (!page) {
-    return {
+    return buildSeoHead({
       title: "Docs | Not Found",
-      meta: [
-        {
-          name: "description",
-          content: "Requested docs page was not found."
-        }
-      ]
-    };
+      description: "Requested docs page was not found.",
+      pathname: "/docs",
+      noindex: true
+    });
   }
 
-  return {
+  return buildSeoHead({
     title: `${page.title} | Aletheia`,
-    meta: [
-      {
-        name: "description",
-        content: page.description
-      }
-    ]
-  };
+    description: page.description,
+    pathname: `/docs/${page.slug}`
+  });
 };

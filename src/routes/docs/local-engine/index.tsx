@@ -42,5 +42,6 @@ export default component$(() => {
 
 export const head = createHead(
   "Local Engine | Aletheia",
-  "Run the Rust binary as a sidecar for development and evaluation."
+  "Run the Rust binary as a sidecar for development and evaluation.",
+  "/docs/local-engine"
 );

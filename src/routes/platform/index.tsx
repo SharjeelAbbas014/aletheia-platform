@@ -19,6 +19,7 @@ import {
 import { requireAuth } from "~/lib/auth";
 import { CONTACT_MAILTO } from "~/constants/contact";
 import { setPrivateNoStore } from "~/lib/cache";
+import { buildSeoHead } from "~/lib/seo";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -267,12 +268,9 @@ results = client.recall(
   );
 });
 
-export const head: DocumentHead = {
+export const head: DocumentHead = buildSeoHead({
   title: "Console | ALETHEIA",
-  meta: [
-    {
-      name: "description",
-      content: "Developer console for the Aletheia engine."
-    }
-  ]
-};
+  description: "Developer console for the Aletheia engine.",
+  pathname: "/platform",
+  noindex: true
+});

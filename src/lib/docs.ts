@@ -1,5 +1,7 @@
 import type { DocumentHead } from "@builder.io/qwik-city";
 
+import { buildSeoHead } from "~/lib/seo";
+
 export interface DocsNavItem {
   href: string;
   title: string;
@@ -213,14 +215,14 @@ export const docsNavigation: DocsCategory[] = [
   }
 ];
 
-export function createHead(title: string, description: string): DocumentHead {
-  return {
+export function createHead(
+  title: string,
+  description: string,
+  pathname = "/docs"
+): DocumentHead {
+  return buildSeoHead({
     title,
-    meta: [
-      {
-        name: "description",
-        content: description
-      }
-    ]
-  };
+    description,
+    pathname
+  });
 }

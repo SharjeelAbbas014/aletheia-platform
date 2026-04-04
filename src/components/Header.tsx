@@ -6,6 +6,7 @@ export const Header = component$(() => {
   const pathname = location.url.pathname;
 
   const isDocs = pathname.startsWith("/docs");
+  const isBlog = pathname.startsWith("/blog");
   const isConsole = pathname.startsWith("/platform");
 
   return (
@@ -35,6 +36,16 @@ export const Header = component$(() => {
               }`}
             >
               Docs
+            </Link>
+            <Link
+              href="/blog"
+              class={`transition-colors duration-200 ${
+                isBlog
+                  ? "border-b-2 border-primary pb-1 text-primary"
+                  : "text-tertiary hover:text-on-surface"
+              }`}
+            >
+              Blog
             </Link>
             <Link
               href="/platform"

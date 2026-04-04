@@ -75,5 +75,6 @@ export default component$(() => {
 
 export const head = createHead(
   "Overview | Aletheia",
-  "What Aletheia is for and why the engine behaves differently from a naive vector store."
+  "What Aletheia is for and why the engine behaves differently from a naive vector store.",
+  "/docs"
 );

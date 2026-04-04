@@ -52,5 +52,6 @@ export default component$(() => {
 
 export const head = createHead(
   "API Authentication | Aletheia",
-  "Platform-issued keys for hosted usage, with a clear path to scoped auth."
+  "Platform-issued keys for hosted usage, with a clear path to scoped auth.",
+  "/docs/api-auth"
 );

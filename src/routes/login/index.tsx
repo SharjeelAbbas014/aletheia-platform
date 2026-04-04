@@ -15,6 +15,7 @@ import {
   validateCredentials
 } from "~/lib/auth";
 import { setPrivateNoStore } from "~/lib/cache";
+import { buildSeoHead } from "~/lib/seo";
 
 export const useLoginPageData = routeLoader$(() => {
   return {
@@ -173,12 +174,9 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = {
+export const head: DocumentHead = buildSeoHead({
   title: "Log In | ALETHEIA",
-  meta: [
-    {
-      name: "description",
-      content: "Initialize access to the Aletheia monolith."
-    }
-  ]
-};
+  description: "Initialize access to the Aletheia platform.",
+  pathname: "/login",
+  noindex: true
+});

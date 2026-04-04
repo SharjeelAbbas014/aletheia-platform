@@ -1,8 +1,16 @@
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { Link, type DocumentHead, type RequestHandler } from "@builder.io/qwik-city";
+import {
+  Form,
+  Link,
+  routeAction$,
+  type DocumentHead,
+  type RequestHandler
+} from "@builder.io/qwik-city";
 import { CALENDLY_30_MIN_URL, CONTACT_EMAIL, CONTACT_MAILTO } from "~/constants/contact";
 import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
+import { DEFAULT_TEST_API_KEY } from "~/lib/api-keys";
 import { setPublicEdgeCache } from "~/lib/cache";
+import { buildSeoHead } from "~/lib/seo";
 
 const landingStyles = `
 .landing-v2 {
@@ -428,12 +436,211 @@ const companyLinks = [
   { label: "Contact", href: CONTACT_MAILTO }
 ];
 
+const HERO_DEMO_ENTITY_COOKIE = "aletheia_hero_demo_entity";
+const HERO_ENGINE_BASE_URL = (
+  process.env.ALETHEIA_HERO_ENGINE_URL ??
+  "https://4tcjq5z2yap9nd.api.runpod.ai"
+).replace(/\/+$/, "");
+const HERO_ENGINE_API_KEY = (
+  process.env.ALETHEIA_HERO_API_KEY ??
+  DEFAULT_TEST_API_KEY
+).trim();
+const HERO_RUNPOD_TOKEN = (
+  process.env.ALETHEIA_HERO_RUNPOD_TOKEN ??
+  process.env.RUNPOD_API_KEY ??
+  ""
+).trim();
+
+type HeroMemoryHit = {
+  memory_id: string;
+  session_id: string;
+  created_at_ms: number;
+  similarity: number;
+  textual_content: string;
+};
+
+type HeroCookieEvent = {
+  cookie: {
+    get: (name: string) => { value?: string } | null | undefined;
+    set: (
+      name: string,
+      value: string,
+      options: ReturnType<typeof heroDemoCookieOptions>
+    ) => void;
+  };
+};
+
+function heroDemoCookieOptions() {
+  return {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 30
+  };
+}
+
+function ensureHeroDemoEntity(event: HeroCookieEvent) {
+  const existing = event.cookie.get(HERO_DEMO_ENTITY_COOKIE)?.value?.trim();
+  if (existing) {
+    return existing;
+  }
+
+  const next = `hero-demo-${crypto.randomUUID()}`;
+  event.cookie.set(HERO_DEMO_ENTITY_COOKIE, next, heroDemoCookieOptions());
+  return next;
+}
+
+function heroRequestHeaders(includeJson = false) {
+  const headers = new Headers();
+  if (includeJson) {
+    headers.set("content-type", "application/json");
+  }
+  headers.set("x-api-key", HERO_ENGINE_API_KEY);
+  if (HERO_RUNPOD_TOKEN) {
+    headers.set("Authorization", `Bearer ${HERO_RUNPOD_TOKEN}`);
+  }
+  return headers;
+}
+
+function readEngineTotalUs(headers: Headers) {
+  const headerUs = headers.get("x-tm-total-us");
+  if (headerUs) {
+    const parsed = Number(headerUs);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  const headerMs = headers.get("x-tm-total-ms");
+  if (headerMs) {
+    const parsed = Number(headerMs);
+    if (Number.isFinite(parsed)) {
+      return parsed * 1000;
+    }
+  }
+
+  return null;
+}
+
+function formatEngineMs(totalUs: number | null) {
+  if (totalUs == null) {
+    return "n/a";
+  }
+  const totalMs = totalUs / 1000;
+  return totalMs >= 10 ? `${Math.round(totalMs)} ms` : `${totalMs.toFixed(1)} ms`;
+}
+
+function formatHeroTimestamp(value: number) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
+
+export const useHeroDemoAction = routeAction$(async (data, event) => {
+  const message = String(data.message ?? "").trim();
+
+  if (!message) {
+    return event.fail(400, {
+      message: "Enter a user message so the engine has something real to save."
+    });
+  }
+
+  if (!HERO_RUNPOD_TOKEN) {
+    return event.fail(500, {
+      message:
+        "Set ALETHEIA_HERO_RUNPOD_TOKEN on the platform server to call the Runpod load balancer."
+    });
+  }
+
+  const entityId = ensureHeroDemoEntity(event);
+  const now = Date.now();
+  const memoryId = `${entityId}::hero-demo::${now}`;
+  let ingestResponse: Response;
+  let queryResponse: Response;
+
+  try {
+    ingestResponse = await fetch(`${HERO_ENGINE_BASE_URL}/ingest`, {
+      method: "POST",
+      headers: heroRequestHeaders(true),
+      body: JSON.stringify({
+        entity_id: entityId,
+        memory_id: memoryId,
+        timestamp: now,
+        textual_content: message,
+        relations: []
+      }),
+      signal: AbortSignal.timeout(45_000)
+    });
+  } catch (error) {
+    return event.fail(502, {
+      message:
+        error instanceof Error
+          ? `Ingest transport failed. ${error.message}`
+          : "Ingest transport failed."
+    });
+  }
+
+  if (!ingestResponse.ok) {
+    return event.fail(502, {
+      message: `Ingest failed (${ingestResponse.status}). ${await ingestResponse.text()}`
+    });
+  }
+
+  try {
+    queryResponse = await fetch(`${HERO_ENGINE_BASE_URL}/query/semantic`, {
+      method: "POST",
+      headers: heroRequestHeaders(true),
+      body: JSON.stringify({
+        entity_id: entityId,
+        textual_query: message,
+        limit: 4
+      }),
+      signal: AbortSignal.timeout(45_000)
+    });
+  } catch (error) {
+    return event.fail(502, {
+      message:
+        error instanceof Error
+          ? `Query transport failed. ${error.message}`
+          : "Query transport failed."
+    });
+  }
+
+  if (!queryResponse.ok) {
+    return event.fail(502, {
+      message: `Query failed (${queryResponse.status}). ${await queryResponse.text()}`
+    });
+  }
+
+  const hits = (await queryResponse.json()) as HeroMemoryHit[];
+  const ingestUs = readEngineTotalUs(ingestResponse.headers);
+  const queryUs = readEngineTotalUs(queryResponse.headers);
+
+  return {
+    entityId,
+    memoryId,
+    submittedText: message,
+    ingestLabel: formatEngineMs(ingestUs),
+    queryLabel: formatEngineMs(queryUs),
+    queryUnderBlink: queryUs != null && queryUs / 1000 < 100,
+    hits: hits.slice(0, 4).map((hit) => ({
+      ...hit,
+      createdLabel: formatHeroTimestamp(hit.created_at_ms)
+    }))
+  };
+});
+
 export const onRequest: RequestHandler = (event) => {
   setPublicEdgeCache(event);
 };
 
 export default component$(() => {
   const pageRef = useSignal<HTMLElement>();
+  const heroDemoAction = useHeroDemoAction();
 
   useVisibleTask$(({ cleanup }) => {
     const root = pageRef.value;
@@ -579,7 +786,7 @@ export default component$(() => {
             <div class="hero-orb-right absolute bottom-0 right-[-25%] h-[500px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]" />
           </div>
 
-          <div class="container mx-auto relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+          <div class="container mx-auto relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
             <div class="animate-fade-in-up">
               <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-300/35 bg-emerald-400/10 px-4 py-1.5">
                 <span class="relative inline-flex h-2.5 w-2.5">
@@ -602,6 +809,40 @@ export default component$(() => {
                 learns who your users are one interaction at a time.
               </p>
 
+              <div class="mb-10 max-w-2xl space-y-3">
+                <div class="glass-panel max-w-[85%] rounded-[1.5rem] rounded-bl-md p-4">
+                  <div class="mb-2 flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/20 text-primary">
+                      <span class="material-symbols-outlined text-lg">smart_toy</span>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-on-surface">Aletheia Bot</p>
+                      <p class="text-[11px] uppercase tracking-[0.24em] text-tertiary">
+                        How we work
+                      </p>
+                    </div>
+                  </div>
+                  <p class="text-sm leading-relaxed text-tertiary">
+                    Tell me something important about the user and I persist it
+                    into the memory engine, not a temporary chat buffer.
+                  </p>
+                </div>
+
+                <div class="ml-auto glass-panel max-w-[80%] rounded-[1.5rem] rounded-br-md border-primary/20 bg-primary/10 p-4">
+                  <p class="text-sm leading-relaxed text-on-surface">
+                    So you keep the fact even after the model changes?
+                  </p>
+                </div>
+
+                <div class="glass-panel max-w-[90%] rounded-[1.5rem] rounded-bl-md p-4">
+                  <p class="text-sm leading-relaxed text-tertiary">
+                    Exactly. The site ingests the event, queries memories back
+                    from Aletheia, and shows the engine-only latency from
+                    `x-tm-total-ms` so you see the real recall path.
+                  </p>
+                </div>
+              </div>
+
               <div class="flex flex-wrap gap-5">
                 <Link
                   href="/docs/quickstart"
@@ -619,34 +860,168 @@ export default component$(() => {
               </div>
             </div>
 
-            <div class="hidden justify-center lg:flex">
-              <div class="relative h-[550px] w-[450px] animate-float">
-                <div class="glass-panel group absolute inset-0 overflow-hidden rounded-3xl border-primary/20 shadow-2xl">
-                  <picture class="block h-full w-full">
-                    <source srcset="/hero-cube.webp" type="image/webp" />
-                    <img
-                      class="h-full w-full object-cover opacity-40 mix-blend-screen transition-transform duration-[10s] group-hover:scale-110"
-                      src="/hero-cube.png"
-                      alt="Glowing translucent cube memory core"
-                      width={512}
-                      height={512}
-                      loading="eager"
-                      fetchPriority="high"
-                      decoding="async"
+            <div class="relative flex justify-center lg:justify-end">
+              <div class="glass-panel relative w-full max-w-[560px] overflow-hidden rounded-[2rem] border-primary/20 shadow-[0_32px_120px_rgba(5,8,18,0.58)]">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(125,249,255,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(99,102,241,0.22),transparent_38%)]" />
+                <div class="relative border-b border-white/10 px-6 py-5">
+                  <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <div class="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-primary">
+                        <span class="material-symbols-outlined text-sm">neurology</span>
+                        Live Memory Demo
+                      </div>
+                      <h2 class="text-2xl font-black tracking-tight text-on-surface">
+                        Persist a user fact. Pull it back from Aletheia.
+                      </h2>
+                    </div>
+                    <div class="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-4 py-3 text-right">
+                      <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-300">
+                        Timing Source
+                      </p>
+                      <p class="mt-1 text-sm text-on-surface">Engine headers only</p>
+                    </div>
+                  </div>
+                  <p class="mt-4 max-w-xl text-sm leading-relaxed text-tertiary">
+                    This demo stores the message under a stable visitor entity,
+                    then fetches related memories back from the engine using the
+                    live Runpod load balancer.
+                  </p>
+                </div>
+
+                <div class="relative space-y-6 p-6">
+                  <Form action={heroDemoAction} class="space-y-4">
+                    <label class="block text-[11px] font-bold uppercase tracking-[0.22em] text-tertiary">
+                      User Message
+                    </label>
+                    <textarea
+                      name="message"
+                      class="min-h-[124px] w-full rounded-[1.5rem] border border-white/10 bg-black/25 px-5 py-4 text-base text-on-surface outline-none transition-colors placeholder:text-tertiary/55 focus:border-primary/60"
+                      placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
+                      value={String(
+                        heroDemoAction.formData?.get("message") ??
+                          "I moved to Tokyo and I still prefer jasmine tea over coffee."
+                      )}
+                      required
                     />
-                  </picture>
-                  <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-surface to-transparent" />
-                  <div class="absolute bottom-8 left-8 right-8">
-                    <div class="glass-panel rounded-xl border-primary/30 p-6">
-                      <div class="mb-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-                        Active Memory Node
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                      <p class="text-xs leading-relaxed text-tertiary">
+                        We ingest this as memory, then query the same entity and
+                        surface the actual hits below.
+                      </p>
+                      <button
+                        type="submit"
+                        class="obsidian-gradient inline-flex items-center gap-3 rounded-2xl px-6 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_0_32px_rgba(99,102,241,0.35)] active:scale-95"
+                      >
+                        Store and Recall
+                        <span class="material-symbols-outlined text-base">arrow_forward</span>
+                      </button>
+                    </div>
+                  </Form>
+
+                  {heroDemoAction.value?.message ? (
+                    <div class="rounded-[1.5rem] border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                      {heroDemoAction.value.message}
+                    </div>
+                  ) : null}
+
+                  <div class="grid gap-4 md:grid-cols-3">
+                    <div class="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                      <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-tertiary">
+                        Persist
+                      </p>
+                      <p class="mt-2 text-2xl font-black tracking-tight text-on-surface">
+                        {heroDemoAction.value?.ingestLabel ?? "pending"}
+                      </p>
+                      <p class="mt-2 text-xs text-tertiary">Engine write time from `/ingest`.</p>
+                    </div>
+                    <div class="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                      <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-tertiary">
+                        Recall
+                      </p>
+                      <p class="mt-2 text-2xl font-black tracking-tight text-on-surface">
+                        {heroDemoAction.value?.queryLabel ?? "pending"}
+                      </p>
+                      <p class="mt-2 text-xs text-tertiary">Engine recall time from `/query/semantic`.</p>
+                    </div>
+                    <div class="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                      <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-tertiary">
+                        Demo Entity
+                      </p>
+                      <p class="mt-2 break-all font-mono text-sm text-on-surface">
+                        {heroDemoAction.value?.entityId ?? "generated on first run"}
+                      </p>
+                      <p class="mt-2 text-xs text-tertiary">Stable cookie-backed user scope.</p>
+                    </div>
+                  </div>
+
+                  {heroDemoAction.value?.queryUnderBlink ? (
+                    <div class="relative overflow-hidden rounded-[1.75rem] border border-cyan-300/25 bg-[linear-gradient(135deg,rgba(14,165,233,0.18),rgba(99,102,241,0.18),rgba(16,185,129,0.16))] p-5">
+                      <div class="absolute right-[-2rem] top-[-2rem] h-24 w-24 rounded-full bg-cyan-300/20 blur-2xl" />
+                      <div class="absolute bottom-[-2rem] left-[-1rem] h-20 w-20 rounded-full bg-emerald-300/20 blur-2xl" />
+                      <div class="relative flex items-start gap-4">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-cyan-100">
+                          <span class="material-symbols-outlined">visibility</span>
+                        </div>
+                        <div>
+                          <p class="text-[10px] font-bold uppercase tracking-[0.26em] text-cyan-100/80">
+                            Faster Than Blink
+                          </p>
+                          <h3 class="mt-2 text-2xl font-black tracking-tight text-white">
+                            We get your memories faster than you blink.
+                          </h3>
+                          <p class="mt-2 max-w-xl text-sm leading-relaxed text-cyan-50/85">
+                            The recall path stayed under 100ms at the engine layer,
+                            excluding HTTPS and any downstream LLM work.
+                          </p>
+                        </div>
                       </div>
-                      <div class="mb-3 text-sm font-medium">
-                        Memory Lattice: 100% Coherent
+                    </div>
+                  ) : null}
+
+                  <div class="rounded-[1.75rem] border border-white/10 bg-black/20 p-5">
+                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-tertiary">
+                          Retrieved Memories
+                        </p>
+                        <p class="mt-1 text-sm text-on-surface">
+                          {heroDemoAction.value?.submittedText
+                            ? `Pulled back from Aletheia for "${heroDemoAction.value.submittedText}".`
+                            : "Submit a message to store a fact and inspect the returned memories."}
+                        </p>
                       </div>
-                      <div class="h-1 w-full overflow-hidden rounded-full bg-white/10">
-                        <div class="h-full w-[88%] bg-primary shadow-[0_0_10px_#6366f1]" />
-                      </div>
+                      {heroDemoAction.value?.memoryId ? (
+                        <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-mono text-[11px] text-tertiary">
+                          saved as {heroDemoAction.value.memoryId}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div class="space-y-3">
+                      {heroDemoAction.value?.hits?.length ? (
+                        heroDemoAction.value.hits.map((hit) => (
+                          <div
+                            key={hit.memory_id}
+                            class="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4"
+                          >
+                            <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
+                              <p class="font-mono text-[11px] text-primary">{hit.memory_id}</p>
+                              <div class="flex items-center gap-3 text-[11px] text-tertiary">
+                                <span>{hit.createdLabel}</span>
+                                <span>score {hit.similarity.toFixed(3)}</span>
+                              </div>
+                            </div>
+                            <p class="text-sm leading-relaxed text-on-surface">
+                              {hit.textual_content}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div class="rounded-[1.25rem] border border-dashed border-white/10 bg-white/[0.02] p-5 text-sm leading-relaxed text-tertiary">
+                          The first successful run will save the message into the
+                          engine, query it back, and render the returned memories here.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1299,14 +1674,17 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = {
+export const head: DocumentHead = buildSeoHead({
   title: "ALETHEIA | Agents That Remember",
-  meta: [
-    {
-      name: "description",
-      content:
-        "Aletheia is the persistent memory layer for AI agents that need temporal awareness, truth extraction, and continuity across models."
-    }
+  description:
+    "Aletheia is the persistent memory layer for AI agents that need temporal awareness, truth extraction, and continuity across models.",
+  pathname: "/",
+  keywords: [
+    "agent memory",
+    "temporal memory",
+    "AI memory layer",
+    "persistent memory for agents",
+    "vector database alternative"
   ],
   styles: [
     {
@@ -1314,4 +1692,4 @@ export const head: DocumentHead = {
       style: landingStyles
     }
   ]
-};
+});
