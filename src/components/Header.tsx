@@ -7,7 +7,6 @@ export const Header = component$(() => {
 
   const isDocs = pathname.startsWith("/docs");
   const isBlog = pathname.startsWith("/blog");
-  const isConsole = pathname.startsWith("/platform");
 
   return (
     <header class="app-topbar fixed top-0 z-50 h-16 w-full font-body text-sm tracking-tight shadow-[0px_24px_48px_rgba(0,0,0,0.8)] antialiased">
@@ -47,25 +46,15 @@ export const Header = component$(() => {
             >
               Blog
             </Link>
-            <Link
-              href="/platform"
-              class={`transition-colors duration-200 ${
-                isConsole
-                  ? "border-b-2 border-primary pb-1 text-primary"
-                  : "text-tertiary hover:text-on-surface"
-              }`}
-            >
-              Console
-            </Link>
           </nav>
         </div>
 
         <div class="flex items-center gap-3">
           <Link
-            href={isConsole ? "/platform" : "/login"}
+            href="/login"
             class="rounded-lg border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary transition-all hover:bg-primary/20"
           >
-            {isConsole ? "Console" : "Log in"}
+            Log in
           </Link>
         </div>
       </div>

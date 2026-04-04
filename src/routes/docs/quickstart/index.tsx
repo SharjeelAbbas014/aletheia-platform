@@ -15,7 +15,7 @@ export default component$(() => {
       <ol>
         <li>Marketing on <code>/</code></li>
         <li>Docs on <code>/docs</code></li>
-        <li>Platform UI on <code>/platform</code></li>
+        <li>Blog on <code>/blog</code></li>
       </ol>
 
       <h2>Local-first path</h2>

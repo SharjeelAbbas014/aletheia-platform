@@ -40,6 +40,8 @@ export const usePlatformData = routeLoader$((event) => {
 
 export const onRequest: RequestHandler = (event) => {
   setPrivateNoStore(event);
+  event.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  throw event.redirect(302, "/");
 };
 
 export const useCreateApiKeyAction = routeAction$(async (data, event) => {

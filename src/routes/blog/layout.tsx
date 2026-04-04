@@ -26,7 +26,14 @@ export default component$(() => {
         <div class="blog-shell-left-inner">
           <div class="blog-brand">
             <div class="blog-brand-icon">
-              <span class="material-symbols-outlined">article</span>
+              <img
+                src="/icon-64.png"
+                alt="Aletheia blog"
+                width={32}
+                height={32}
+                loading="eager"
+                decoding="async"
+              />
             </div>
             <div>
               <p class="blog-brand-title">Blog</p>
@@ -41,7 +48,6 @@ export default component$(() => {
                 href="/blog"
                 class={`blog-nav-link ${pathname === "/blog" ? "blog-nav-link-active" : ""}`}
               >
-                <span class="material-symbols-outlined blog-nav-icon">feed</span>
                 <span class="blog-nav-copy">
                   <span class="blog-nav-title">All Posts</span>
                   <span class="blog-nav-description">
@@ -64,9 +70,6 @@ export default component$(() => {
                     href={post.url}
                     class={`blog-nav-link ${isActive ? "blog-nav-link-active" : ""}`}
                   >
-                    <span class="material-symbols-outlined blog-nav-icon">
-                      auto_stories
-                    </span>
                     <span class="blog-nav-copy">
                       <span class="blog-nav-title">{post.title}</span>
                       <span class="blog-nav-description">

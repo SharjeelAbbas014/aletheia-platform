@@ -35,13 +35,13 @@ export const useLoginAction = routeAction$(async (data, event) => {
   }
 
   createSession(event.cookie, email);
-  throw event.redirect(302, "/platform");
+  throw event.redirect(302, "/");
 });
 
 export const useAuthGuard = routeLoader$((event) => {
   const authenticated = isAuthenticated(event.cookie);
   if (authenticated) {
-    throw event.redirect(302, "/platform");
+    throw event.redirect(302, "/");
   }
 });
 
