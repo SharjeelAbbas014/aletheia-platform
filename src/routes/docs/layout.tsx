@@ -83,6 +83,26 @@ export default component$(() => {
 
       <main class="docs-shell-main">
         <div class="docs-main-gradient" aria-hidden="true" />
+        <div class="docs-mobile-nav">
+          <div class="docs-mobile-nav-header">
+            <p class="docs-mobile-nav-kicker">Section</p>
+            <h2 class="docs-mobile-nav-title">{activeCategory.category}</h2>
+          </div>
+          <div class="docs-mobile-nav-links">
+            {activeCategory.items.map((item) => {
+              const isActive = item.href === pathname;
+              return (
+                <Link
+                  key={`mobile-${item.href}`}
+                  href={item.href}
+                  class={`docs-mobile-nav-link ${isActive ? "docs-mobile-nav-link-active" : ""}`}
+                >
+                  {item.title}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
         <article class="docs-article docs-prose">
           <Slot />
         </article>

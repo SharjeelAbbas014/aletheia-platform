@@ -86,6 +86,33 @@ export default component$(() => {
 
       <main class="blog-shell-main">
         <div class="blog-main-gradient" aria-hidden="true" />
+        <div class="blog-mobile-nav">
+          <div class="blog-mobile-nav-header">
+            <p class="blog-mobile-nav-kicker">Latest Posts</p>
+            <h2 class="blog-mobile-nav-title">Browse the journal</h2>
+          </div>
+          <div class="blog-mobile-nav-links">
+            <Link
+              href="/blog"
+              class={`blog-mobile-nav-link ${pathname === "/blog" ? "blog-mobile-nav-link-active" : ""}`}
+            >
+              All Posts
+            </Link>
+            {allPosts.map((post) => {
+              const isActive = post.url === pathname;
+
+              return (
+                <Link
+                  key={`mobile-${post.slug}`}
+                  href={post.url}
+                  class={`blog-mobile-nav-link ${isActive ? "blog-mobile-nav-link-active" : ""}`}
+                >
+                  {post.title}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
         <article class="blog-article">
           <Slot />
         </article>
