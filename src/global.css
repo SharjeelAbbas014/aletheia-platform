@@ -60,6 +60,7 @@ body {
   background-color: var(--background);
   color: var(--on-surface);
   font-family: var(--font-body);
+  overflow-x: hidden;
 }
 
 .app-topbar {
@@ -1471,6 +1472,7 @@ pre {
   display: grid;
   grid-template-columns: 20.5rem minmax(0, 1fr) 16.5rem;
   min-height: calc(100vh - 4rem);
+  width: 100%;
   background:
     radial-gradient(60rem 38rem at 76% -6%, rgba(93, 230, 255, 0.08), transparent 60%),
     radial-gradient(44rem 30rem at 20% 25%, rgba(192, 193, 255, 0.08), transparent 64%),
@@ -1624,7 +1626,9 @@ pre {
 
 .docs-shell-main {
   position: relative;
+  min-width: 0;
   padding: 0 0.6rem 3.8rem;
+  overflow-x: clip;
 }
 
 .docs-mobile-nav {
@@ -1647,6 +1651,7 @@ pre {
   position: relative;
   z-index: 1;
   max-width: 54rem;
+  min-width: 0;
   margin: 0 auto;
   padding: 2.8rem 2.8rem 5.5rem;
 }
@@ -1992,6 +1997,7 @@ pre {
   display: grid;
   grid-template-columns: 19.5rem minmax(0, 1fr) 16rem;
   min-height: calc(100vh - 4rem);
+  width: 100%;
   background:
     radial-gradient(52rem 34rem at 78% -8%, rgba(93, 230, 255, 0.08), transparent 58%),
     radial-gradient(48rem 28rem at 18% 18%, rgba(192, 193, 255, 0.08), transparent 64%),
@@ -2027,7 +2033,9 @@ pre {
 
 .blog-shell-main {
   position: relative;
+  min-width: 0;
   padding: 0 0.75rem 3.5rem;
+  overflow-x: clip;
 }
 
 .blog-mobile-nav {
@@ -2050,6 +2058,7 @@ pre {
   position: relative;
   z-index: 1;
   max-width: 56rem;
+  min-width: 0;
   margin: 0 auto;
   padding: 2.8rem 2.4rem 4.5rem;
 }
@@ -2278,6 +2287,8 @@ pre {
 
 .blog-metric-card,
 .blog-card {
+  width: 100%;
+  min-width: 0;
   border: 1px solid rgba(126, 146, 188, 0.2);
   border-radius: 1.2rem;
   background:
@@ -2369,6 +2380,7 @@ pre {
 .blog-card-meta,
 .blog-post-meta {
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   gap: 0.8rem;
   font-size: 0.72rem;
@@ -2384,6 +2396,7 @@ pre {
   font-size: 1.4rem;
   line-height: 1.15;
   color: #f3f6ff;
+  overflow-wrap: anywhere;
 }
 
 .blog-card-description,
@@ -2391,10 +2404,12 @@ pre {
   margin: 0.75rem 0 0;
   line-height: 1.75;
   color: rgba(204, 214, 233, 0.88);
+  overflow-wrap: anywhere;
 }
 
 .blog-card-footer {
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   align-items: end;
   justify-content: space-between;
@@ -2419,6 +2434,7 @@ pre {
 
 .blog-prose {
   margin-top: 1.9rem;
+  min-width: 0;
   color: rgba(221, 228, 243, 0.9);
 }
 
@@ -2444,6 +2460,7 @@ pre {
   font-size: 1rem;
   line-height: 1.88;
   color: rgba(219, 226, 241, 0.9);
+  overflow-wrap: anywhere;
 }
 
 .blog-prose a {
@@ -2591,6 +2608,10 @@ pre {
 }
 
 @media (max-width: 640px) {
+  .app-topbar {
+    overflow-x: clip;
+  }
+
   .blog-hero-title,
   .blog-post-title,
   .blog-not-found h1 {
@@ -2612,6 +2633,11 @@ pre {
     font-size: 1.18rem;
   }
 
+  .blog-card,
+  .blog-metric-card {
+    padding: 1rem;
+  }
+
   .blog-card-description,
   .blog-card-excerpt,
   .blog-prose p,
@@ -2624,6 +2650,7 @@ pre {
   .blog-tag-pill {
     padding: 0.3rem 0.58rem;
     font-size: 0.68rem;
+    max-width: 100%;
   }
 
   .blog-prose pre {
@@ -2632,6 +2659,11 @@ pre {
   }
 
   .blog-section-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .blog-card-footer {
     align-items: start;
     flex-direction: column;
   }
