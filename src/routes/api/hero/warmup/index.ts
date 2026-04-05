@@ -12,6 +12,7 @@ import { setPrivateNoStore } from "~/lib/cache";
 
 export const onPost: RequestHandler = async (event) => {
   setPrivateNoStore(event);
+  event.headers.set("Content-Type", "application/json; charset=utf-8");
 
   const startedAt = Date.now();
   let response: Response;
@@ -30,7 +31,7 @@ export const onPost: RequestHandler = async (event) => {
           ? `Warm-up transport failed. ${error.message}`
           : "Warm-up transport failed."
     };
-    event.json(502, body);
+    event.send(502, JSON.stringify(body));
     return;
   }
 
@@ -39,7 +40,7 @@ export const onPost: RequestHandler = async (event) => {
       ok: false,
       message: `Warm-up failed (${response.status}). ${await response.text()}`
     };
-    event.json(502, body);
+    event.send(502, JSON.stringify(body));
     return;
   }
 
@@ -49,5 +50,5 @@ export const onPost: RequestHandler = async (event) => {
     roundTripLabel: formatRoundTripMs(startedAt),
     engineLabel: formatEngineMs(readEngineTotalUs(response.headers))
   };
-  event.json(200, body);
+  event.send(200, JSON.stringify(body));
 };

@@ -15,6 +15,7 @@ import {
 
 export const onPost: RequestHandler = async (event) => {
   setPrivateNoStore(event);
+  event.headers.set("Content-Type", "application/json; charset=utf-8");
 
   const body = (await event.parseBody()) as Record<string, unknown>;
   const message = String(body.message ?? "").trim();
@@ -24,7 +25,7 @@ export const onPost: RequestHandler = async (event) => {
       ok: false,
       message: "Enter a user message so the engine has something real to save."
     };
-    event.json(400, response);
+    event.send(400, JSON.stringify(response));
     return;
   }
 
@@ -56,7 +57,7 @@ export const onPost: RequestHandler = async (event) => {
           ? `Ingest transport failed. ${error.message}`
           : "Ingest transport failed."
     };
-    event.json(502, response);
+    event.send(502, JSON.stringify(response));
     return;
   }
 
@@ -65,7 +66,7 @@ export const onPost: RequestHandler = async (event) => {
       ok: false,
       message: `Ingest failed (${ingestResponse.status}). ${await ingestResponse.text()}`
     };
-    event.json(502, response);
+    event.send(502, JSON.stringify(response));
     return;
   }
 
@@ -90,7 +91,7 @@ export const onPost: RequestHandler = async (event) => {
           ? `Query transport failed. ${error.message}`
           : "Query transport failed."
     };
-    event.json(502, response);
+    event.send(502, JSON.stringify(response));
     return;
   }
 
@@ -99,7 +100,7 @@ export const onPost: RequestHandler = async (event) => {
       ok: false,
       message: `Query failed (${queryResponse.status}). ${await queryResponse.text()}`
     };
-    event.json(502, response);
+    event.send(502, JSON.stringify(response));
     return;
   }
 
@@ -123,5 +124,5 @@ export const onPost: RequestHandler = async (event) => {
     }))
   };
 
-  event.json(200, response);
+  event.send(200, JSON.stringify(response));
 };

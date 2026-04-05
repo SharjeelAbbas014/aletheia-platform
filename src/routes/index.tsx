@@ -430,6 +430,21 @@ export default component$(() => {
   const heroDemoRunning = useSignal(false);
   const heroWarmupRunning = useSignal(false);
 
+  const readJsonResponse = $(async (
+    response: Response,
+    fallbackPrefix: string
+  ): Promise<HeroWarmupResult | HeroDemoResult> => {
+    const raw = await response.text();
+    try {
+      return JSON.parse(raw) as HeroWarmupResult | HeroDemoResult;
+    } catch {
+      return {
+        ok: false,
+        message: `${fallbackPrefix} ${raw.trim() || response.statusText}`
+      };
+    }
+  });
+
   const runHeroWarmup = $(async () => {
     heroWarmupRunning.value = true;
     heroWarmupResult.value = null;
@@ -441,7 +456,10 @@ export default component$(() => {
           "content-type": "application/json"
         }
       });
-      heroWarmupResult.value = (await response.json()) as HeroWarmupResult;
+      heroWarmupResult.value = (await readJsonResponse(
+        response,
+        "Warm-up failed."
+      )) as HeroWarmupResult;
     } catch (error) {
       heroWarmupResult.value = {
         ok: false,
@@ -478,7 +496,10 @@ export default component$(() => {
           message
         })
       });
-      heroDemoResult.value = (await response.json()) as HeroDemoResult;
+      heroDemoResult.value = (await readJsonResponse(
+        response,
+        "Demo failed."
+      )) as HeroDemoResult;
     } catch (error) {
       heroDemoResult.value = {
         ok: false,
