@@ -438,6 +438,12 @@ type HeroCookieEvent = {
   };
 };
 
+type HeroEnvEvent = {
+  env?: {
+    get: (key: string) => string | null | undefined;
+  };
+};
+
 function heroDemoCookieOptions() {
   return {
     path: "/",
@@ -459,38 +465,52 @@ function ensureHeroDemoEntity(event: HeroCookieEvent) {
   return next;
 }
 
-function heroEngineBaseUrl() {
+function readEnvValue(event: HeroEnvEvent | undefined, key: string): string | undefined {
+  const fromEvent = event?.env?.get(key)?.trim();
+  if (fromEvent) {
+    return fromEvent;
+  }
+
+  const fromProcess = process.env[key]?.trim();
+  if (fromProcess) {
+    return fromProcess;
+  }
+
+  return undefined;
+}
+
+function heroEngineBaseUrl(event?: HeroEnvEvent) {
   return (
-    process.env.ALETHEIA_HERO_ENGINE_URL ??
-    process.env.ALETHEIA_URL ??
+    readEnvValue(event, "ALETHEIA_HERO_ENGINE_URL") ??
+    readEnvValue(event, "ALETHEIA_URL") ??
     "https://4tcjq5z2yap9nd.api.runpod.ai"
   ).replace(/\/+$/, "");
 }
 
-function heroEngineApiKey() {
+function heroEngineApiKey(event?: HeroEnvEvent) {
   return (
-    process.env.ALETHEIA_HERO_API_KEY ??
-    process.env.ALETHEIA_API_KEY ??
+    readEnvValue(event, "ALETHEIA_HERO_API_KEY") ??
+    readEnvValue(event, "ALETHEIA_API_KEY") ??
     DEFAULT_TEST_API_KEY
   ).trim();
 }
 
-function heroRunpodToken() {
+function heroRunpodToken(event?: HeroEnvEvent) {
   return (
-    process.env.ALETHEIA_HERO_RUNPOD_TOKEN ??
-    process.env.ALETHEIA_RUNPOD_TOKEN ??
-    process.env.RUNPOD_API_KEY ??
+    readEnvValue(event, "ALETHEIA_HERO_RUNPOD_TOKEN") ??
+    readEnvValue(event, "ALETHEIA_RUNPOD_TOKEN") ??
+    readEnvValue(event, "RUNPOD_API_KEY") ??
     ""
   ).trim();
 }
 
-function heroRequestHeaders(includeJson = false) {
+function heroRequestHeaders(event?: HeroEnvEvent, includeJson = false) {
   const headers = new Headers();
   if (includeJson) {
     headers.set("content-type", "application/json");
   }
-  headers.set("x-api-key", heroEngineApiKey());
-  const runpodToken = heroRunpodToken();
+  headers.set("x-api-key", heroEngineApiKey(event));
+  const runpodToken = heroRunpodToken(event);
   if (runpodToken) {
     headers.set("Authorization", `Bearer ${runpodToken}`);
   }
@@ -548,9 +568,9 @@ export const useHeroWarmupAction = routeAction$(async (_, event) => {
   let response: Response;
 
   try {
-    response = await fetch(`${heroEngineBaseUrl()}/health`, {
+    response = await fetch(`${heroEngineBaseUrl(event)}/health`, {
       method: "GET",
-      headers: heroRequestHeaders(),
+      headers: heroRequestHeaders(event),
       signal: AbortSignal.timeout(60_000),
     });
   } catch (error) {
@@ -593,9 +613,9 @@ export const useHeroDemoAction = routeAction$(async (data, event) => {
   const ingestStartedAt = Date.now();
 
   try {
-    ingestResponse = await fetch(`${heroEngineBaseUrl()}/ingest`, {
+    ingestResponse = await fetch(`${heroEngineBaseUrl(event)}/ingest`, {
       method: "POST",
-      headers: heroRequestHeaders(true),
+      headers: heroRequestHeaders(event, true),
       body: JSON.stringify({
         entity_id: entityId,
         memory_id: memoryId,
@@ -623,9 +643,9 @@ export const useHeroDemoAction = routeAction$(async (data, event) => {
   const queryStartedAt = Date.now();
 
   try {
-    queryResponse = await fetch(`${heroEngineBaseUrl()}/query/semantic`, {
+    queryResponse = await fetch(`${heroEngineBaseUrl(event)}/query/semantic`, {
       method: "POST",
-      headers: heroRequestHeaders(true),
+      headers: heroRequestHeaders(event, true),
       body: JSON.stringify({
         entity_id: entityId,
         textual_query: message,
