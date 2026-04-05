@@ -2,8 +2,8 @@
 title: Evaluating Agent Memory Beyond Context Length
 description: Why serious memory evaluation should focus on recall quality, temporal correctness, and contradiction handling instead of context window size alone.
 excerpt: A long context window does not prove an agent remembers well. Memory quality is about retrieving the right evidence at the right time.
-publishedAt: 2026-02-15T00:00:00.000Z
-updatedAt: 2026-02-15T00:00:00.000Z
+publishedAt: 2026-03-25T00:00:00.000Z
+updatedAt: 2026-03-25T00:00:00.000Z
 author: Aletheia Team
 tags:
   - Evaluation

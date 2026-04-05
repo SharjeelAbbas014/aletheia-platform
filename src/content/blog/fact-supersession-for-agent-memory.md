@@ -2,8 +2,8 @@
 title: Fact Supersession for Agent Memory
 description: How fact supersession prevents stale claims from competing with newer truth inside an agent memory system.
 excerpt: If your memory layer stores every fact forever at the same priority, your agent will eventually argue with itself. Supersession is how you stop that.
-publishedAt: 2026-03-11T00:00:00.000Z
-updatedAt: 2026-03-11T00:00:00.000Z
+publishedAt: 2026-03-30T00:00:00.000Z
+updatedAt: 2026-03-30T00:00:00.000Z
 author: Aletheia Team
 tags:
   - Fact Supersession

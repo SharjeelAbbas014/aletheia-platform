@@ -2,8 +2,8 @@
 title: Hybrid Retrieval for Exact and Semantic Recall
 description: Why production memory systems need both semantic search and lexical retrieval instead of treating them as substitutes.
 excerpt: Pure semantic retrieval misses exact strings at the worst possible moments. Pure lexical retrieval misses intent. Hybrid retrieval exists because production queries require both.
-publishedAt: 2026-03-03T00:00:00.000Z
-updatedAt: 2026-03-03T00:00:00.000Z
+publishedAt: 2026-03-28T00:00:00.000Z
+updatedAt: 2026-03-28T00:00:00.000Z
 author: Aletheia Team
 tags:
   - Hybrid Retrieval

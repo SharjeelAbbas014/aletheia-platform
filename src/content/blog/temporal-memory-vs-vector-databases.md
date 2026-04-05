@@ -2,8 +2,8 @@
 title: Temporal Memory vs Vector Databases
 description: Why temporal memory infrastructure behaves differently from a flat vector store when agents need continuity over time.
 excerpt: A vector database can retrieve similar text. It cannot decide that a newer fact should replace an old one unless you build temporal reasoning on top.
-publishedAt: 2026-03-18T00:00:00.000Z
-updatedAt: 2026-03-18T00:00:00.000Z
+publishedAt: 2026-04-01T00:00:00.000Z
+updatedAt: 2026-04-01T00:00:00.000Z
 author: Aletheia Team
 tags:
   - Temporal Memory

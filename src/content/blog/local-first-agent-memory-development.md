@@ -2,8 +2,8 @@
 title: Local-First Agent Memory Development
 description: Why teams building memory-heavy AI systems move faster when the same retrieval engine can run locally before cloud deployment.
 excerpt: Memory systems are hard to debug when every experiment depends on a hosted environment. Local-first development shortens that loop dramatically.
-publishedAt: 2026-02-24T00:00:00.000Z
-updatedAt: 2026-02-24T00:00:00.000Z
+publishedAt: 2026-03-26T00:00:00.000Z
+updatedAt: 2026-03-26T00:00:00.000Z
 author: Aletheia Team
 tags:
   - Local Development

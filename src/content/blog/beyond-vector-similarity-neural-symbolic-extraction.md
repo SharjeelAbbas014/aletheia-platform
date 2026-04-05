@@ -2,8 +2,8 @@
 title: "Beyond Vector Similarity: Neural-Symbolic Extraction for Agentic Memory"
 description: "How Aletheia combines BERT-based Neural Extraction with Deterministic Logic to build a more reliable memory engine for AI agents."
 excerpt: "Vector similarity is only half the battle. To truly understand a user, an agent needs to extract structured entities, relationships, and numeric metrics. Discover Aletheia's new Neural-Symbolic pipeline."
-publishedAt: 2026-04-15T00:00:00.000Z
-updatedAt: 2026-04-15T00:00:00.000Z
+publishedAt: 2026-04-05T00:00:00.000Z
+updatedAt: 2026-04-05T00:00:00.000Z
 author: "Aletheia Team"
 tags:
   - Neural Extraction
