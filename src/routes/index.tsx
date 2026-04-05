@@ -130,6 +130,35 @@ const landingStyles = `
   animation: flow-line 2s linear infinite;
 }
 
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.landing-v2 .animate-bar {
+  transform-origin: bottom;
+  animation: bar-grow 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
+}
+
+@keyframes line-draw {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+.landing-v2 .animate-line {
+  stroke-dasharray: 100;
+  animation: line-draw 1.5s ease-out forwards;
+}
+
+@keyframes fade-in-stale {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 0.4; transform: scale(1); }
+}
+
+.landing-v2 .stale-node {
+  animation: fade-in-stale 1s ease-out forwards;
+}
+
 .landing-v2 ::selection {
   background: rgba(99, 102, 241, 0.3);
 }
@@ -195,20 +224,20 @@ const memoryGapCards = [
     panelClass: "",
     items: [
       {
-        title: "Static Snapshot",
-        body: "Retrieves data from 2 years ago exactly like data from 2 minutes ago.",
+        title: "Amnesiac & Static",
+        body: "Retrieves conflicting data from 2 years ago exactly like data from 2 minutes ago. No concept of evolving truth.",
         icon: "close",
         iconClass: "text-red-500",
       },
       {
-        title: "Context Blind",
-        body: "Simply matches keywords. It does not know the difference between a wish and a fact.",
+        title: "Fails at Counting",
+        body: "Cannot accurately aggregate or count facts (e.g. 'How many cars do I own?'). Relies entirely on the LLM to do math.",
         icon: "close",
         iconClass: "text-red-500",
       },
       {
         title: "Bloated Storage",
-        body: "Stores every uh and um instead of the core truth of the conversation.",
+        body: "Stores every single conversational 'uh' and 'um' instead of maintaining a clean, structured user profile.",
         icon: "close",
         iconClass: "text-red-500",
       },
@@ -222,20 +251,20 @@ const memoryGapCards = [
     panelClass: "border-primary/40 shadow-[0_0_50px_rgba(99,102,241,0.1)]",
     items: [
       {
-        title: "Temporal Awareness",
-        body: "Understands the arrow of time. Newer facts naturally supersede obsolete ones.",
+        title: "Fact Supersession (Temporal Truth)",
+        body: "When life changes (e.g. moving from NYC to SF), Aletheia marks the old fact as stale, ensuring the LLM always gets the latest truth.",
         icon: "check_circle",
         iconClass: "text-primary",
       },
       {
-        title: "Truth Extraction",
-        body: "Distills 1,000 words into 3 verified semantic facts. Efficiency by design.",
+        title: "Deterministic Aggregation",
+        body: "Built-in execution layer accurately computes numeric and temporal queries before hitting the LLM, fixing benchmark failures.",
         icon: "check_circle",
         iconClass: "text-primary",
       },
       {
-        title: "Active Reasoning",
-        body: "Connects the dots between conversations to build a coherent world-view.",
+        title: "Predict-Calibrate Profile",
+        body: "Distills thousands of words into compact, continuous user profiles. We track the deltas, you save on context windows.",
         icon: "check_circle",
         iconClass: "text-primary",
       },
@@ -1097,6 +1126,76 @@ export default component$(() => {
                 </div>
               ))}
             </div>
+
+            <div class="mt-24 grid grid-cols-1 gap-12 lg:grid-cols-2">
+              <div class="glass-panel scroll-reveal rounded-3xl p-10 border-primary/20">
+                <h4 class="mb-8 text-xl font-black tracking-tight">Recall Precision Benchmarks</h4>
+                <div class="flex items-end gap-10 h-64 border-b border-outline-variant/20 pb-2 px-4 relative">
+                   <div class="absolute left-0 top-0 h-full w-px bg-outline-variant/10 flex flex-col justify-between text-[10px] text-tertiary pr-2 -translate-x-full">
+                      <span>100%</span>
+                      <span>75%</span>
+                      <span>50%</span>
+                      <span>25%</span>
+                      <span>0%</span>
+                   </div>
+                   <div class="flex-1 flex flex-col items-center gap-4">
+                      <div class="w-full bg-surface-container-highest rounded-t-lg relative" style="height: 68%;">
+                         <div class="absolute inset-x-0 bottom-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
+                         <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-red-400">68%</span>
+                      </div>
+                      <span class="text-[10px] uppercase font-bold tracking-widest text-tertiary">Standard Vector DB</span>
+                   </div>
+                   <div class="flex-1 flex flex-col items-center gap-4">
+                      <div class="w-full bg-surface-container-highest rounded-t-lg relative" style="height: 95.4%;">
+                         <div class="absolute inset-x-0 bottom-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
+                         <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-primary">95.4%</span>
+                      </div>
+                      <span class="text-[10px] uppercase font-bold tracking-widest text-primary">Aletheia Memory Engine</span>
+                   </div>
+                </div>
+                <p class="mt-8 text-xs leading-relaxed text-tertiary">
+                  Aletheia outperforms standard vector databases by **27%** on the LongMemEval-S benchmark, specifically resolving hard numeric and temporal aggregation failures.
+                </p>
+              </div>
+
+              <div class="glass-panel scroll-reveal rounded-3xl p-10 border-primary/20">
+                <h4 class="mb-8 text-xl font-black tracking-tight">Temporal Fact Evolution</h4>
+                <div class="relative py-12 px-8">
+                   <div class="absolute left-0 top-1/2 h-0.5 w-full bg-outline-variant/20 -translate-y-1/2 z-0" />
+                   <div class="relative z-10 flex justify-between items-center h-24">
+                      <div class="flex flex-col items-center gap-3">
+                         <div class="h-10 w-10 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center stale-node">
+                            <span class="material-symbols-outlined text-sm text-red-400">cancel</span>
+                         </div>
+                         <div class="text-center">
+                            <span class="block text-[10px] uppercase tracking-widest text-tertiary font-bold">2025</span>
+                            <span class="block text-xs text-red-400/60 line-through">"Living in NYC"</span>
+                         </div>
+                      </div>
+
+                      <div class="flex h-10 w-10 items-center justify-center">
+                         <span class="material-symbols-outlined text-primary animate-pulse">trending_flat</span>
+                      </div>
+
+                      <div class="flex flex-col items-center gap-3">
+                         <div class="h-10 w-10 rounded-full obsidian-gradient shadow-[0_0_15px_rgba(99,102,241,0.4)] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-sm text-white">verified</span>
+                         </div>
+                         <div class="text-center">
+                            <span class="block text-[10px] uppercase tracking-widest text-primary font-bold">Today</span>
+                            <span class="block text-xs font-bold text-white">"Moving to SF"</span>
+                         </div>
+                      </div>
+                   </div>
+                   <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 text-center p-2 rounded-lg bg-primary/10 border border-primary/20">
+                      <span class="text-[9px] uppercase tracking-[0.2em] text-primary font-black">Fact Supersession Triggered</span>
+                   </div>
+                </div>
+                <p class="mt-8 text-xs leading-relaxed text-tertiary">
+                   Aletheia tracks the evolution of truth. When new facts arrive, old ones are superseded, preventing stale data from leaking into your agent's current worldview.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1318,6 +1417,93 @@ export default component$(() => {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="architecture" class="bg-surface-container-high/10 px-6 py-32 border-t border-outline-variant/10">
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-20 text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">The Architecture of Truth</h2>
+              <h3 class="text-4xl font-black tracking-tight md:text-5xl">Sentient Memory <span class="italic text-primary">Pipeline.</span></h3>
+              <p class="mt-6 mx-auto max-w-2xl text-tertiary">Aletheia is not just storage; it is a multi-stage cognitive processor that transforms raw noise into reliable agentic state.</p>
+            </div>
+
+            <div class="relative glass-panel rounded-[2.5rem] border border-primary/20 p-8 md:p-16 overflow-hidden">
+               <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05),transparent_70%)]" />
+               
+               <div class="relative z-10 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                  <div class="flex flex-col items-center text-center gap-4">
+                     <div class="h-16 w-16 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/20 shadow-xl">
+                        <span class="material-symbols-outlined text-3xl text-tertiary">input</span>
+                     </div>
+                     <div>
+                        <span class="block text-sm font-black">Ingest</span>
+                        <span class="block text-[10px] uppercase tracking-widest text-tertiary font-bold mt-1">Raw Events</span>
+                     </div>
+                  </div>
+
+                  <div class="hidden md:flex justify-center">
+                     <svg width="40" height="20" viewBox="0 0 40 20" fill="none" class="text-primary/40">
+                        <path d="M0 10H38M38 10L30 2M38 10L30 18" stroke="currentColor" stroke-width="2" class="animate-line" />
+                     </svg>
+                  </div>
+
+                  <div class="flex flex-col items-center text-center gap-4 p-6 rounded-3xl bg-primary/10 border border-primary/30 shadow-[0_0_40px_rgba(99,102,241,0.1)]">
+                     <div class="h-16 w-16 rounded-2xl obsidian-gradient flex items-center justify-center shadow-xl">
+                        <span class="material-symbols-outlined text-3xl text-white">psychology</span>
+                     </div>
+                     <div>
+                        <span class="block text-sm font-black">Distill & Store</span>
+                        <span class="block text-[10px] uppercase tracking-widest text-primary font-black mt-1">Cognitive Controller</span>
+                     </div>
+                     <div class="mt-2 flex flex-wrap justify-center gap-1">
+                        <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">HNSW</span>
+                        <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">BM25</span>
+                        <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">GRAPH</span>
+                     </div>
+                  </div>
+
+                  <div class="hidden md:flex justify-center">
+                     <svg width="40" height="20" viewBox="0 0 40 20" fill="none" class="text-primary/40">
+                        <path d="M0 10H38M38 10L30 2M38 10L30 18" stroke="currentColor" stroke-width="2" class="animate-line" />
+                     </svg>
+                  </div>
+
+                  <div class="flex flex-col items-center text-center gap-4">
+                     <div class="h-16 w-16 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/20 shadow-xl">
+                        <span class="material-symbols-outlined text-3xl text-primary">verified</span>
+                     </div>
+                     <div>
+                        <span class="block text-sm font-black">Final Truth</span>
+                        <span class="block text-[10px] uppercase tracking-widest text-tertiary font-bold mt-1">Grounded Context</span>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="mt-16 pt-16 border-t border-outline-variant/10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div class="flex gap-4">
+                     <span class="material-symbols-outlined text-primary">filter_list</span>
+                     <div>
+                        <h5 class="font-bold text-sm">Intent-Aware Filtering</h5>
+                        <p class="text-xs text-tertiary mt-2">Automatically detects if the user is asking for numbers, preferences, or narrative history.</p>
+                     </div>
+                  </div>
+                  <div class="flex gap-4">
+                     <span class="material-symbols-outlined text-primary">rebase_edit</span>
+                     <div>
+                        <h5 class="font-bold text-sm">Neural Reranking</h5>
+                        <p class="text-xs text-tertiary mt-2">Applies a secondary precision pass to ensure the top-k candidates are semantically perfect.</p>
+                     </div>
+                  </div>
+                  <div class="flex gap-4">
+                     <span class="material-symbols-outlined text-primary">calculate</span>
+                     <div>
+                        <h5 class="font-bold text-sm">Deterministic Compute</h5>
+                        <p class="text-xs text-tertiary mt-2">Computes aggregates (sums, counts) before delivery, preventing LLM arithmetic errors.</p>
+                     </div>
+                  </div>
+               </div>
             </div>
           </div>
         </section>
