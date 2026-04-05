@@ -1,8 +1,16 @@
 ---
 title: "The Predict-Calibrate Pattern: Keeping User Profiles Compact and Context Windows Lean"
 description: "Discover how Aletheia's Predict-Calibrate pattern manages evolving user profiles without blowing up your LLM context window."
-date: "2026-04-12"
+excerpt: "As user interactions evolve, static profiles become bloated and contradictory. Aletheia uses a Predict-Calibrate pattern to maintain distilled, compact state."
+publishedAt: 2026-04-12T00:00:00.000Z
+updatedAt: 2026-04-12T00:00:00.000Z
 author: "Aletheia Team"
+tags:
+  - Predict-Calibrate
+  - User Profiling
+  - Context Management
+image: /screen.png
+featured: true
 ---
 
 # The Predict-Calibrate Pattern: Keeping User Profiles Compact and Context Windows Lean

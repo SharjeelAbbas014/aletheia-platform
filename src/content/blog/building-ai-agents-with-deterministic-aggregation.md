@@ -1,8 +1,16 @@
 ---
 title: "Building AI Agents with Deterministic Aggregation: Why Vector Databases Fail at Math"
 description: "Learn how Aletheia's Deterministic Aggregation Layer solves the critical failure of vector databases in counting and numeric queries for AI agents."
-date: "2026-04-10"
+excerpt: "Vector databases fail at math because embeddings represent meaning, not aggregates. Aletheia fixes this with a built-in Deterministic Aggregation Layer."
+publishedAt: 2026-04-10T00:00:00.000Z
+updatedAt: 2026-04-10T00:00:00.000Z
 author: "Aletheia Team"
+tags:
+  - Deterministic Aggregation
+  - Numeric Retrieval
+  - Vector DBs
+image: /screen.png
+featured: true
 ---
 
 # Building AI Agents with Deterministic Aggregation: Why Vector Databases Fail at Math

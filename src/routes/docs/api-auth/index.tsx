@@ -6,52 +6,59 @@ export default component$(() => {
   return (
     <>
       <div class="eyebrow">API Authentication</div>
-      <h1>API Authentication</h1>
+      <h1>Securing Your Aletheia Instance</h1>
       <p class="doc-lead">
-        Hosted usage should be authenticated with API keys and server-side scope
-        enforcement.
+        When you move from local development to a hosted environment, authentication becomes a top priority. Aletheia's API key management ensures your user's memories are protected.
       </p>
 
+      <h2>A simple path to security</h2>
       <p>
-        For testing, the engine and SDKs default to a shared key:
-        <code> XXX1111AAA</code>.
+        By default, the engine and SDKs use a shared testing key (<code>XXX1111AAA</code>). This is perfect for quick demos, but for real-world production, you'll need to use platform-issued keys.
       </p>
 
-      <h2>Key expectations</h2>
+      <h3>How API keys keep you safe:</h3>
       <ul>
-        <li>Keys identify the calling application or workspace.</li>
-        <li>Tenant or project scope is enforced server-side.</li>
-        <li>Audit logs attach request IDs and actor context.</li>
-        <li>Rate limits are applied per tenant or per key.</li>
+        <li><strong>App Isolation:</strong> Each key identifies exactly which application or workspace is making a request.</li>
+        <li><strong>Server-Side Enclosure:</strong> Aletheia enforces tenant and project scopes at the engine level, so memories from different apps never leak.</li>
+        <li><strong>Audit Logging:</strong> Every ingest and query is logged with request IDs and actor context, giving you a full trail of how memory is used.</li>
+        <li><strong>Traffic Control:</strong> We apply rate limits per key, ensuring your production instances are protected from accidental (or intentional) spikes in usage.</li>
       </ul>
 
-      <h2>Example</h2>
+      <h2>A quick example request</h2>
+      <p>
+        Using your API key is as simple as adding a header. Here's how you'd perform a semantic query using standard curl:
+      </p>
       <pre class="docs-code">
-        <code>{`curl http://143.110.246.15:3000/query/semantic \\
-  -H "x-api-key: XXX1111AAA" \\
+        <code>{`curl https://api.aletheia.com/query/semantic \\
+  -H "x-api-key: YOUR_PRODUCTION_API_KEY" \\
   -H "content-type: application/json" \\
-  -d '{"textual_query":"what changed?","entity_id":"user-123","limit":5}'`}</code>
+  -d '{
+    "textual_query": "What has changed in the user's profile?",
+    "entity_id": "user-123",
+    "limit": 5
+  }'`}</code>
       </pre>
 
-      <h2>Platform workflow</h2>
-      <p>The platform UI in this repo includes a demo flow for:</p>
+      <h2>The Platform Experience</h2>
+      <p>
+        The Aletheia Platform UI makes managing your security effortless. In just a few clicks, you can:
+      </p>
       <ul>
-        <li>logging in</li>
-        <li>creating a key</li>
-        <li>viewing the full token</li>
-        <li>revoking a key</li>
+        <li><strong>Login and Sign Up:</strong> Securely manage your account and workspaces.</li>
+        <li><strong>Provision New Keys:</strong> Generate keys for different staging or production environments.</li>
+        <li><strong>Full Token Visibility:</strong> View and copy your keys for use in your SDKs.</li>
+        <li><strong>Revoke & Rotate:</strong> Instantly disable a key if it's been compromised.</li>
       </ul>
 
       <p>
-        Swap the cookie-backed demo store for your production database when you
-        wire in real auth.
+        Ready to secure your instance? Check out our [Quickstart](/docs/quickstart) to see how to point your SDK to a hosted Aletheia engine.
       </p>
     </>
   );
 });
 
 export const head = createHead(
-  "API Authentication | Aletheia",
-  "Platform-issued keys for hosted usage, with a clear path to scoped auth.",
+  "API Authentication for AI Memory | Aletheia",
+  "Learn how to secure your hosted Aletheia memory engine with API keys and scoped access controls.",
   "/docs/api-auth"
 );
