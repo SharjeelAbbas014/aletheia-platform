@@ -1188,18 +1188,18 @@ export default component$(() => {
                          <div class="absolute inset-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
                          <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-red-400 z-10">68%</span>
                       </div>
-                      <span class="text-[10px] uppercase font-bold tracking-widest text-tertiary">Standard Vector DB</span>
+                      <span class="text-[10px] uppercase font-bold tracking-widest text-tertiary">Standard RAG</span>
                    </div>
                    <div class="flex-1 h-full flex flex-col justify-end items-center gap-4">
                       <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 95.4%;">
                          <div class="absolute inset-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
-                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-primary z-10">95.4%</span>
+                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-primary z-10">95%+</span>
                       </div>
-                      <span class="text-[10px] uppercase font-bold tracking-widest text-primary">Aletheia Memory Engine</span>
+                      <span class="text-[10px] uppercase font-bold tracking-widest text-primary">Aletheia (Target)</span>
                    </div>
                 </div>
                 <p class="mt-8 text-xs leading-relaxed text-tertiary">
-                  Aletheia outperforms standard vector databases by **27%** on the LongMemEval-S benchmark, specifically resolving hard numeric and temporal aggregation failures.
+                  Aletheia is architected to resolve the fundamental recall failures of standard vector databases. Preliminary benchmarks on LongMemEval-S indicate significant improvements in handling numeric and temporal aggregation tasks.
                 </p>
               </div>
 
