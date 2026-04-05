@@ -1109,9 +1109,13 @@ export default component$(() => {
                       <div class="absolute bottom-[-2rem] left-[-1rem] h-20 w-20 rounded-full bg-emerald-300/20 blur-2xl" />
                       <div class="relative flex items-start gap-4">
                         <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-cyan-100">
-                          <span class="material-symbols-outlined">
-                            visibility
-                          </span>
+                          <img
+                            src="/logo-64.png"
+                            alt=""
+                            width={24}
+                            height={24}
+                            class="h-6 w-6 object-contain"
+                          />
                         </div>
                         <div>
                           <p class="text-[10px] font-bold uppercase tracking-[0.26em] text-cyan-100/80">
