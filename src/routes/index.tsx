@@ -16,6 +16,7 @@ import {
 import { setPublicEdgeCache } from "~/lib/cache";
 import type { HeroDemoResult, HeroWarmupResult } from "~/lib/hero-demo";
 import { buildSeoHead } from "~/lib/seo";
+import { MemoryLattice } from "~/components/MemoryLattice";
 
 const landingStyles = `
 .landing-v2 {
@@ -1503,6 +1504,32 @@ export default component$(() => {
                         <p class="text-xs text-tertiary mt-2">Computes aggregates (sums, counts) before delivery, preventing LLM arithmetic errors.</p>
                      </div>
                   </div>
+               </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="lattice" class="px-6 py-32 bg-black">
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-20">
+               <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">Interactive Graph</h2>
+               <h3 class="text-4xl font-black tracking-tight md:text-5xl">Sentient <span class="italic text-primary">Memory Lattice.</span></h3>
+               <p class="mt-6 max-w-2xl text-tertiary">Experience how Aletheia organizes memories. Drag nodes to interact with the underlying graph logic where new facts supersede the old.</p>
+            </div>
+
+            <div class="glass-panel relative rounded-[3rem] border border-primary/20 bg-surface-container-low/20 overflow-hidden">
+               <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.08),transparent_50%)]" />
+               <MemoryLattice />
+            </div>
+            
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-tertiary">
+               <div class="flex gap-4 p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+                  <span class="material-symbols-outlined text-primary">hub</span>
+                  <p>Nodes represent discrete semantic facts, preferences, and entities stored within the Rust engine.</p>
+               </div>
+               <div class="flex gap-4 p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
+                  <span class="material-symbols-outlined text-red-400">history</span>
+                  <p>Red nodes indicate **superseded memories**—stale data that has been automatically invalidated by more recent truths.</p>
                </div>
             </div>
           </div>
