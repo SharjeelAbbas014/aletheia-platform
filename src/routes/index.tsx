@@ -131,12 +131,29 @@ const landingStyles = `
   animation: flow-line 2s linear infinite;
 }
 
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none !important;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
 @keyframes bar-grow {
-  from { height: 0; }
-  to { height: 100%; }
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
 }
 
 .landing-v2 .animate-bar {
+  transform-origin: bottom;
   animation: bar-grow 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
 }
 
@@ -1138,16 +1155,16 @@ export default component$(() => {
                       <span>25%</span>
                       <span>0%</span>
                    </div>
-                   <div class="flex-1 flex flex-col items-center gap-4">
+                   <div class="flex-1 h-full flex flex-col items-center gap-4">
                       <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 68%;">
-                         <div class="absolute bottom-0 left-0 right-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
+                         <div class="absolute inset-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
                          <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-red-400 z-10">68%</span>
                       </div>
                       <span class="text-[10px] uppercase font-bold tracking-widest text-tertiary">Standard Vector DB</span>
                    </div>
-                   <div class="flex-1 flex flex-col items-center gap-4">
+                   <div class="flex-1 h-full flex flex-col items-center gap-4">
                       <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 95.4%;">
-                         <div class="absolute bottom-0 left-0 right-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
+                         <div class="absolute inset-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
                          <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-primary z-10">95.4%</span>
                       </div>
                       <span class="text-[10px] uppercase font-bold tracking-widest text-primary">Aletheia Memory Engine</span>

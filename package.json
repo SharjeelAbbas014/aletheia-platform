@@ -20,6 +20,7 @@
     "d3": "^7.9.0",
     "gray-matter": "^4.0.3",
     "ignore": "^7.0.5",
+    "lucide-qwik": "^1.0.0",
     "marked": "^17.0.5",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
