@@ -23,6 +23,7 @@ export interface HeroWarmupResult {
 export interface HeroDemoResult {
   ok: boolean;
   message?: string;
+  action?: "store" | "recall";
   entityId?: string;
   memoryId?: string;
   submittedText?: string;
@@ -34,45 +35,18 @@ export interface HeroDemoResult {
   hits?: HeroMemoryHitView[];
 }
 
-export type HeroCookieEvent = {
-  cookie: {
-    get: (name: string) => { value?: string } | null | undefined;
-    set: (
-      name: string,
-      value: string,
-      options: ReturnType<typeof heroDemoCookieOptions>
-    ) => void;
-  };
-};
-
 export type HeroEnvEvent = {
   env?: {
     get: (key: string) => string | null | undefined;
   };
 };
 
-export const HERO_DEMO_ENTITY_COOKIE = "aletheia_hero_demo_entity";
-
-export function heroDemoCookieOptions() {
-  return {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 30
+export type HeroIdentityEvent = HeroEnvEvent & {
+  clientConn?: {
+    ip?: string;
   };
-}
-
-export function ensureHeroDemoEntity(event: HeroCookieEvent) {
-  const existing = event.cookie.get(HERO_DEMO_ENTITY_COOKIE)?.value?.trim();
-  if (existing) {
-    return existing;
-  }
-
-  const next = `hero-demo-${crypto.randomUUID()}`;
-  event.cookie.set(HERO_DEMO_ENTITY_COOKIE, next, heroDemoCookieOptions());
-  return next;
-}
+  request?: Request;
+};
 
 export function readEnvValue(event: HeroEnvEvent | undefined, key: string): string | undefined {
   const fromEvent = event?.env?.get(key)?.trim();
@@ -86,6 +60,25 @@ export function readEnvValue(event: HeroEnvEvent | undefined, key: string): stri
   }
 
   return undefined;
+}
+
+function sanitizeIp(value: string) {
+  return value.trim().replace(/^::ffff:/, "");
+}
+
+export function resolveHeroEntityId(event: HeroIdentityEvent) {
+  const forwardedFor = event.request?.headers
+    .get("x-forwarded-for")
+    ?.split(",")[0]
+    ?.trim();
+  const realIp = event.request?.headers.get("x-real-ip")?.trim();
+  const clientIp = event.clientConn?.ip?.trim();
+  return sanitizeIp(clientIp || forwardedFor || realIp || "unknown-ip");
+}
+
+export function buildHeroMemoryId(entityId: string, timestamp: number) {
+  const safeEntity = entityId.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `${safeEntity || "unknown-ip"}::hero-demo::${timestamp}`;
 }
 
 export function heroEngineBaseUrl(event?: HeroEnvEvent) {

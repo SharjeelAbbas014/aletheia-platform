@@ -429,6 +429,7 @@ export default component$(() => {
   const heroWarmupResult = useSignal<HeroWarmupResult | null>(null);
   const heroDemoRunning = useSignal(false);
   const heroWarmupRunning = useSignal(false);
+  const heroDemoMode = useSignal<"store" | "recall" | null>(null);
 
   const readJsonResponse = $(async (
     response: Response,
@@ -473,18 +474,22 @@ export default component$(() => {
     }
   });
 
-  const runHeroDemo = $(async () => {
+  const runHeroDemo = $(async (action: "store" | "recall") => {
     const message = heroMessage.value.trim();
     if (!message) {
       heroDemoResult.value = {
         ok: false,
-        message: "Enter a user message so the engine has something real to save."
+        action,
+        message:
+          action === "store"
+            ? "Enter a user message so the engine has something real to save."
+            : "Enter a query to recall memories for this demo user."
       };
       return;
     }
 
     heroDemoRunning.value = true;
-    heroDemoResult.value = null;
+    heroDemoMode.value = action;
 
     try {
       const response = await fetch("/api/hero/demo", {
@@ -493,16 +498,28 @@ export default component$(() => {
           "content-type": "application/json"
         },
         body: JSON.stringify({
+          action,
           message
         })
       });
-      heroDemoResult.value = (await readJsonResponse(
+      const nextResult = (await readJsonResponse(
         response,
         "Demo failed."
       )) as HeroDemoResult;
+      heroDemoResult.value = nextResult.ok
+        ? {
+            ...(heroDemoResult.value ?? {}),
+            ...nextResult,
+            message: undefined
+          }
+        : {
+            ...(heroDemoResult.value ?? {}),
+            ...nextResult
+          };
     } catch (error) {
       heroDemoResult.value = {
         ok: false,
+        action,
         message:
           error instanceof Error
             ? `Demo transport failed. ${error.message}`
@@ -510,6 +527,7 @@ export default component$(() => {
       };
     } finally {
       heroDemoRunning.value = false;
+      heroDemoMode.value = null;
     }
   });
 
@@ -855,19 +873,28 @@ export default component$(() => {
                         We ingest this as memory, then query the same entity and
                         surface the actual hits below.
                       </p>
-                      <button
-                        type="button"
-                        class="obsidian-gradient inline-flex items-center gap-3 rounded-2xl px-6 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_0_32px_rgba(99,102,241,0.35)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled={heroDemoRunning.value}
-                        onClick$={runHeroDemo}
-                      >
-                        {heroDemoRunning.value
-                          ? "Running..."
-                          : "Store and Recall"}
-                        <span class="material-symbols-outlined text-base">
-                          arrow_forward
-                        </span>
-                      </button>
+                      <div class="flex flex-wrap gap-3">
+                        <button
+                          type="button"
+                          class="obsidian-gradient inline-flex items-center gap-3 rounded-2xl px-6 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_0_32px_rgba(99,102,241,0.35)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                          disabled={heroDemoRunning.value}
+                          onClick$={() => runHeroDemo("store")}
+                        >
+                          {heroDemoRunning.value && heroDemoMode.value === "store"
+                            ? "Storing..."
+                            : "Store"}
+                        </button>
+                        <button
+                          type="button"
+                          class="glass-panel inline-flex items-center gap-3 rounded-2xl px-6 py-3.5 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                          disabled={heroDemoRunning.value}
+                          onClick$={() => runHeroDemo("recall")}
+                        >
+                          {heroDemoRunning.value && heroDemoMode.value === "recall"
+                            ? "Recalling..."
+                            : "Recall"}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -910,10 +937,10 @@ export default component$(() => {
                       </p>
                       <p class="mt-2 break-all font-mono text-sm text-on-surface">
                         {heroDemoResult.value?.entityId ??
-                          "generated on first run"}
+                          "detected on first request"}
                       </p>
                       <p class="mt-2 text-xs text-tertiary">
-                        Stable cookie-backed user scope.
+                        Anonymous demo scope derived from client IP.
                       </p>
                     </div>
                   </div>
