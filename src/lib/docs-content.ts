@@ -756,6 +756,79 @@ t2: preferred_drink = tea      -> becomes current
     ]
   },
   {
+    slug: "cognitive-extraction",
+    eyebrow: "Intelligence",
+    title: "Cognitive Extraction Pipeline",
+    lead: "Transform raw episodic text into structured knowledge triples and verified entities.",
+    description: "Overview of Aletheia's neural entity extraction and autonomous relationship discovery.",
+    sections: [
+      {
+        heading: "Neural Entity Extraction",
+        paragraphs: [
+          "Aletheia integrates a local BERT-based model for Named Entity Recognition (NER). During ingestion, episodic text is scanned to identify core entities without requiring external LLM calls.",
+          "Entities are classified into standard categories (Person, Organization, Location, Miscellaneous), allowing for precise scoping and relationship mapping."
+        ],
+        bullets: [
+          "PER: Identities and individual actors.",
+          "ORG: Companies, teams, and institutions.",
+          "LOC: Geographic context and movement history.",
+          "MISC: General artifacts and specific concepts."
+        ]
+      },
+      {
+        heading: "Autonomous Relationship Discovery",
+        paragraphs: [
+          "Extracted entities are passed through a heuristic relationship engine that automatically constructs knowledge graph triples.",
+          "For example, detecting a Person and an Organization in the same context can trigger an `associated_with` edge, while two people can trigger a `knows` edge."
+        ]
+      },
+      {
+        heading: "Implicit Preference Detection",
+        paragraphs: [
+          "Aletheia identifies sentiment and preference signals (love, hate, prefer, favorite) automatically. When detected, the memory is elevated to a `Preference` kind, exempting it from standard time-decay policies to ensure core user identity persists."
+        ]
+      }
+    ]
+  },
+  {
+    slug: "analytics-api",
+    eyebrow: "Analytics",
+    title: "The Metric Vault",
+    lead: "Track and aggregate numeric truth with absolute deterministic precision.",
+    description: "How to use the Aletheia Analytics API for range-based sums and counts of extracted metrics.",
+    sections: [
+      {
+        heading: "Deterministic Metric Extraction",
+        paragraphs: [
+          "Beyond semantic recall, Aletheia uses deterministic regex extractors to identify numeric values during ingestion. These are stored in the Metric Vault—a specialized B-Tree index optimized for temporal range scans."
+        ],
+        bullets: [
+          "Currency ($50, 100 EUR): Track user spending habits.",
+          "Distance (5 miles, 10km): Track physical activity and movement.",
+          "Counts (3 times, 5 people): Track frequency and social context."
+        ]
+      },
+      {
+        heading: "Querying the Vault",
+        paragraphs: [
+          "The `/analytics/query` endpoint allows you to compute sums and counts over specific time windows without hallucination risks."
+        ],
+        codeBlocks: [
+          {
+            label: "Aggregation Request",
+            language: "json",
+            code: `{
+  "entity_id": "user-123",
+  "label": "money",
+  "start_timestamp_ms": 1743465600000,
+  "end_timestamp_ms": 1744070400000
+}`
+          }
+        ]
+      }
+    ]
+  },
+  {
     slug: "sdk-javascript",
     eyebrow: "SDK",
     title: "JavaScript SDK",

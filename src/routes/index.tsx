@@ -415,13 +415,23 @@ const engineSpecs = [
 
 const shippedPillars = [
   {
-    title: "Retrieval Brain",
-    icon: "travel_explore",
-    body: "Hybrid retrieval keeps exact tokens and semantic intent in the same decision path so answers stay grounded.",
+    title: "Cognitive Extraction",
+    icon: "psychology",
+    body: "Transform raw text into structured knowledge using integrated Neural and Symbolic extractors.",
     capabilities: [
-      "Vector + lexical candidate generation",
-      "Cross-encoder precision pass",
-      "Rank fusion for stable top-k",
+      "Neural Entity Extraction (BERT-NER)",
+      "Autonomous Relationship Discovery",
+      "Implicit Preference Detection",
+    ],
+  },
+  {
+    title: "Metric Vault",
+    icon: "calculate",
+    body: "Track and aggregate numeric truth (money, counts, distances) with absolute deterministic precision.",
+    capabilities: [
+      "Deterministic Regex Extraction",
+      "B-Tree range aggregation",
+      "Exact Sum/Count Query API",
     ],
   },
   {
@@ -431,7 +441,7 @@ const shippedPillars = [
     capabilities: [
       "Kind-aware TTL and decay",
       "Fact supersession and invalidation",
-      "Time-windowed query mode",
+      "Graph-based version lineage",
     ],
   },
   {
@@ -439,19 +449,9 @@ const shippedPillars = [
     icon: "terminal",
     body: "SDK and HTTP entry points are designed to keep local-first workflows aligned with hosted deployments.",
     capabilities: [
-      "Python and JavaScript SDK paths",
+      "Graph Walking & Analytics APIs",
       "Auth + key lifecycle support",
-      "Clear ingest/query contracts",
-    ],
-  },
-  {
-    title: "Ops Readiness",
-    icon: "deployed_code",
-    body: "The system includes practical controls for measurement, tuning, and safe production rollout.",
-    capabilities: [
-      "Benchmark harness integration",
-      "Observability and diagnostics",
-      "Single-binary deployment model",
+      "OpenAI-Compatible Proxy Path",
     ],
   },
 ];
