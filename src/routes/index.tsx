@@ -18,6 +18,58 @@ import type { HeroDemoResult, HeroWarmupResult } from "~/lib/hero-demo";
 import { buildSeoHead } from "~/lib/seo";
 import { MemoryLattice } from "~/components/MemoryLattice";
 
+import {
+  LayersIcon, XIcon, BotIcon, CheckCircleIcon, ClockIcon,
+  FocusIcon, MessageSquareIcon, Wand2Icon, InfinityIcon, RefreshCwIcon,
+  ZapIcon, CpuIcon, PackageIcon, GaugeIcon, GlobeIcon,
+  TerminalIcon, UploadIcon, NetworkIcon, RocketIcon, XCircleIcon,
+  ArrowRightIcon, ShieldCheckIcon, LogInIcon, FilterIcon, GitBranchIcon,
+  CalculatorIcon, HistoryIcon, Settings2Icon, DatabaseIcon, ExternalLinkIcon,
+  EditIcon
+} from 'lucide-qwik';
+
+const IconMap: Record<string, any> = {
+  layers_clear: LayersIcon,
+  close: XIcon,
+  psychology: BotIcon,
+  check_circle: CheckCircleIcon,
+  schedule: ClockIcon,
+  filter_center_focus: FocusIcon,
+  chat_bubble: MessageSquareIcon,
+  auto_awesome: Wand2Icon,
+  all_inclusive: InfinityIcon,
+  published_with_changes: RefreshCwIcon,
+  bolt: ZapIcon,
+  memory: CpuIcon,
+  deployed_code: PackageIcon,
+  speed: GaugeIcon,
+  travel_explore: GlobeIcon,
+  terminal: TerminalIcon,
+  upload: UploadIcon,
+  hub: NetworkIcon,
+  rocket_launch: RocketIcon,
+  cancel: XCircleIcon,
+  trending_flat: ArrowRightIcon,
+  verified: ShieldCheckIcon,
+  input: LogInIcon,
+  filter_list: FilterIcon,
+  rebase_edit: GitBranchIcon,
+  calculate: CalculatorIcon,
+  history: HistoryIcon,
+  arrow_forward: ArrowRightIcon,
+  settings_input_component: Settings2Icon,
+  database: DatabaseIcon,
+  open_in_new: ExternalLinkIcon,
+  arrow_right_alt: ArrowRightIcon,
+  edit_square: EditIcon
+};
+
+export const MaterialIcon = component$(({ name, class: className }: { name: string; class?: string }) => {
+  const IconComponent = IconMap[name] || ZapIcon;
+  return <IconComponent class={className} />;
+});
+
+
 const landingStyles = `
 .landing-v2 {
   background: #0a0a0b;
@@ -131,21 +183,7 @@ const landingStyles = `
   animation: flow-line 2s linear infinite;
 }
 
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined' !important;
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none !important;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-}
+
 
 @keyframes bar-grow {
   from { transform: scaleY(0); }
@@ -812,7 +850,7 @@ export default component$(() => {
                   class="obsidian-gradient flex items-center gap-3 rounded-xl px-10 py-5 text-lg font-bold text-white transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] active:scale-95"
                 >
                   Truth Disclosed
-                  <span class="material-symbols-outlined notranslate normal-case">bolt</span>
+                  <MaterialIcon name="bolt" class="" />
                 </Link>
                 <Link
                   href="/login"
@@ -865,9 +903,7 @@ export default component$(() => {
                       onClick$={runHeroWarmup}
                     >
                       {heroWarmupRunning.value ? "Warming..." : "Warm Up"}
-                      <span class="material-symbols-outlined notranslate normal-case text-base">
-                        bolt
-                      </span>
+                      <MaterialIcon name="bolt" class=" text-base" />
                     </button>
                   </div>
 
@@ -1116,11 +1152,7 @@ export default component$(() => {
                     <div
                       class={`flex h-10 w-10 items-center justify-center rounded-full ${card.iconWrapClass}`}
                     >
-                      <span
-                        class={`material-symbols-outlined ${card.iconClass}`}
-                      >
-                        {card.icon}
-                      </span>
+                      <MaterialIcon name={card.icon} class={`${card.iconClass}`.trim()} />
                     </div>
                     <h4 class="text-xl font-bold">{card.title}</h4>
                   </div>
@@ -1128,11 +1160,7 @@ export default component$(() => {
                   <ul class="space-y-6">
                     {card.items.map((item) => (
                       <li key={item.title} class="flex gap-4">
-                        <span
-                          class={`material-symbols-outlined shrink-0 ${item.iconClass}`}
-                        >
-                          {item.icon}
-                        </span>
+                        <MaterialIcon name={item.icon} class={`shrink-0 ${item.iconClass}`.trim()} />
                         <div>
                           <span class="mb-1 block font-bold">{item.title}</span>
                           <p class="text-sm text-tertiary">{item.body}</p>
@@ -1155,14 +1183,14 @@ export default component$(() => {
                       <span>25%</span>
                       <span>0%</span>
                    </div>
-                   <div class="flex-1 h-full flex flex-col items-center gap-4">
+                   <div class="flex-1 h-full flex flex-col justify-end items-center gap-4">
                       <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 68%;">
                          <div class="absolute inset-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
                          <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-red-400 z-10">68%</span>
                       </div>
                       <span class="text-[10px] uppercase font-bold tracking-widest text-tertiary">Standard Vector DB</span>
                    </div>
-                   <div class="flex-1 h-full flex flex-col items-center gap-4">
+                   <div class="flex-1 h-full flex flex-col justify-end items-center gap-4">
                       <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 95.4%;">
                          <div class="absolute inset-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
                          <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-primary z-10">95.4%</span>
@@ -1182,7 +1210,7 @@ export default component$(() => {
                    <div class="relative z-10 flex justify-between items-center h-24">
                       <div class="flex flex-col items-center gap-3">
                          <div class="h-10 w-10 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center stale-node">
-                            <span class="material-symbols-outlined notranslate normal-case text-sm text-red-400">cancel</span>
+                            <MaterialIcon name="cancel" class=" text-sm text-red-400" />
                          </div>
                          <div class="text-center">
                             <span class="block text-[10px] uppercase tracking-widest text-tertiary font-bold">2025</span>
@@ -1191,12 +1219,12 @@ export default component$(() => {
                       </div>
 
                       <div class="flex h-10 w-10 items-center justify-center">
-                         <span class="material-symbols-outlined notranslate normal-case text-primary animate-pulse">trending_flat</span>
+                         <MaterialIcon name="trending_flat" class=" text-primary animate-pulse" />
                       </div>
 
                       <div class="flex flex-col items-center gap-3">
                          <div class="h-10 w-10 rounded-full obsidian-gradient shadow-[0_0_15px_rgba(99,102,241,0.4)] flex items-center justify-center">
-                            <span class="material-symbols-outlined notranslate normal-case text-sm text-white">verified</span>
+                            <MaterialIcon name="verified" class=" text-sm text-white" />
                          </div>
                          <div class="text-center">
                             <span class="block text-[10px] uppercase tracking-widest text-primary font-bold">Today</span>
@@ -1238,9 +1266,7 @@ export default component$(() => {
                   {distillationDetails.map((item) => (
                     <div key={item.title} class="flex items-start gap-6">
                       <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
-                        <span class="material-symbols-outlined notranslate normal-case text-primary">
-                          {item.icon}
-                        </span>
+                        <MaterialIcon name={item.icon} class=" text-primary" />
                       </div>
                       <div>
                         <h4 class="mb-2 font-bold">{item.title}</h4>
@@ -1260,9 +1286,7 @@ export default component$(() => {
                     <div class="rounded-xl border border-white/10 bg-white/5 p-4 font-mono text-xs">
                       "Hey! I just bought a white Mercedes!"
                     </div>
-                    <span class="material-symbols-outlined notranslate normal-case animate-pulse text-primary">
-                      arrow_forward
-                    </span>
+                    <MaterialIcon name="arrow_forward" class=" animate-pulse text-primary" />
                     <div class="rounded-full border border-primary/40 bg-primary/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
                       Raw Chat
                     </div>
@@ -1270,9 +1294,7 @@ export default component$(() => {
 
                   <div class="flex w-full flex-col items-center border-y border-outline-variant/20 py-8">
                     <div class="obsidian-gradient mb-4 flex h-20 w-20 items-center justify-center rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.5)]">
-                      <span class="material-symbols-outlined notranslate normal-case text-4xl text-white">
-                        settings_input_component
-                      </span>
+                      <MaterialIcon name="settings_input_component" class=" text-4xl text-white" />
                     </div>
                     <div class="text-sm font-bold uppercase tracking-widest">
                       Distillation Engine
@@ -1284,17 +1306,13 @@ export default component$(() => {
 
                   <div class="w-full space-y-3">
                     <div class="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 p-3">
-                      <span class="material-symbols-outlined notranslate normal-case text-sm text-green-400">
-                        verified
-                      </span>
+                      <MaterialIcon name="verified" class=" text-sm text-green-400" />
                       <span class="font-mono text-xs">
                         Semantic Fact: User owns White Mercedes
                       </span>
                     </div>
                     <div class="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 opacity-60">
-                      <span class="material-symbols-outlined notranslate normal-case text-sm text-primary">
-                        database
-                      </span>
+                      <MaterialIcon name="database" class=" text-sm text-primary" />
                       <span class="font-mono text-xs">
                         Committed to Long-Term Memory
                       </span>
@@ -1336,9 +1354,7 @@ export default component$(() => {
                   <div
                     class={`mb-6 flex h-12 w-12 items-center justify-center rounded-lg ${card.iconWrapClass}`}
                   >
-                    <span class={`material-symbols-outlined ${card.iconClass}`}>
-                      {card.icon}
-                    </span>
+                    <MaterialIcon name={card.icon} class={`${card.iconClass}`.trim()} />
                   </div>
 
                   <div
@@ -1368,9 +1384,7 @@ export default component$(() => {
                           key={fact}
                           class="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
                         >
-                          <span class="material-symbols-outlined notranslate normal-case text-sm text-green-400">
-                            check_circle
-                          </span>
+                          <MaterialIcon name="check_circle" class=" text-sm text-green-400" />
                           <span class="font-mono text-xs">{fact}</span>
                         </div>
                       ))}
@@ -1425,9 +1439,7 @@ export default component$(() => {
                     transitionDelay: item.delay || undefined,
                   }}
                 >
-                  <span class="material-symbols-outlined notranslate normal-case mb-6 text-4xl text-primary">
-                    {item.icon}
-                  </span>
+                  <MaterialIcon name={item.icon} class=" mb-6 text-4xl text-primary" />
                   <h4 class="mb-4 text-xl font-bold">{item.title}</h4>
                   <p class="text-sm leading-relaxed text-tertiary">
                     {item.body}
@@ -1452,7 +1464,7 @@ export default component$(() => {
                <div class="relative z-10 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                   <div class="flex flex-col items-center text-center gap-4">
                      <div class="h-16 w-16 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/20 shadow-xl">
-                        <span class="material-symbols-outlined notranslate normal-case text-3xl text-tertiary">input</span>
+                        <MaterialIcon name="input" class=" text-3xl text-tertiary" />
                      </div>
                      <div>
                         <span class="block text-sm font-black">Ingest</span>
@@ -1468,7 +1480,7 @@ export default component$(() => {
 
                   <div class="flex flex-col items-center text-center gap-4 p-6 rounded-3xl bg-primary/10 border border-primary/30 shadow-[0_0_40px_rgba(99,102,241,0.1)]">
                      <div class="h-16 w-16 rounded-2xl obsidian-gradient flex items-center justify-center shadow-xl">
-                        <span class="material-symbols-outlined notranslate normal-case text-3xl text-white">psychology</span>
+                        <MaterialIcon name="psychology" class=" text-3xl text-white" />
                      </div>
                      <div>
                         <span class="block text-sm font-black">Distill & Store</span>
@@ -1489,7 +1501,7 @@ export default component$(() => {
 
                   <div class="flex flex-col items-center text-center gap-4">
                      <div class="h-16 w-16 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/20 shadow-xl">
-                        <span class="material-symbols-outlined notranslate normal-case text-3xl text-primary">verified</span>
+                        <MaterialIcon name="verified" class=" text-3xl text-primary" />
                      </div>
                      <div>
                         <span class="block text-sm font-black">Final Truth</span>
@@ -1500,21 +1512,21 @@ export default component$(() => {
 
                <div class="mt-16 pt-16 border-t border-outline-variant/10 grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div class="flex gap-4">
-                     <span class="material-symbols-outlined notranslate normal-case text-primary">filter_list</span>
+                     <MaterialIcon name="filter_list" class=" text-primary" />
                      <div>
                         <h5 class="font-bold text-sm">Intent-Aware Filtering</h5>
                         <p class="text-xs text-tertiary mt-2">Automatically detects if the user is asking for numbers, preferences, or narrative history.</p>
                      </div>
                   </div>
                   <div class="flex gap-4">
-                     <span class="material-symbols-outlined notranslate normal-case text-primary">rebase_edit</span>
+                     <MaterialIcon name="rebase_edit" class=" text-primary" />
                      <div>
                         <h5 class="font-bold text-sm">Neural Reranking</h5>
                         <p class="text-xs text-tertiary mt-2">Applies a secondary precision pass to ensure the top-k candidates are semantically perfect.</p>
                      </div>
                   </div>
                   <div class="flex gap-4">
-                     <span class="material-symbols-outlined notranslate normal-case text-primary">calculate</span>
+                     <MaterialIcon name="calculate" class=" text-primary" />
                      <div>
                         <h5 class="font-bold text-sm">Deterministic Compute</h5>
                         <p class="text-xs text-tertiary mt-2">Computes aggregates (sums, counts) before delivery, preventing LLM arithmetic errors.</p>
@@ -1540,11 +1552,11 @@ export default component$(() => {
             
             <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-tertiary">
                <div class="flex gap-4 p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                  <span class="material-symbols-outlined notranslate normal-case text-primary">hub</span>
+                  <MaterialIcon name="hub" class=" text-primary" />
                   <p>Nodes represent discrete semantic facts, preferences, and entities stored within the Rust engine.</p>
                </div>
                <div class="flex gap-4 p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                  <span class="material-symbols-outlined notranslate normal-case text-red-400">history</span>
+                  <MaterialIcon name="history" class=" text-red-400" />
                   <p>Red nodes indicate **superseded memories**—stale data that has been automatically invalidated by more recent truths.</p>
                </div>
             </div>
@@ -1569,9 +1581,7 @@ export default component$(() => {
                   {engineSpecs.map((spec) => (
                     <div key={spec.title} class="flex gap-6">
                       <div class="glass-panel flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
-                        <span class="material-symbols-outlined notranslate normal-case text-3xl text-primary">
-                          {spec.icon}
-                        </span>
+                        <MaterialIcon name={spec.icon} class=" text-3xl text-primary" />
                       </div>
                       <div>
                         <h4 class="mb-1 text-xl font-bold">{spec.title}</h4>
@@ -1638,9 +1648,7 @@ export default component$(() => {
                       data-tilt
                       style={{ transitionDelay: `${index * 100}ms` }}
                     >
-                      <span class="material-symbols-outlined notranslate normal-case mb-4 text-3xl text-primary">
-                        {pillar.icon}
-                      </span>
+                      <MaterialIcon name={pillar.icon} class=" mb-4 text-3xl text-primary" />
                       <h4 class="mb-3 text-xl font-bold">{pillar.title}</h4>
                       <p class="mb-5 text-sm leading-relaxed text-tertiary">
                         {pillar.body}
@@ -1651,9 +1659,7 @@ export default component$(() => {
                             key={capability}
                             class="flex items-start gap-2 text-xs text-on-surface/90"
                           >
-                            <span class="material-symbols-outlined notranslate normal-case mt-[1px] text-sm text-primary">
-                              check_circle
-                            </span>
+                            <MaterialIcon name="check_circle" class=" mt-[1px] text-sm text-primary" />
                             <span>{capability}</span>
                           </li>
                         ))}
@@ -1708,9 +1714,7 @@ export default component$(() => {
                           class="flex items-center justify-between rounded-lg border border-white/10 bg-surface/80 px-3 py-2 text-xs text-on-surface transition-colors hover:border-primary/40 hover:bg-surface-container-high"
                         >
                           <span>{repo.label}</span>
-                          <span class="material-symbols-outlined notranslate normal-case text-sm text-primary">
-                            open_in_new
-                          </span>
+                          <MaterialIcon name="open_in_new" class=" text-sm text-primary" />
                         </a>
                       </li>
                     ))}
@@ -1752,9 +1756,7 @@ export default component$(() => {
                     <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
                       {step.phase}
                     </span>
-                    <span class="material-symbols-outlined notranslate normal-case text-2xl text-primary">
-                      {step.icon}
-                    </span>
+                    <MaterialIcon name={step.icon} class=" text-2xl text-primary" />
                   </div>
                   <h4 class="mb-3 text-2xl font-black tracking-tight">
                     {step.title}
@@ -1768,9 +1770,7 @@ export default component$(() => {
                         key={checkpoint}
                         class="flex items-center gap-2 text-xs text-on-surface/90"
                       >
-                        <span class="material-symbols-outlined notranslate normal-case text-sm text-primary">
-                          arrow_right_alt
-                        </span>
+                        <MaterialIcon name="arrow_right_alt" class=" text-sm text-primary" />
                         <span>{checkpoint}</span>
                       </li>
                     ))}
@@ -1803,9 +1803,7 @@ export default component$(() => {
                   class="obsidian-gradient inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-xl shadow-primary/20 transition-transform hover:scale-[1.02]"
                 >
                   Open Calendly
-                  <span class="material-symbols-outlined notranslate normal-case text-base">
-                    open_in_new
-                  </span>
+                  <MaterialIcon name="open_in_new" class=" text-base" />
                 </a>
                 <a
                   href={CONTACT_MAILTO}
@@ -1878,15 +1876,13 @@ export default component$(() => {
                 href="/docs"
                 class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
               >
-                <span class="material-symbols-outlined notranslate normal-case text-sm">hub</span>
+                <MaterialIcon name="hub" class=" text-sm" />
               </Link>
               <Link
                 href="/blog"
                 class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
               >
-                <span class="material-symbols-outlined notranslate normal-case text-sm">
-                  edit_square
-                </span>
+                <MaterialIcon name="edit_square" class=" text-sm" />
               </Link>
             </div>
           </div>
