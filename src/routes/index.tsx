@@ -432,7 +432,8 @@ const HERO_ENGINE_API_KEY = (
 const HERO_RUNPOD_TOKEN = (
   process.env.ALETHEIA_HERO_RUNPOD_TOKEN ??
   process.env.ALETHEIA_RUNPOD_TOKEN ??
-  process.env.RUNPOD_API_KEY
+  process.env.RUNPOD_API_KEY ??
+  ""
 ).trim();
 type HeroMemoryHit = {
   memory_id: string;
