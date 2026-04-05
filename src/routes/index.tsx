@@ -1140,16 +1140,16 @@ export default component$(() => {
                       <span>0%</span>
                    </div>
                    <div class="flex-1 flex flex-col items-center gap-4">
-                      <div class="w-full bg-surface-container-highest rounded-t-lg relative" style="height: 68%;">
-                         <div class="absolute inset-x-0 bottom-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
-                         <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-red-400">68%</span>
+                      <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 68%;">
+                         <div class="absolute inset-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
+                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-red-400">68%</span>
                       </div>
                       <span class="text-[10px] uppercase font-bold tracking-widest text-tertiary">Standard Vector DB</span>
                    </div>
                    <div class="flex-1 flex flex-col items-center gap-4">
-                      <div class="w-full bg-surface-container-highest rounded-t-lg relative" style="height: 95.4%;">
-                         <div class="absolute inset-x-0 bottom-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
-                         <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-primary">95.4%</span>
+                      <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 95.4%;">
+                         <div class="absolute inset-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
+                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-primary">95.4%</span>
                       </div>
                       <span class="text-[10px] uppercase font-bold tracking-widest text-primary">Aletheia Memory Engine</span>
                    </div>
@@ -1170,7 +1170,7 @@ export default component$(() => {
                          </div>
                          <div class="text-center">
                             <span class="block text-[10px] uppercase tracking-widest text-tertiary font-bold">2025</span>
-                            <span class="block text-xs text-red-400/60 line-through">"Living in NYC"</span>
+                            <span class="block text-[10px] text-red-400/60 line-through">"Living in NYC"</span>
                          </div>
                       </div>
 
@@ -1184,7 +1184,7 @@ export default component$(() => {
                          </div>
                          <div class="text-center">
                             <span class="block text-[10px] uppercase tracking-widest text-primary font-bold">Today</span>
-                            <span class="block text-xs font-bold text-white">"Moving to SF"</span>
+                            <span class="block text-[10px] font-bold text-white">"Moving to SF"</span>
                          </div>
                       </div>
                    </div>
