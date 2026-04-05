@@ -4,7 +4,7 @@ import { Link } from "@builder.io/qwik-city";
 import {
   formatBlogDate,
   getAllBlogPosts,
-  getFeaturedBlogPosts
+  getFeaturedBlogPosts,
 } from "~/lib/blog";
 import { buildSeoHead } from "~/lib/seo";
 import { SITE_NAME, absoluteUrl } from "~/lib/site";
@@ -16,11 +16,11 @@ export default component$(() => {
   return (
     <div class="blog-index">
       <section class="blog-hero">
-        <div class="eyebrow blog-eyebrow">Organic Reach</div>
         <h1 class="blog-hero-title">Aletheia Blog</h1>
         <p class="blog-hero-lead">
-          Writing for high-intent searches around temporal memory, hybrid retrieval,
-          and infrastructure for agents that need continuity over time.
+          Writing for high-intent searches around temporal memory, hybrid
+          retrieval, and infrastructure for agents that need continuity over
+          time.
         </p>
 
         <div class="blog-hero-metrics">
@@ -30,11 +30,15 @@ export default component$(() => {
           </div>
           <div class="blog-metric-card">
             <span class="blog-metric-label">Primary topics</span>
-            <strong class="blog-metric-value">Memory, Retrieval, Evaluation</strong>
+            <strong class="blog-metric-value">
+              Memory, Retrieval, Evaluation
+            </strong>
           </div>
           <div class="blog-metric-card">
             <span class="blog-metric-label">Audience</span>
-            <strong class="blog-metric-value">AI teams shipping to production</strong>
+            <strong class="blog-metric-value">
+              AI teams shipping to production
+            </strong>
           </div>
         </div>
       </section>
@@ -52,7 +56,11 @@ export default component$(() => {
 
         <div class="blog-card-grid blog-card-grid-featured">
           {featuredPosts.map((post) => (
-            <Link key={post.slug} href={post.url} class="blog-card blog-card-featured">
+            <Link
+              key={post.slug}
+              href={post.url}
+              class="blog-card blog-card-featured"
+            >
               <div class="blog-card-meta">
                 <span>{formatBlogDate(post.publishedAt)}</span>
                 <span>{post.readingTimeMinutes} min read</span>
@@ -117,7 +125,7 @@ export const head = buildSeoHead({
     "temporal memory",
     "hybrid retrieval",
     "vector database alternatives",
-    "AI infrastructure blog"
+    "AI infrastructure blog",
   ],
   structuredData: {
     "@context": "https://schema.org",
@@ -125,6 +133,6 @@ export const head = buildSeoHead({
     name: `${SITE_NAME} Blog`,
     description:
       "Insights on temporal memory, retrieval, evaluation, and memory infrastructure for AI agents.",
-    url: absoluteUrl("/blog")
-  }
+    url: absoluteUrl("/blog"),
+  },
 });

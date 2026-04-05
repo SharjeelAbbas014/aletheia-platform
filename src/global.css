@@ -1656,6 +1656,15 @@ pre {
   padding: 2.8rem 2.8rem 5.5rem;
 }
 
+.docs-article,
+.docs-article *,
+.docs-prose,
+.docs-prose * {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
 .docs-prose {
   font-family: var(--font-body);
   color: rgba(234, 239, 250, 0.9);
@@ -2061,6 +2070,17 @@ pre {
   min-width: 0;
   margin: 0 auto;
   padding: 2.8rem 2.4rem 4.5rem;
+}
+
+.blog-article,
+.blog-article *,
+.blog-prose,
+.blog-prose *,
+.blog-card,
+.blog-card * {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 .blog-brand {
