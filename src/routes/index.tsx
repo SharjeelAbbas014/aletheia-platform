@@ -16,7 +16,7 @@ import {
   publicRepositoryLinks,
 } from "~/constants/repositories";
 import { DEFAULT_TEST_API_KEY } from "~/lib/api-keys";
-import { setPublicEdgeCache } from "~/lib/cache";
+import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
 
 const landingStyles = `
@@ -689,7 +689,7 @@ export const useHeroDemoAction = routeAction$(async (data, event) => {
 });
 
 export const onRequest: RequestHandler = (event) => {
-  setPublicEdgeCache(event);
+  setPrivateNoStore(event);
 };
 
 export default component$(() => {
