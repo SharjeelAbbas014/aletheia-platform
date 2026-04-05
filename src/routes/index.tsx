@@ -132,12 +132,11 @@ const landingStyles = `
 }
 
 @keyframes bar-grow {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
+  from { height: 0; }
+  to { height: 100%; }
 }
 
 .landing-v2 .animate-bar {
-  transform-origin: bottom;
   animation: bar-grow 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
 }
 
@@ -796,7 +795,7 @@ export default component$(() => {
                   class="obsidian-gradient flex items-center gap-3 rounded-xl px-10 py-5 text-lg font-bold text-white transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] active:scale-95"
                 >
                   Truth Disclosed
-                  <span class="material-symbols-outlined">bolt</span>
+                  <span class="material-symbols-outlined notranslate normal-case">bolt</span>
                 </Link>
                 <Link
                   href="/login"
@@ -849,7 +848,7 @@ export default component$(() => {
                       onClick$={runHeroWarmup}
                     >
                       {heroWarmupRunning.value ? "Warming..." : "Warm Up"}
-                      <span class="material-symbols-outlined text-base">
+                      <span class="material-symbols-outlined notranslate normal-case text-base">
                         bolt
                       </span>
                     </button>
@@ -1141,15 +1140,15 @@ export default component$(() => {
                    </div>
                    <div class="flex-1 flex flex-col items-center gap-4">
                       <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 68%;">
-                         <div class="absolute inset-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
-                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-red-400">68%</span>
+                         <div class="absolute bottom-0 left-0 right-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
+                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-red-400 z-10">68%</span>
                       </div>
                       <span class="text-[10px] uppercase font-bold tracking-widest text-tertiary">Standard Vector DB</span>
                    </div>
                    <div class="flex-1 flex flex-col items-center gap-4">
                       <div class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden" style="height: 95.4%;">
-                         <div class="absolute inset-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
-                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-primary">95.4%</span>
+                         <div class="absolute bottom-0 left-0 right-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
+                         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-primary z-10">95.4%</span>
                       </div>
                       <span class="text-[10px] uppercase font-bold tracking-widest text-primary">Aletheia Memory Engine</span>
                    </div>
@@ -1166,7 +1165,7 @@ export default component$(() => {
                    <div class="relative z-10 flex justify-between items-center h-24">
                       <div class="flex flex-col items-center gap-3">
                          <div class="h-10 w-10 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center stale-node">
-                            <span class="material-symbols-outlined text-sm text-red-400">cancel</span>
+                            <span class="material-symbols-outlined notranslate normal-case text-sm text-red-400">cancel</span>
                          </div>
                          <div class="text-center">
                             <span class="block text-[10px] uppercase tracking-widest text-tertiary font-bold">2025</span>
@@ -1175,12 +1174,12 @@ export default component$(() => {
                       </div>
 
                       <div class="flex h-10 w-10 items-center justify-center">
-                         <span class="material-symbols-outlined text-primary animate-pulse">trending_flat</span>
+                         <span class="material-symbols-outlined notranslate normal-case text-primary animate-pulse">trending_flat</span>
                       </div>
 
                       <div class="flex flex-col items-center gap-3">
                          <div class="h-10 w-10 rounded-full obsidian-gradient shadow-[0_0_15px_rgba(99,102,241,0.4)] flex items-center justify-center">
-                            <span class="material-symbols-outlined text-sm text-white">verified</span>
+                            <span class="material-symbols-outlined notranslate normal-case text-sm text-white">verified</span>
                          </div>
                          <div class="text-center">
                             <span class="block text-[10px] uppercase tracking-widest text-primary font-bold">Today</span>
@@ -1222,7 +1221,7 @@ export default component$(() => {
                   {distillationDetails.map((item) => (
                     <div key={item.title} class="flex items-start gap-6">
                       <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
-                        <span class="material-symbols-outlined text-primary">
+                        <span class="material-symbols-outlined notranslate normal-case text-primary">
                           {item.icon}
                         </span>
                       </div>
@@ -1244,7 +1243,7 @@ export default component$(() => {
                     <div class="rounded-xl border border-white/10 bg-white/5 p-4 font-mono text-xs">
                       "Hey! I just bought a white Mercedes!"
                     </div>
-                    <span class="material-symbols-outlined animate-pulse text-primary">
+                    <span class="material-symbols-outlined notranslate normal-case animate-pulse text-primary">
                       arrow_forward
                     </span>
                     <div class="rounded-full border border-primary/40 bg-primary/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
@@ -1254,7 +1253,7 @@ export default component$(() => {
 
                   <div class="flex w-full flex-col items-center border-y border-outline-variant/20 py-8">
                     <div class="obsidian-gradient mb-4 flex h-20 w-20 items-center justify-center rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.5)]">
-                      <span class="material-symbols-outlined text-4xl text-white">
+                      <span class="material-symbols-outlined notranslate normal-case text-4xl text-white">
                         settings_input_component
                       </span>
                     </div>
@@ -1268,7 +1267,7 @@ export default component$(() => {
 
                   <div class="w-full space-y-3">
                     <div class="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 p-3">
-                      <span class="material-symbols-outlined text-sm text-green-400">
+                      <span class="material-symbols-outlined notranslate normal-case text-sm text-green-400">
                         verified
                       </span>
                       <span class="font-mono text-xs">
@@ -1276,7 +1275,7 @@ export default component$(() => {
                       </span>
                     </div>
                     <div class="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 opacity-60">
-                      <span class="material-symbols-outlined text-sm text-primary">
+                      <span class="material-symbols-outlined notranslate normal-case text-sm text-primary">
                         database
                       </span>
                       <span class="font-mono text-xs">
@@ -1352,7 +1351,7 @@ export default component$(() => {
                           key={fact}
                           class="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
                         >
-                          <span class="material-symbols-outlined text-sm text-green-400">
+                          <span class="material-symbols-outlined notranslate normal-case text-sm text-green-400">
                             check_circle
                           </span>
                           <span class="font-mono text-xs">{fact}</span>
@@ -1409,7 +1408,7 @@ export default component$(() => {
                     transitionDelay: item.delay || undefined,
                   }}
                 >
-                  <span class="material-symbols-outlined mb-6 text-4xl text-primary">
+                  <span class="material-symbols-outlined notranslate normal-case mb-6 text-4xl text-primary">
                     {item.icon}
                   </span>
                   <h4 class="mb-4 text-xl font-bold">{item.title}</h4>
@@ -1436,7 +1435,7 @@ export default component$(() => {
                <div class="relative z-10 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                   <div class="flex flex-col items-center text-center gap-4">
                      <div class="h-16 w-16 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/20 shadow-xl">
-                        <span class="material-symbols-outlined text-3xl text-tertiary">input</span>
+                        <span class="material-symbols-outlined notranslate normal-case text-3xl text-tertiary">input</span>
                      </div>
                      <div>
                         <span class="block text-sm font-black">Ingest</span>
@@ -1452,7 +1451,7 @@ export default component$(() => {
 
                   <div class="flex flex-col items-center text-center gap-4 p-6 rounded-3xl bg-primary/10 border border-primary/30 shadow-[0_0_40px_rgba(99,102,241,0.1)]">
                      <div class="h-16 w-16 rounded-2xl obsidian-gradient flex items-center justify-center shadow-xl">
-                        <span class="material-symbols-outlined text-3xl text-white">psychology</span>
+                        <span class="material-symbols-outlined notranslate normal-case text-3xl text-white">psychology</span>
                      </div>
                      <div>
                         <span class="block text-sm font-black">Distill & Store</span>
@@ -1473,7 +1472,7 @@ export default component$(() => {
 
                   <div class="flex flex-col items-center text-center gap-4">
                      <div class="h-16 w-16 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/20 shadow-xl">
-                        <span class="material-symbols-outlined text-3xl text-primary">verified</span>
+                        <span class="material-symbols-outlined notranslate normal-case text-3xl text-primary">verified</span>
                      </div>
                      <div>
                         <span class="block text-sm font-black">Final Truth</span>
@@ -1484,21 +1483,21 @@ export default component$(() => {
 
                <div class="mt-16 pt-16 border-t border-outline-variant/10 grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div class="flex gap-4">
-                     <span class="material-symbols-outlined text-primary">filter_list</span>
+                     <span class="material-symbols-outlined notranslate normal-case text-primary">filter_list</span>
                      <div>
                         <h5 class="font-bold text-sm">Intent-Aware Filtering</h5>
                         <p class="text-xs text-tertiary mt-2">Automatically detects if the user is asking for numbers, preferences, or narrative history.</p>
                      </div>
                   </div>
                   <div class="flex gap-4">
-                     <span class="material-symbols-outlined text-primary">rebase_edit</span>
+                     <span class="material-symbols-outlined notranslate normal-case text-primary">rebase_edit</span>
                      <div>
                         <h5 class="font-bold text-sm">Neural Reranking</h5>
                         <p class="text-xs text-tertiary mt-2">Applies a secondary precision pass to ensure the top-k candidates are semantically perfect.</p>
                      </div>
                   </div>
                   <div class="flex gap-4">
-                     <span class="material-symbols-outlined text-primary">calculate</span>
+                     <span class="material-symbols-outlined notranslate normal-case text-primary">calculate</span>
                      <div>
                         <h5 class="font-bold text-sm">Deterministic Compute</h5>
                         <p class="text-xs text-tertiary mt-2">Computes aggregates (sums, counts) before delivery, preventing LLM arithmetic errors.</p>
@@ -1524,11 +1523,11 @@ export default component$(() => {
             
             <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-tertiary">
                <div class="flex gap-4 p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                  <span class="material-symbols-outlined text-primary">hub</span>
+                  <span class="material-symbols-outlined notranslate normal-case text-primary">hub</span>
                   <p>Nodes represent discrete semantic facts, preferences, and entities stored within the Rust engine.</p>
                </div>
                <div class="flex gap-4 p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                  <span class="material-symbols-outlined text-red-400">history</span>
+                  <span class="material-symbols-outlined notranslate normal-case text-red-400">history</span>
                   <p>Red nodes indicate **superseded memories**—stale data that has been automatically invalidated by more recent truths.</p>
                </div>
             </div>
@@ -1553,7 +1552,7 @@ export default component$(() => {
                   {engineSpecs.map((spec) => (
                     <div key={spec.title} class="flex gap-6">
                       <div class="glass-panel flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
-                        <span class="material-symbols-outlined text-3xl text-primary">
+                        <span class="material-symbols-outlined notranslate normal-case text-3xl text-primary">
                           {spec.icon}
                         </span>
                       </div>
@@ -1622,7 +1621,7 @@ export default component$(() => {
                       data-tilt
                       style={{ transitionDelay: `${index * 100}ms` }}
                     >
-                      <span class="material-symbols-outlined mb-4 text-3xl text-primary">
+                      <span class="material-symbols-outlined notranslate normal-case mb-4 text-3xl text-primary">
                         {pillar.icon}
                       </span>
                       <h4 class="mb-3 text-xl font-bold">{pillar.title}</h4>
@@ -1635,7 +1634,7 @@ export default component$(() => {
                             key={capability}
                             class="flex items-start gap-2 text-xs text-on-surface/90"
                           >
-                            <span class="material-symbols-outlined mt-[1px] text-sm text-primary">
+                            <span class="material-symbols-outlined notranslate normal-case mt-[1px] text-sm text-primary">
                               check_circle
                             </span>
                             <span>{capability}</span>
@@ -1692,7 +1691,7 @@ export default component$(() => {
                           class="flex items-center justify-between rounded-lg border border-white/10 bg-surface/80 px-3 py-2 text-xs text-on-surface transition-colors hover:border-primary/40 hover:bg-surface-container-high"
                         >
                           <span>{repo.label}</span>
-                          <span class="material-symbols-outlined text-sm text-primary">
+                          <span class="material-symbols-outlined notranslate normal-case text-sm text-primary">
                             open_in_new
                           </span>
                         </a>
@@ -1736,7 +1735,7 @@ export default component$(() => {
                     <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
                       {step.phase}
                     </span>
-                    <span class="material-symbols-outlined text-2xl text-primary">
+                    <span class="material-symbols-outlined notranslate normal-case text-2xl text-primary">
                       {step.icon}
                     </span>
                   </div>
@@ -1752,7 +1751,7 @@ export default component$(() => {
                         key={checkpoint}
                         class="flex items-center gap-2 text-xs text-on-surface/90"
                       >
-                        <span class="material-symbols-outlined text-sm text-primary">
+                        <span class="material-symbols-outlined notranslate normal-case text-sm text-primary">
                           arrow_right_alt
                         </span>
                         <span>{checkpoint}</span>
@@ -1787,7 +1786,7 @@ export default component$(() => {
                   class="obsidian-gradient inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-xl shadow-primary/20 transition-transform hover:scale-[1.02]"
                 >
                   Open Calendly
-                  <span class="material-symbols-outlined text-base">
+                  <span class="material-symbols-outlined notranslate normal-case text-base">
                     open_in_new
                   </span>
                 </a>
@@ -1862,13 +1861,13 @@ export default component$(() => {
                 href="/docs"
                 class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
               >
-                <span class="material-symbols-outlined text-sm">hub</span>
+                <span class="material-symbols-outlined notranslate normal-case text-sm">hub</span>
               </Link>
               <Link
                 href="/blog"
                 class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
               >
-                <span class="material-symbols-outlined text-sm">
+                <span class="material-symbols-outlined notranslate normal-case text-sm">
                   edit_square
                 </span>
               </Link>
