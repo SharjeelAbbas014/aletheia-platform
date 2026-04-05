@@ -419,25 +419,6 @@ const companyLinks = [
 ];
 
 const HERO_DEMO_ENTITY_COOKIE = "aletheia_hero_demo_entity";
-const HERO_ENGINE_BASE_URL = (
-  process.env.ALETHEIA_HERO_ENGINE_URL ??
-  process.env.ALETHEIA_URL ??
-  "https://4tcjq5z2yap9nd.api.runpod.ai"
-).replace(/\/+$/, "");
-const HERO_ENGINE_API_KEY = (
-  process.env.ALETHEIA_HERO_API_KEY ??
-  process.env.ALETHEIA_API_KEY ??
-  DEFAULT_TEST_API_KEY
-).trim();
-const HERO_RUNPOD_TOKEN = (
-  process.env.ALETHEIA_HERO_RUNPOD_TOKEN ??
-  process.env.ALETHEIA_RUNPOD_TOKEN ??
-  process.env.RUNPOD_API_KEY ??
-  ""
-).trim();
-
-console.log(">HERO_ENGINE_API_KEY", HERO_ENGINE_API_KEY);
-console.log(">HERO_RUNPOD_TOKEN", HERO_RUNPOD_TOKEN);
 type HeroMemoryHit = {
   memory_id: string;
   session_id: string;
@@ -478,14 +459,40 @@ function ensureHeroDemoEntity(event: HeroCookieEvent) {
   return next;
 }
 
+function heroEngineBaseUrl() {
+  return (
+    process.env.ALETHEIA_HERO_ENGINE_URL ??
+    process.env.ALETHEIA_URL ??
+    "https://4tcjq5z2yap9nd.api.runpod.ai"
+  ).replace(/\/+$/, "");
+}
+
+function heroEngineApiKey() {
+  return (
+    process.env.ALETHEIA_HERO_API_KEY ??
+    process.env.ALETHEIA_API_KEY ??
+    DEFAULT_TEST_API_KEY
+  ).trim();
+}
+
+function heroRunpodToken() {
+  return (
+    process.env.ALETHEIA_HERO_RUNPOD_TOKEN ??
+    process.env.ALETHEIA_RUNPOD_TOKEN ??
+    process.env.RUNPOD_API_KEY ??
+    ""
+  ).trim();
+}
+
 function heroRequestHeaders(includeJson = false) {
   const headers = new Headers();
   if (includeJson) {
     headers.set("content-type", "application/json");
   }
-  headers.set("x-api-key", HERO_ENGINE_API_KEY);
-  if (HERO_RUNPOD_TOKEN) {
-    headers.set("Authorization", `Bearer ${HERO_RUNPOD_TOKEN}`);
+  headers.set("x-api-key", heroEngineApiKey());
+  const runpodToken = heroRunpodToken();
+  if (runpodToken) {
+    headers.set("Authorization", `Bearer ${runpodToken}`);
   }
   return headers;
 }
@@ -541,7 +548,7 @@ export const useHeroWarmupAction = routeAction$(async (_, event) => {
   let response: Response;
 
   try {
-    response = await fetch(`${HERO_ENGINE_BASE_URL}/health`, {
+    response = await fetch(`${heroEngineBaseUrl()}/health`, {
       method: "GET",
       headers: heroRequestHeaders(),
       signal: AbortSignal.timeout(60_000),
@@ -586,7 +593,7 @@ export const useHeroDemoAction = routeAction$(async (data, event) => {
   const ingestStartedAt = Date.now();
 
   try {
-    ingestResponse = await fetch(`${HERO_ENGINE_BASE_URL}/ingest`, {
+    ingestResponse = await fetch(`${heroEngineBaseUrl()}/ingest`, {
       method: "POST",
       headers: heroRequestHeaders(true),
       body: JSON.stringify({
@@ -616,7 +623,7 @@ export const useHeroDemoAction = routeAction$(async (data, event) => {
   const queryStartedAt = Date.now();
 
   try {
-    queryResponse = await fetch(`${HERO_ENGINE_BASE_URL}/query/semantic`, {
+    queryResponse = await fetch(`${heroEngineBaseUrl()}/query/semantic`, {
       method: "POST",
       headers: heroRequestHeaders(true),
       body: JSON.stringify({
