@@ -805,6 +805,12 @@ export default component$(() => {
                         Ping the engine before a live demo to reduce cold-start
                         surprises on Runpod serverless.
                       </p>
+                      <p class="mt-2 text-xs leading-relaxed text-tertiary">
+                        We are still in the dev stage and currently running on
+                        serverless infrastructure. Please bear with us if the
+                        first request takes a bit longer, and warm the engine up
+                        before testing store or recall.
+                      </p>
                     </div>
                     <button
                       type="button"
