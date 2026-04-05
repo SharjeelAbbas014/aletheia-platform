@@ -435,6 +435,9 @@ const HERO_RUNPOD_TOKEN = (
   process.env.RUNPOD_API_KEY ??
   ""
 ).trim();
+
+console.log(">HERO_ENGINE_API_KEY", HERO_ENGINE_API_KEY);
+console.log(">HERO_RUNPOD_TOKEN", HERO_RUNPOD_TOKEN);
 type HeroMemoryHit = {
   memory_id: string;
   session_id: string;
