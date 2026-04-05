@@ -1,8 +1,6 @@
-import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import {
-  Form,
   Link,
-  routeAction$,
   type DocumentHead,
   type RequestHandler,
 } from "@builder.io/qwik-city";
@@ -15,8 +13,8 @@ import {
   privateRepositoryNote,
   publicRepositoryLinks,
 } from "~/constants/repositories";
-import { DEFAULT_TEST_API_KEY } from "~/lib/api-keys";
-import { setPrivateNoStore } from "~/lib/cache";
+import { setPublicEdgeCache } from "~/lib/cache";
+import type { HeroDemoResult, HeroWarmupResult } from "~/lib/hero-demo";
 import { buildSeoHead } from "~/lib/seo";
 
 const landingStyles = `
@@ -418,284 +416,81 @@ const companyLinks = [
   { label: "Contact", href: CONTACT_MAILTO },
 ];
 
-const HERO_DEMO_ENTITY_COOKIE = "aletheia_hero_demo_entity";
-type HeroMemoryHit = {
-  memory_id: string;
-  session_id: string;
-  created_at_ms: number;
-  similarity: number;
-  textual_content: string;
-};
-
-type HeroCookieEvent = {
-  cookie: {
-    get: (name: string) => { value?: string } | null | undefined;
-    set: (
-      name: string,
-      value: string,
-      options: ReturnType<typeof heroDemoCookieOptions>,
-    ) => void;
-  };
-};
-
-type HeroEnvEvent = {
-  env?: {
-    get: (key: string) => string | null | undefined;
-  };
-};
-
-function heroDemoCookieOptions() {
-  return {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 30,
-  };
-}
-
-function ensureHeroDemoEntity(event: HeroCookieEvent) {
-  const existing = event.cookie.get(HERO_DEMO_ENTITY_COOKIE)?.value?.trim();
-  if (existing) {
-    return existing;
-  }
-
-  const next = `hero-demo-${crypto.randomUUID()}`;
-  event.cookie.set(HERO_DEMO_ENTITY_COOKIE, next, heroDemoCookieOptions());
-  return next;
-}
-
-function readEnvValue(event: HeroEnvEvent | undefined, key: string): string | undefined {
-  const fromEvent = event?.env?.get(key)?.trim();
-  if (fromEvent) {
-    return fromEvent;
-  }
-
-  const fromProcess = process.env[key]?.trim();
-  if (fromProcess) {
-    return fromProcess;
-  }
-
-  return undefined;
-}
-
-function heroEngineBaseUrl(event?: HeroEnvEvent) {
-  return (
-    readEnvValue(event, "ALETHEIA_HERO_ENGINE_URL") ??
-    readEnvValue(event, "ALETHEIA_URL") ??
-    "https://4tcjq5z2yap9nd.api.runpod.ai"
-  ).replace(/\/+$/, "");
-}
-
-function heroEngineApiKey(event?: HeroEnvEvent) {
-  return (
-    readEnvValue(event, "ALETHEIA_HERO_API_KEY") ??
-    readEnvValue(event, "ALETHEIA_API_KEY") ??
-    DEFAULT_TEST_API_KEY
-  ).trim();
-}
-
-function heroRunpodToken(event?: HeroEnvEvent) {
-  return (
-    readEnvValue(event, "ALETHEIA_HERO_RUNPOD_TOKEN") ??
-    readEnvValue(event, "ALETHEIA_RUNPOD_TOKEN") ??
-    readEnvValue(event, "RUNPOD_API_KEY") ??
-    ""
-  ).trim();
-}
-
-function heroRequestHeaders(event?: HeroEnvEvent, includeJson = false) {
-  const headers = new Headers();
-  if (includeJson) {
-    headers.set("content-type", "application/json");
-  }
-  headers.set("x-api-key", heroEngineApiKey(event));
-  const runpodToken = heroRunpodToken(event);
-  if (runpodToken) {
-    headers.set("Authorization", `Bearer ${runpodToken}`);
-  }
-  return headers;
-}
-
-function readEngineTotalUs(headers: Headers) {
-  const headerUs = headers.get("x-tm-total-us");
-  if (headerUs) {
-    const parsed = Number(headerUs);
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  const headerMs = headers.get("x-tm-total-ms");
-  if (headerMs) {
-    const parsed = Number(headerMs);
-    if (Number.isFinite(parsed)) {
-      return parsed * 1000;
-    }
-  }
-
-  return null;
-}
-
-function formatEngineMs(totalUs: number | null) {
-  if (totalUs == null) {
-    return "n/a";
-  }
-  const totalMs = totalUs / 1000;
-  return totalMs >= 10
-    ? `${Math.round(totalMs)} ms`
-    : `${totalMs.toFixed(1)} ms`;
-}
-
-function formatHeroTimestamp(value: number) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function formatRoundTripMs(startedAt: number) {
-  const totalMs = Date.now() - startedAt;
-  return totalMs >= 10
-    ? `${Math.round(totalMs)} ms`
-    : `${totalMs.toFixed(1)} ms`;
-}
-
-export const useHeroWarmupAction = routeAction$(async (_, event) => {
-  const startedAt = Date.now();
-  let response: Response;
-
-  try {
-    response = await fetch(`${heroEngineBaseUrl(event)}/health`, {
-      method: "GET",
-      headers: heroRequestHeaders(event),
-      signal: AbortSignal.timeout(60_000),
-    });
-  } catch (error) {
-    return event.fail(502, {
-      message:
-        error instanceof Error
-          ? `Warm-up transport failed. ${error.message}`
-          : "Warm-up transport failed.",
-    });
-  }
-
-  if (!response.ok) {
-    return event.fail(502, {
-      message: `Warm-up failed (${response.status}). ${await response.text()}`,
-    });
-  }
-
-  return {
-    ok: true,
-    status: "Warm",
-    roundTripLabel: formatRoundTripMs(startedAt),
-    engineLabel: formatEngineMs(readEngineTotalUs(response.headers)),
-  };
-});
-
-export const useHeroDemoAction = routeAction$(async (data, event) => {
-  const message = String(data.message ?? "").trim();
-
-  if (!message) {
-    return event.fail(400, {
-      message: "Enter a user message so the engine has something real to save.",
-    });
-  }
-
-  const entityId = ensureHeroDemoEntity(event);
-  const now = Date.now();
-  const memoryId = `${entityId}::hero-demo::${now}`;
-  let ingestResponse: Response;
-  let queryResponse: Response;
-  const ingestStartedAt = Date.now();
-
-  try {
-    ingestResponse = await fetch(`${heroEngineBaseUrl(event)}/ingest`, {
-      method: "POST",
-      headers: heroRequestHeaders(event, true),
-      body: JSON.stringify({
-        entity_id: entityId,
-        memory_id: memoryId,
-        timestamp: now,
-        textual_content: message,
-        relations: [],
-      }),
-      signal: AbortSignal.timeout(60_000),
-    });
-  } catch (error) {
-    return event.fail(502, {
-      message:
-        error instanceof Error
-          ? `Ingest transport failed. ${error.message}`
-          : "Ingest transport failed.",
-    });
-  }
-
-  if (!ingestResponse.ok) {
-    return event.fail(502, {
-      message: `Ingest failed (${ingestResponse.status}). ${await ingestResponse.text()}`,
-    });
-  }
-
-  const queryStartedAt = Date.now();
-
-  try {
-    queryResponse = await fetch(`${heroEngineBaseUrl(event)}/query/semantic`, {
-      method: "POST",
-      headers: heroRequestHeaders(event, true),
-      body: JSON.stringify({
-        entity_id: entityId,
-        textual_query: message,
-        limit: 4,
-      }),
-      signal: AbortSignal.timeout(60_000),
-    });
-  } catch (error) {
-    return event.fail(502, {
-      message:
-        error instanceof Error
-          ? `Query transport failed. ${error.message}`
-          : "Query transport failed.",
-    });
-  }
-
-  if (!queryResponse.ok) {
-    return event.fail(502, {
-      message: `Query failed (${queryResponse.status}). ${await queryResponse.text()}`,
-    });
-  }
-
-  const hits = (await queryResponse.json()) as HeroMemoryHit[];
-  const ingestUs = readEngineTotalUs(ingestResponse.headers);
-  const queryUs = readEngineTotalUs(queryResponse.headers);
-
-  return {
-    entityId,
-    memoryId,
-    submittedText: message,
-    ingestLabel: formatEngineMs(ingestUs),
-    ingestRoundTripLabel: formatRoundTripMs(ingestStartedAt),
-    queryLabel: formatEngineMs(queryUs),
-    queryRoundTripLabel: formatRoundTripMs(queryStartedAt),
-    queryUnderBlink: queryUs != null && queryUs / 1000 < 100,
-    hits: hits.slice(0, 4).map((hit) => ({
-      ...hit,
-      createdLabel: formatHeroTimestamp(hit.created_at_ms),
-    })),
-  };
-});
-
 export const onRequest: RequestHandler = (event) => {
-  setPrivateNoStore(event);
+  setPublicEdgeCache(event);
 };
 
 export default component$(() => {
   const pageRef = useSignal<HTMLElement>();
-  const heroDemoAction = useHeroDemoAction();
-  const heroWarmupAction = useHeroWarmupAction();
+  const heroMessage = useSignal(
+    "I moved to Tokyo and I still prefer jasmine tea over coffee."
+  );
+  const heroDemoResult = useSignal<HeroDemoResult | null>(null);
+  const heroWarmupResult = useSignal<HeroWarmupResult | null>(null);
+  const heroDemoRunning = useSignal(false);
+  const heroWarmupRunning = useSignal(false);
+
+  const runHeroWarmup = $(async () => {
+    heroWarmupRunning.value = true;
+    heroWarmupResult.value = null;
+
+    try {
+      const response = await fetch("/api/hero/warmup", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        }
+      });
+      heroWarmupResult.value = (await response.json()) as HeroWarmupResult;
+    } catch (error) {
+      heroWarmupResult.value = {
+        ok: false,
+        message:
+          error instanceof Error
+            ? `Warm-up transport failed. ${error.message}`
+            : "Warm-up transport failed."
+      };
+    } finally {
+      heroWarmupRunning.value = false;
+    }
+  });
+
+  const runHeroDemo = $(async () => {
+    const message = heroMessage.value.trim();
+    if (!message) {
+      heroDemoResult.value = {
+        ok: false,
+        message: "Enter a user message so the engine has something real to save."
+      };
+      return;
+    }
+
+    heroDemoRunning.value = true;
+    heroDemoResult.value = null;
+
+    try {
+      const response = await fetch("/api/hero/demo", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          message
+        })
+      });
+      heroDemoResult.value = (await response.json()) as HeroDemoResult;
+    } catch (error) {
+      heroDemoResult.value = {
+        ok: false,
+        message:
+          error instanceof Error
+            ? `Demo transport failed. ${error.message}`
+            : "Demo transport failed."
+      };
+    } finally {
+      heroDemoRunning.value = false;
+    }
+  });
 
   useVisibleTask$(({ cleanup }) => {
     const root = pageRef.value;
@@ -972,34 +767,33 @@ export default component$(() => {
                         surprises on Runpod serverless.
                       </p>
                     </div>
-                    <Form action={heroWarmupAction}>
-                      <button
-                        type="submit"
-                        class="glass-panel inline-flex items-center gap-3 rounded-2xl px-5 py-3 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled={heroWarmupAction.isRunning}
-                      >
-                        {heroWarmupAction.isRunning ? "Warming..." : "Warm Up"}
-                        <span class="material-symbols-outlined text-base">
-                          bolt
-                        </span>
-                      </button>
-                    </Form>
+                    <button
+                      type="button"
+                      class="glass-panel inline-flex items-center gap-3 rounded-2xl px-5 py-3 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={heroWarmupRunning.value}
+                      onClick$={runHeroWarmup}
+                    >
+                      {heroWarmupRunning.value ? "Warming..." : "Warm Up"}
+                      <span class="material-symbols-outlined text-base">
+                        bolt
+                      </span>
+                    </button>
                   </div>
 
-                  {heroWarmupAction.value?.message ? (
+                  {heroWarmupResult.value?.message ? (
                     <div class="rounded-[1.5rem] border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
-                      {heroWarmupAction.value.message}
+                      {heroWarmupResult.value.message}
                     </div>
                   ) : null}
 
-                  {heroWarmupAction.value?.ok ? (
+                  {heroWarmupResult.value?.ok ? (
                     <div class="grid gap-4 md:grid-cols-2">
                       <div class="rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4">
                         <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-200/80">
                           Warm-Up Status
                         </p>
                         <p class="mt-2 text-2xl font-black tracking-tight text-white">
-                          {heroWarmupAction.value.status}
+                          {heroWarmupResult.value.status}
                         </p>
                         <p class="mt-2 text-xs text-emerald-100/80">
                           The engine answered `/health`.
@@ -1010,30 +804,29 @@ export default component$(() => {
                           Warm-Up Round Trip
                         </p>
                         <p class="mt-2 text-2xl font-black tracking-tight text-on-surface">
-                          {heroWarmupAction.value.roundTripLabel}
+                          {heroWarmupResult.value.roundTripLabel}
                         </p>
                         <p class="mt-2 text-xs text-tertiary">
                           End-to-end response time from `/health`
-                          {heroWarmupAction.value.engineLabel !== "n/a"
-                            ? `, engine ${heroWarmupAction.value.engineLabel}.`
+                          {heroWarmupResult.value.engineLabel !== "n/a"
+                            ? `, engine ${heroWarmupResult.value.engineLabel}.`
                             : "."}
                         </p>
                       </div>
                     </div>
                   ) : null}
 
-                  <Form action={heroDemoAction} class="space-y-4">
+                  <div class="space-y-4">
                     <label class="block text-[11px] font-bold uppercase tracking-[0.22em] text-tertiary">
                       User Message
                     </label>
                     <textarea
-                      name="message"
                       class="min-h-[124px] w-full rounded-[1.5rem] border border-white/10 bg-black/25 px-5 py-4 text-base text-on-surface outline-none transition-colors placeholder:text-tertiary/55 focus:border-primary/60"
                       placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
-                      value={String(
-                        heroDemoAction.formData?.get("message") ??
-                          "I moved to Tokyo and I still prefer jasmine tea over coffee.",
-                      )}
+                      value={heroMessage.value}
+                      onInput$={(_, currentTarget) => {
+                        heroMessage.value = currentTarget.value;
+                      }}
                       required
                     />
                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -1042,11 +835,12 @@ export default component$(() => {
                         surface the actual hits below.
                       </p>
                       <button
-                        type="submit"
+                        type="button"
                         class="obsidian-gradient inline-flex items-center gap-3 rounded-2xl px-6 py-3.5 text-sm font-bold text-white transition-all hover:shadow-[0_0_32px_rgba(99,102,241,0.35)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled={heroDemoAction.isRunning}
+                        disabled={heroDemoRunning.value}
+                        onClick$={runHeroDemo}
                       >
-                        {heroDemoAction.isRunning
+                        {heroDemoRunning.value
                           ? "Running..."
                           : "Store and Recall"}
                         <span class="material-symbols-outlined text-base">
@@ -1054,11 +848,11 @@ export default component$(() => {
                         </span>
                       </button>
                     </div>
-                  </Form>
+                  </div>
 
-                  {heroDemoAction.value?.message ? (
+                  {heroDemoResult.value?.message ? (
                     <div class="rounded-[1.5rem] border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
-                      {heroDemoAction.value.message}
+                      {heroDemoResult.value.message}
                     </div>
                   ) : null}
 
@@ -1068,11 +862,11 @@ export default component$(() => {
                         Persist
                       </p>
                       <p class="mt-2 text-2xl font-black tracking-tight text-on-surface">
-                        {heroDemoAction.value?.ingestLabel ?? "pending"}
+                        {heroDemoResult.value?.ingestLabel ?? "pending"}
                       </p>
                       <p class="mt-2 text-xs text-tertiary">
-                        {heroDemoAction.value?.ingestRoundTripLabel
-                          ? `Engine write time from /ingest. Round trip ${heroDemoAction.value.ingestRoundTripLabel}.`
+                        {heroDemoResult.value?.ingestRoundTripLabel
+                          ? `Engine write time from /ingest. Round trip ${heroDemoResult.value.ingestRoundTripLabel}.`
                           : "Engine write time from `/ingest`."}
                       </p>
                     </div>
@@ -1081,11 +875,11 @@ export default component$(() => {
                         Recall
                       </p>
                       <p class="mt-2 text-2xl font-black tracking-tight text-on-surface">
-                        {heroDemoAction.value?.queryLabel ?? "pending"}
+                        {heroDemoResult.value?.queryLabel ?? "pending"}
                       </p>
                       <p class="mt-2 text-xs text-tertiary">
-                        {heroDemoAction.value?.queryRoundTripLabel
-                          ? `Engine recall time from /query/semantic. Round trip ${heroDemoAction.value.queryRoundTripLabel}.`
+                        {heroDemoResult.value?.queryRoundTripLabel
+                          ? `Engine recall time from /query/semantic. Round trip ${heroDemoResult.value.queryRoundTripLabel}.`
                           : "Engine recall time from `/query/semantic`."}
                       </p>
                     </div>
@@ -1094,7 +888,7 @@ export default component$(() => {
                         Demo Entity
                       </p>
                       <p class="mt-2 break-all font-mono text-sm text-on-surface">
-                        {heroDemoAction.value?.entityId ??
+                        {heroDemoResult.value?.entityId ??
                           "generated on first run"}
                       </p>
                       <p class="mt-2 text-xs text-tertiary">
@@ -1103,7 +897,7 @@ export default component$(() => {
                     </div>
                   </div>
 
-                  {heroDemoAction.value?.queryUnderBlink ? (
+                  {heroDemoResult.value?.queryUnderBlink ? (
                     <div class="relative overflow-hidden rounded-[1.75rem] border border-cyan-300/25 bg-[linear-gradient(135deg,rgba(14,165,233,0.18),rgba(99,102,241,0.18),rgba(16,185,129,0.16))] p-5">
                       <div class="absolute right-[-2rem] top-[-2rem] h-24 w-24 rounded-full bg-cyan-300/20 blur-2xl" />
                       <div class="absolute bottom-[-2rem] left-[-1rem] h-20 w-20 rounded-full bg-emerald-300/20 blur-2xl" />
@@ -1140,21 +934,21 @@ export default component$(() => {
                           Retrieved Memories
                         </p>
                         <p class="mt-1 text-sm text-on-surface">
-                          {heroDemoAction.value?.submittedText
-                            ? `Pulled back from Aletheia for "${heroDemoAction.value.submittedText}".`
+                          {heroDemoResult.value?.submittedText
+                            ? `Pulled back from Aletheia for "${heroDemoResult.value.submittedText}".`
                             : "Submit a message to store a fact and inspect the returned memories."}
                         </p>
                       </div>
-                      {heroDemoAction.value?.memoryId ? (
+                      {heroDemoResult.value?.memoryId ? (
                         <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-mono text-[11px] text-tertiary">
-                          saved as {heroDemoAction.value.memoryId}
+                          saved as {heroDemoResult.value.memoryId}
                         </div>
                       ) : null}
                     </div>
 
                     <div class="space-y-3">
-                      {heroDemoAction.value?.hits?.length ? (
-                        heroDemoAction.value.hits.map((hit) => (
+                      {heroDemoResult.value?.hits?.length ? (
+                        heroDemoResult.value.hits.map((hit) => (
                           <div
                             key={hit.memory_id}
                             class="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4"
