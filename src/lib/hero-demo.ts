@@ -73,12 +73,16 @@ export function resolveHeroEntityId(event: HeroIdentityEvent) {
     ?.trim();
   const realIp = event.request?.headers.get("x-real-ip")?.trim();
   const clientIp = event.clientConn?.ip?.trim();
-  return sanitizeIp(clientIp || forwardedFor || realIp || "unknown-ip");
+  const rawIp = sanitizeIp(clientIp || forwardedFor || realIp || "unknown-ip");
+  const safeIp = rawIp
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+  return `visitor-${safeIp || "unknown-ip"}`;
 }
 
 export function buildHeroMemoryId(entityId: string, timestamp: number) {
-  const safeEntity = entityId.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return `${safeEntity || "unknown-ip"}::hero-demo::${timestamp}`;
+  return `${entityId}::hero-demo::${timestamp}`;
 }
 
 export function heroEngineBaseUrl(event?: HeroEnvEvent) {
