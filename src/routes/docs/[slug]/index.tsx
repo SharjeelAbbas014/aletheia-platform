@@ -47,6 +47,34 @@ export default component$(() => {
             <p key={`${section.heading}-p-${paragraphIndex}`}>{paragraph}</p>
           ))}
 
+          {section.callout ? (
+            <div
+              class={`docs-callout docs-callout-${section.callout.tone ?? "info"}`}
+            >
+              {section.callout.title ? (
+                <p class="docs-callout-title">{section.callout.title}</p>
+              ) : null}
+              <p class="docs-callout-body">{section.callout.body}</p>
+            </div>
+          ) : null}
+
+          {section.stats?.length ? (
+            <div class="docs-stat-grid">
+              {section.stats.map((stat, statIndex) => (
+                <article
+                  key={`${section.heading}-stat-${statIndex}`}
+                  class={`docs-stat-card docs-stat-card-${stat.tone ?? "default"}`}
+                >
+                  <p class="docs-stat-label">{stat.label}</p>
+                  <p class="docs-stat-value">{stat.value}</p>
+                  {stat.description ? (
+                    <p class="docs-stat-description">{stat.description}</p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : null}
+
           {section.bullets?.length ? (
             <ul>
               {section.bullets.map((bullet, bulletIndex) => (
@@ -61,6 +89,56 @@ export default component$(() => {
                 <li key={`${section.heading}-s-${stepIndex}`}>{step}</li>
               ))}
             </ol>
+          ) : null}
+
+          {section.artifacts?.length ? (
+            <div class="docs-artifact-grid">
+              {section.artifacts.map((artifact, artifactIndex) => (
+                <article
+                  key={`${section.heading}-artifact-${artifactIndex}`}
+                  class="docs-artifact-card"
+                >
+                  <div class="docs-artifact-chip">Artifact</div>
+                  <h3>{artifact.name}</h3>
+                  <p>{artifact.description}</p>
+                  {artifact.meta ? (
+                    <p class="docs-artifact-meta">{artifact.meta}</p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : null}
+
+          {section.table ? (
+            <div class="docs-table-wrap">
+              <table class="docs-table">
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    {section.table.columns.map((column, columnIndex) => (
+                      <th key={`${section.heading}-column-${columnIndex}`}>
+                        {column}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {section.table.rows.map((row, rowIndex) => (
+                    <tr key={`${section.heading}-row-${rowIndex}`}>
+                      <th>{row.label}</th>
+                      {row.values.map((value, valueIndex) => (
+                        <td key={`${section.heading}-value-${rowIndex}-${valueIndex}`}>
+                          {value}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {section.table.footnote ? (
+                <p class="docs-table-footnote">{section.table.footnote}</p>
+              ) : null}
+            </div>
           ) : null}
 
           {section.codeBlocks?.map((block, blockIndex) => (

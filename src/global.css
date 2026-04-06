@@ -1692,6 +1692,222 @@ pre {
   line-height: 1.82;
 }
 
+.docs-callout {
+  margin: 1rem 0 1.3rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(132, 150, 187, 0.28);
+  border-radius: 1rem;
+  background:
+    linear-gradient(160deg, rgba(19, 23, 34, 0.96), rgba(11, 14, 22, 0.94)),
+    radial-gradient(circle at top right, rgba(120, 136, 255, 0.16), transparent 58%);
+  box-shadow: 0 18px 42px rgba(3, 7, 16, 0.34);
+}
+
+.docs-callout-warning {
+  border-color: rgba(255, 191, 92, 0.28);
+  background:
+    linear-gradient(160deg, rgba(29, 21, 12, 0.96), rgba(18, 13, 8, 0.94)),
+    radial-gradient(circle at top right, rgba(255, 190, 84, 0.16), transparent 60%);
+}
+
+.docs-callout-success {
+  border-color: rgba(86, 223, 183, 0.24);
+  background:
+    linear-gradient(160deg, rgba(13, 25, 24, 0.96), rgba(8, 17, 17, 0.94)),
+    radial-gradient(circle at top right, rgba(84, 223, 179, 0.14), transparent 60%);
+}
+
+.docs-callout-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(242, 246, 255, 0.9);
+}
+
+.docs-callout-body {
+  margin: 0;
+  color: rgba(226, 233, 247, 0.88);
+  font-size: 0.95rem;
+  line-height: 1.72;
+}
+
+.docs-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.4rem;
+}
+
+.docs-stat-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 9.4rem;
+  padding: 1rem;
+  border: 1px solid rgba(129, 147, 181, 0.24);
+  border-radius: 1.05rem;
+  background:
+    linear-gradient(180deg, rgba(17, 20, 30, 0.98), rgba(10, 13, 22, 0.96)),
+    radial-gradient(circle at top right, rgba(90, 102, 255, 0.16), transparent 58%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 22px 50px rgba(2, 6, 14, 0.34);
+}
+
+.docs-stat-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 1rem 0.9rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent);
+}
+
+.docs-stat-card-primary {
+  border-color: rgba(101, 212, 236, 0.3);
+  background:
+    linear-gradient(180deg, rgba(12, 21, 31, 0.98), rgba(8, 14, 23, 0.96)),
+    radial-gradient(circle at top right, rgba(84, 211, 255, 0.18), transparent 56%);
+}
+
+.docs-stat-card-success {
+  border-color: rgba(86, 223, 183, 0.28);
+  background:
+    linear-gradient(180deg, rgba(10, 21, 22, 0.98), rgba(7, 14, 15, 0.96)),
+    radial-gradient(circle at top right, rgba(86, 223, 183, 0.16), transparent 56%);
+}
+
+.docs-stat-card-warning {
+  border-color: rgba(255, 191, 92, 0.28);
+  background:
+    linear-gradient(180deg, rgba(28, 20, 11, 0.98), rgba(17, 13, 8, 0.96)),
+    radial-gradient(circle at top right, rgba(255, 191, 92, 0.16), transparent 56%);
+}
+
+.docs-stat-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(178, 190, 216, 0.76);
+}
+
+.docs-stat-value {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  color: #f5f8ff;
+}
+
+.docs-stat-description {
+  margin: 0.65rem 0 0;
+  max-width: 24rem;
+  color: rgba(198, 209, 229, 0.84);
+  font-size: 0.86rem;
+  line-height: 1.62;
+}
+
+.docs-artifact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.docs-artifact-card {
+  padding: 1rem;
+  border: 1px solid rgba(130, 148, 182, 0.24);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(11, 14, 22, 0.96)),
+    radial-gradient(circle at top right, rgba(153, 165, 255, 0.13), transparent 58%);
+  box-shadow: 0 18px 44px rgba(2, 6, 14, 0.32);
+}
+
+.docs-artifact-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(101, 213, 236, 0.12);
+  color: #93e8ff;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.docs-artifact-card h3 {
+  margin-top: 0.8rem;
+}
+
+.docs-artifact-meta {
+  margin-top: 0.8rem;
+  color: rgba(151, 168, 198, 0.82);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.docs-table-wrap {
+  margin: 1rem 0 1.55rem;
+  border: 1px solid rgba(128, 146, 182, 0.25);
+  border-radius: 1rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(16, 20, 31, 0.97), rgba(8, 11, 19, 0.97)),
+    radial-gradient(circle at top right, rgba(88, 102, 255, 0.14), transparent 58%);
+  box-shadow: 0 18px 42px rgba(2, 5, 12, 0.32);
+}
+
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.docs-table th,
+.docs-table td {
+  padding: 0.88rem 0.9rem;
+  border-bottom: 1px solid rgba(126, 143, 176, 0.16);
+  text-align: left;
+  vertical-align: top;
+}
+
+.docs-table thead th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(178, 189, 215, 0.74);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.docs-table tbody th {
+  width: 10rem;
+  font-size: 0.84rem;
+  color: rgba(238, 244, 255, 0.92);
+}
+
+.docs-table tbody td {
+  color: rgba(210, 220, 239, 0.88);
+  font-size: 0.9rem;
+}
+
+.docs-table tbody tr:last-child th,
+.docs-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.docs-table-footnote {
+  margin: 0;
+  padding: 0.8rem 0.9rem 0.95rem;
+  border-top: 1px solid rgba(126, 143, 176, 0.16);
+  color: rgba(165, 179, 206, 0.8);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
 .docs-prose a {
   color: #8edfff;
   text-decoration: underline;
@@ -1957,6 +2173,23 @@ pre {
 }
 
 @media (max-width: 640px) {
+  .docs-stat-grid,
+  .docs-artifact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-stat-card {
+    min-height: auto;
+  }
+
+  .docs-table-wrap {
+    overflow-x: auto;
+  }
+
+  .docs-table {
+    min-width: 38rem;
+  }
+
   .docs-prose h1 {
     font-size: clamp(2rem, 8vw, 2.35rem);
   }

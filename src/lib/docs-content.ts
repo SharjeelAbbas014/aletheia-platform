@@ -4,12 +4,44 @@ export interface DocsCodeBlock {
   code: string;
 }
 
+export interface DocsCallout {
+  tone?: "info" | "warning" | "success";
+  title?: string;
+  body: string;
+}
+
+export interface DocsStat {
+  label: string;
+  value: string;
+  description?: string;
+  tone?: "default" | "primary" | "success" | "warning";
+}
+
+export interface DocsArtifact {
+  name: string;
+  description: string;
+  meta?: string;
+}
+
+export interface DocsTable {
+  columns: string[];
+  rows: Array<{
+    label: string;
+    values: string[];
+  }>;
+  footnote?: string;
+}
+
 export interface DocsSection {
   heading: string;
   paragraphs?: string[];
   bullets?: string[];
   steps?: string[];
   codeBlocks?: DocsCodeBlock[];
+  callout?: DocsCallout;
+  stats?: DocsStat[];
+  artifacts?: DocsArtifact[];
+  table?: DocsTable;
 }
 
 export interface DocsPage {
@@ -1105,21 +1137,149 @@ for item in batch:
     eyebrow: "Evaluation",
     title: "Benchmarking and Evaluation",
     lead:
-      "Benchmark memory quality with repeatable datasets and fixed configurations.",
+      "Benchmark memory quality with repeatable datasets, fixed configurations, and a clear split between preliminary signal and publishable scorecards.",
     description:
       "How to benchmark Aletheia retrieval quality and latency reliably.",
     sections: [
       {
-        heading: "Benchmark principles",
-        bullets: [
-          "Use fixed datasets and deterministic start index.",
-          "Record model versions and policy versions.",
-          "Separate warm and cold runs.",
-          "Keep ingest and query concurrency explicit."
+        heading: "Current benchmark status",
+        paragraphs: [
+          "We have not yet published a full-blown benchmark campaign across all target tasks, models, and ablation settings. What we do have today are preliminary harness runs and archived evaluator outputs that already give a directional read on retrieval quality and runtime behavior.",
+          "The purpose of this page is to show what is already instrumented, what the early LoCoMo recall run looks like, and what still needs to happen before we call the numbers final."
+        ],
+        callout: {
+          tone: "warning",
+          title: "Important",
+          body:
+            "Treat the results below as preliminary engineering signals, not a finalized benchmark report. Full LongMemEval publication-grade runs, ablations, and model-normalized comparisons are still in progress."
+        },
+        stats: [
+          {
+            label: "Benchmark Phase",
+            value: "Preliminary",
+            description: "Harness is live; full campaign is still pending.",
+            tone: "warning"
+          },
+          {
+            label: "Published Dataset Signal",
+            value: "LoCoMo",
+            description: "Current docs publish the cleanest retrieval summary from archived logs.",
+            tone: "primary"
+          },
+          {
+            label: "Archived Artifacts",
+            value: "2 Logs",
+            description: "`locomo_output.txt` and `longmemeval_output.txt` are retained in the repo.",
+            tone: "default"
+          },
+          {
+            label: "Next Milestone",
+            value: "Full LongMemEval",
+            description: "Run, validate, and publish the cleaned scorecard plus ablations.",
+            tone: "success"
+          }
         ]
       },
       {
-        heading: "Representative run",
+        heading: "What is already in the repo",
+        paragraphs: [
+          "Two benchmark artifacts are currently tracked in the workspace and referenced internally when validating the evaluator pipeline.",
+          "The LoCoMo artifact already contains a clean recall summary. The LongMemEval artifact is preserved as a working benchmark log, but we are intentionally not publishing a polished LongMemEval scorecard from it yet."
+        ],
+        artifacts: [
+          {
+            name: "locomo_output.txt",
+            description:
+              "Preliminary LoCoMo recall run log with full progress output, timing breakdowns, and the final Recall@8 summary.",
+            meta: "Current best directional retrieval read for docs publication."
+          },
+          {
+            name: "longmemeval_output.txt",
+            description:
+              "Archived preliminary benchmark output kept in the repo while the final LongMemEval evaluation flow is cleaned up and rerun end to end.",
+            meta: "Tracked as a working artifact, not yet a publication-ready benchmark table."
+          }
+        ]
+      },
+      {
+        heading: "Preliminary LoCoMo snapshot",
+        paragraphs: [
+          "The strongest concrete benchmark signal we are comfortable surfacing today comes from the LoCoMo recall harness. This run focuses on whether the correct evidence session appears in the retrieved Top-8, which is a useful proxy for whether the memory engine is bringing the right context back into scope before any downstream answer-generation layer gets involved.",
+          "That distinction matters. We want to isolate memory retrieval quality first, then layer answer quality and judge-model evaluation on top. Otherwise, retrieval regressions and generation regressions get mixed together."
+        ],
+        stats: [
+          {
+            label: "Overall Recall@8",
+            value: "94.7%",
+            description: "Evidence session found in the Top-8 for 1538 evaluated questions.",
+            tone: "primary"
+          },
+          {
+            label: "Questions Evaluated",
+            value: "1538",
+            description: "No skipped questions in the archived run.",
+            tone: "success"
+          },
+          {
+            label: "Avg Query Time",
+            value: "65 ms",
+            description: "Average end-to-end query timing reported by the harness.",
+            tone: "default"
+          },
+          {
+            label: "Avg Total Time",
+            value: "83 ms",
+            description: "Includes ingest/query/pack timing reported per evaluation cycle.",
+            tone: "default"
+          },
+          {
+            label: "Avg Batch Ingest",
+            value: "407 ms",
+            description: "Average ingest batch time during the initial session indexing phase.",
+            tone: "default"
+          },
+          {
+            label: "Top-K Window",
+            value: "8 Sessions",
+            description: "Run used `top-k=8` and `max-chunks-per-session=4`.",
+            tone: "default"
+          }
+        ],
+        table: {
+          columns: ["Single-Hop", "Multi-Hop", "Open Domain", "Temporal", "Overall"],
+          rows: [
+            {
+              label: "Recall@8",
+              values: ["90.8%", "80.4%", "97.9%", "93.8%", "94.7%"]
+            },
+            {
+              label: "Question Count",
+              values: ["282", "92", "841", "321", "1538"]
+            }
+          ],
+          footnote:
+            "This table is taken from the archived LoCoMo recall log and represents retrieval-stage evidence recovery, not a final answer-generation leaderboard."
+        }
+      },
+      {
+        heading: "How to read these numbers",
+        paragraphs: [
+          "The LoCoMo result is promising because it says the right session is usually being recovered even in a long-running conversation setting. The open-domain and temporal slices are especially strong in this early run, which suggests the hybrid lexical-plus-semantic stack is doing real work beyond naive vector search.",
+          "The multi-hop slice is the current pressure point. That is not surprising: once the right evidence is split across multiple linked conversational fragments, raw retrieval has to do more than recover a single relevant session. This is exactly where graph lineage, fact companions, temporal linking, and deterministic aggregation become more important.",
+          "The timing split is also useful. Average engine-stage totals show that embedding and hydrate costs dominate more than ANN search. That points optimization effort toward payload hydration, result packing, and indexing layout rather than only ANN micro-tuning."
+        ],
+        bullets: [
+          "Average engine query stages in the archived run were roughly: embed 11 ms, ANN 2 ms, FTS 4 ms, hydrate 39 ms, total 64 ms.",
+          "Reranking was disabled in this run, which means the current score reflects the base hybrid retrieval pipeline without cross-encoder rescue.",
+          "Semantic dedup and consolidation were also disabled, so there is still headroom for future ablation work."
+        ]
+      },
+      {
+        heading: "Run configuration behind the preliminary LoCoMo result",
+        paragraphs: [
+          "The archived LoCoMo run used the Rust evaluator directly against the engine with an explicit retrieval-only configuration. That is useful because it minimizes ambiguity about where latency and quality are coming from.",
+          "For benchmark reproducibility, keep the full invocation with the result artifact. Small flags such as rerank on/off, start index, chunk caps, or ingest concurrency can materially change both runtime and quality."
+        ],
         codeBlocks: [
           {
             label: "Rust evaluator invocation",
@@ -1128,15 +1288,63 @@ for item in batch:
   --dataset-kind locomo \\
   --dataset benchmarks/LoCoMo/data/locomo10.json \\
   --engine-url http://127.0.0.1:3000 \\
-  --top-k 8 --limit 100`
+  --engine-api-key XXX1111AAA \\
+  --reset-first \\
+  --limit 99999 \\
+  --ingest-concurrency 16 \\
+  --top-k 8 \\
+  --max-chunks-per-session 4 recall`
+          },
+          {
+            label: "Archived run characteristics",
+            language: "text",
+            code: `dataset: LoCoMo
+questions: 1538
+top-k sessions: 8
+max chunks per session: 4
+neural rerank: false
+semantic dedup: false
+consolidation: false
+reset first: true`
+          },
+          {
+            label: "LongMemEval harness entry point",
+            language: "bash",
+            code: `cargo run --release --manifest-path benchmarks/rust_evaluator/Cargo.toml -- \\
+  --dataset-kind longmemeval \\
+  --dataset benchmarks/LongMemEval/data/longmemeval_s_cleaned.json \\
+  --engine-url http://127.0.0.1:3000 \\
+  --engine-api-key XXX1111AAA \\
+  --reset-first \\
+  --ingest-concurrency 1 \\
+  --top-k 8 \\
+  --max-chunks-per-session 4 recall`
           }
         ]
       },
       {
-        heading: "Result interpretation",
+        heading: "What still needs to happen before we call benchmarking complete",
         paragraphs: [
-          "Report both retrieval metrics (recall@k, MRR) and QA outcome metrics. A retrieval gain that does not improve downstream answer quality may still indicate ranking or prompt issues.",
-          "Keep failed examples and inspect them manually; qualitative review catches failure modes aggregate scores hide."
+          "A proper benchmark page for Aletheia should not stop at one preliminary retrieval run. We still need a full matrix across datasets, retrieval settings, optional reranking, answer-generation layers, and judge-model evaluation so the results are defensible outside the repo.",
+          "In practice, that means LoCoMo is only the first published checkpoint. LongMemEval, ablations, and answer-quality scoring are the next layer."
+        ],
+        steps: [
+          "Rerun LongMemEval end to end with the cleaned dataset and publish the final summary separately from working logs.",
+          "Add retrieval ablations for rerank on/off, lexical-only, semantic-only, and hybrid fusion.",
+          "Report answer-quality metrics alongside retrieval metrics so improvements can be tied to end-user outcome quality.",
+          "Track warm versus cold runs, model versions, and hardware profile so latency claims remain reproducible.",
+          "Keep failed examples and inspect them manually because aggregate percentages hide the most valuable failure modes."
+        ]
+      },
+      {
+        heading: "Benchmark principles we follow",
+        bullets: [
+          "Use fixed datasets and deterministic start indices whenever possible.",
+          "Record model versions, engine config, and policy version with every run.",
+          "Separate warm and cold measurements so cache effects do not blur real latency.",
+          "Keep ingest and query concurrency explicit in the command line and in the published report.",
+          "Publish both retrieval-stage metrics and downstream answer metrics instead of treating them as interchangeable.",
+          "Retain raw artifacts so regressions can be audited, not just summarized."
         ]
       }
     ]
