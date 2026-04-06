@@ -69,6 +69,39 @@ export const MaterialIcon = component$(({ name, class: className }: { name: stri
   return <IconComponent class={className} />;
 });
 
+const topTenFeatures = [
+  { title: "Fact Supersession", body: "Newer truths automatically invalidate stale context." },
+  { title: "Deterministic Aggregation", body: "Perfect math and counting queries at the engine level." },
+  { title: "Predict-Calibrate Profiling", body: "Lean context windows through continuous delta-tracking." },
+  { title: "Neural BERT-NER", body: "Local entity extraction for people, orgs, and places." },
+  { title: "Implicit Preference Detection", body: "Autonomous discovery of user likes and habits." },
+  { title: "Autonomous Knowledge Graph", body: "Self-organizing relationship lattice of user history." },
+  { title: "Hybrid Retrieval Kernel", i: "Fuses semantic, lexical, and neural reranking signals." },
+  { title: "Local-First Rust Binary", body: "Sub-10ms iteration sidecar for rapid development." },
+  { title: "OpenAI-Compatible Proxy", body: "Drop-in memory for any existing OpenAI agent." },
+  { title: "Temporal Decay Policy", body: "Smart ranking that respects the arrow of time." },
+];
+
+export const SentientCheckbox = component$(({ delay }: { delay: string }) => {
+  return (
+    <div class="relative h-6 w-6 flex-shrink-0" style={{ animationDelay: delay }}>
+      <div class="absolute inset-0 rounded-md border-2 border-primary/30 bg-primary/5 transition-colors group-hover:border-primary/60" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="animate-check absolute inset-0 text-primary"
+        style={{ animationDelay: `calc(${delay} + 300ms)` }}
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
+  );
+});
+
 
 const landingStyles = `
 .landing-v2 {
@@ -181,6 +214,27 @@ const landingStyles = `
 .landing-v2 .distillation-path {
   stroke-dasharray: 10;
   animation: flow-line 2s linear infinite;
+}
+
+@keyframes check-draw {
+  from { stroke-dashoffset: 30; }
+  to { stroke-dashoffset: 0; }
+}
+
+.landing-v2 .animate-check {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: check-draw 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+@keyframes feature-entrance {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.landing-v2 .feature-entrance {
+  opacity: 0;
+  animation: feature-entrance 0.5s ease-out forwards;
 }
 
 

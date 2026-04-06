@@ -86,14 +86,15 @@ export function clearSession(cookie: CookieStore) {
 }
 
 export function isAuthenticated(cookie: CookieStore) {
-  return !!cookie.get(SESSION_COOKIE);
+  return !!getCurrentUser(cookie);
 }
 
 export function getCurrentUser(cookie: CookieStore): AuthUser | null {
+  const session = cookie.get(SESSION_COOKIE)?.value;
   const user_id = cookie.get(USER_ID_COOKIE)?.value;
   const username = cookie.get(USERNAME_COOKIE)?.value;
   
-  if (!user_id || !username) return null;
+  if (!session || !user_id || !username) return null;
 
   return { user_id, username };
 }

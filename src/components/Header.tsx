@@ -11,6 +11,13 @@ export const Header = component$(() => {
 
   return (
     <header class="app-topbar fixed top-0 z-50 w-full font-body text-sm tracking-tight shadow-[0px_24px_48px_rgba(0,0,0,0.8)] antialiased">
+      {/* Development Banner */}
+      <div class="bg-primary/10 border-b border-primary/20 py-2 px-4 text-center">
+        <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-primary">
+          Aletheia is currently under development. For early access, 
+          <a href="mailto:sharjeel@aletheiadb.com" class="ml-1 underline hover:text-white transition-colors">contact us</a>.
+        </p>
+      </div>
       <div class="flex h-16 w-full items-center justify-between px-4 md:px-6">
         <div class="flex items-center gap-8">
           <Link
