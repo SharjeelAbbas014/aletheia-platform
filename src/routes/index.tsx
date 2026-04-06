@@ -867,7 +867,7 @@ export default component$(() => {
 
               <div class="flex flex-wrap gap-5">
                 <Link
-                  href="/docs/quickstart"
+                  href="/signup"
                   class="obsidian-gradient flex items-center gap-3 rounded-xl px-10 py-5 text-lg font-bold text-white transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] active:scale-95"
                 >
                   Truth Disclosed
@@ -877,7 +877,7 @@ export default component$(() => {
                   href="/login"
                   class="glass-panel rounded-xl px-10 py-5 text-lg font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95"
                 >
-                  Watch Demo
+                  Mission Control
                 </Link>
               </div>
             </div>
@@ -1857,7 +1857,7 @@ export default component$(() => {
               </p>
               <div class="relative z-10 flex flex-col justify-center gap-6 sm:flex-row">
                 <Link
-                  href="/login"
+                  href="/signup"
                   class="obsidian-gradient rounded-xl px-12 py-5 text-lg font-black uppercase tracking-wider text-white shadow-xl shadow-primary/30 transition-transform hover:scale-105"
                 >
                   Initialize Engine

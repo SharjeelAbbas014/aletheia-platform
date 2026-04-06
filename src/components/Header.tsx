@@ -67,15 +67,38 @@ export const Header = component$(() => {
             <span class={`app-topbar-menu-line ${mobileOpen.value ? "app-topbar-menu-line-middle-open" : ""}`} />
             <span class={`app-topbar-menu-line ${mobileOpen.value ? "app-topbar-menu-line-bottom-open" : ""}`} />
           </button>
-          <Link
-            href="/login"
-            class="rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition-all hover:bg-primary/20 md:px-4"
-            onClick$={() => {
-              mobileOpen.value = false;
-            }}
-          >
-            Log in
-          </Link>
+          <div class="hidden items-center gap-3 md:flex">
+            <Link
+              href="/login"
+              class="text-xs font-bold text-tertiary transition-colors hover:text-on-surface"
+              onClick$={() => {
+                mobileOpen.value = false;
+              }}
+            >
+              Log in
+            </Link>
+            <Link
+              href="/signup"
+              class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20"
+              onClick$={() => {
+                mobileOpen.value = false;
+              }}
+            >
+              Sign up
+            </Link>
+          </div>
+          {/* Mobile Auth Button (just show signup for brevity or keep both) */}
+          <div class="md:hidden">
+             <Link
+                href="/signup"
+                class="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary shadow-lg"
+                onClick$={() => {
+                  mobileOpen.value = false;
+                }}
+              >
+                Sign up
+              </Link>
+          </div>
         </div>
       </div>
 
@@ -100,14 +123,24 @@ export const Header = component$(() => {
             >
               Blog
             </Link>
+            <div class="h-px w-full bg-outline-variant/10 my-2" />
             <Link
               href="/login"
-              class="app-topbar-mobile-link"
+              class="app-topbar-mobile-link text-tertiary"
               onClick$={() => {
                 mobileOpen.value = false;
               }}
             >
               Log in
+            </Link>
+            <Link
+              href="/signup"
+              class="app-topbar-mobile-link font-bold text-primary"
+              onClick$={() => {
+                mobileOpen.value = false;
+              }}
+            >
+              Sign up
             </Link>
           </nav>
         </div>
