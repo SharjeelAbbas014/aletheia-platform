@@ -7,6 +7,7 @@ import {
   type DocumentHead,
   Link
 } from "@builder.io/qwik-city";
+import { Loader2Icon } from "lucide-qwik";
 
 import {
   loginUser,
@@ -112,9 +113,17 @@ export default component$(() => {
 
             <button
               type="submit"
-              class="w-full rounded-lg bg-primary py-4 font-bold text-on-primary shadow-xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
+              disabled={loginAction.isRunning}
+              class="w-full rounded-lg bg-primary py-4 font-bold text-on-primary shadow-xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-70 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Sign In
+              {loginAction.isRunning ? (
+                <>
+                  <Loader2Icon class="w-5 h-5 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </Form>
 

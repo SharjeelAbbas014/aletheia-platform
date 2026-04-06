@@ -1,6 +1,13 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import { buildSeoHead } from "~/lib/seo";
+import { 
+  ArrowLeftIcon, 
+  CheckCircle2Icon, 
+  RocketIcon, 
+  LockIcon, 
+  ZapIcon 
+} from "lucide-qwik";
 
 export default component$(() => {
   const selectedTier = useSignal<string>('fractional');
@@ -8,10 +15,10 @@ export default component$(() => {
 
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
-      <main class="flex-1 overflow-y-auto p-8 lg:p-12 mb-20 max-w-5xl mx-auto w-full">
+      <main class="flex-1 overflow-y-auto p-8 lg:p-12 mb-20 max-w-5xl mx-auto w-full pt-[104px]">
         <header class="mb-12 flex flex-col gap-2">
             <Link href="/platform" class="text-tertiary hover:text-primary mb-4 flex items-center gap-1 transition-colors w-fit">
-                <span class="material-symbols-outlined notranslate normal-case text-sm">arrow_back</span>
+                <ArrowLeftIcon class="w-4 h-4" />
                 Back to Mission Control
             </Link>
           <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface">Deploy New Cluster</h1>
@@ -44,11 +51,11 @@ export default component$(() => {
                     <span class="rounded bg-primary/10 px-2 py-1 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">Pay as you go</span>
                 </div>
                 <ul class="text-sm text-tertiary space-y-2 mb-6">
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined notranslate normal-case text-primary text-sm">check_circle</span> Instance spins up instantly</li>
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined notranslate normal-case text-primary text-sm">check_circle</span> Multi-tenant isolation</li>
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined notranslate normal-case text-primary text-sm">check_circle</span> Best for MVP and testing</li>
+                    <li class="flex items-center gap-2"><CheckCircle2Icon class="w-4 h-4 text-primary" /> Instance spins up instantly</li>
+                    <li class="flex items-center gap-2"><CheckCircle2Icon class="w-4 h-4 text-primary" /> Multi-tenant isolation</li>
+                    <li class="flex items-center gap-2"><CheckCircle2Icon class="w-4 h-4 text-primary" /> Best for MVP and testing</li>
                 </ul>
-                <p class="text-xs font-mono text-tertiary font-bold">$0.50 per 1M vectors indexed</p>
+                <p class="text-xs font-mono text-tertiary font-bold">$1.00 per 1M Semantic Truths Distilled</p>
             </div>
 
             {/* Dedicated Pro Tier */}
@@ -64,9 +71,9 @@ export default component$(() => {
                     <span class="rounded bg-orange-500/10 px-2 py-1 font-mono text-[10px] text-orange-400 font-bold uppercase tracking-widest">Single Tenant</span>
                 </div>
                 <ul class="text-sm text-tertiary space-y-2 mb-6">
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined notranslate normal-case text-orange-400 text-sm">rocket_launch</span> Dedicated L4 GPU Container</li>
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined notranslate normal-case text-orange-400 text-sm">lock</span> Complete Data Isolation (PVC)</li>
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined notranslate normal-case text-orange-400 text-sm">speed</span> Zero Noisy Neighbors</li>
+                    <li class="flex items-center gap-2"><RocketIcon class="w-4 h-4 text-orange-400" /> Dedicated L4 GPU Container</li>
+                    <li class="flex items-center gap-2"><LockIcon class="w-4 h-4 text-orange-400" /> Complete Data Isolation (PVC)</li>
+                    <li class="flex items-center gap-2"><ZapIcon class="w-4 h-4 text-orange-400" /> Zero Noisy Neighbors</li>
                 </ul>
                 <p class="text-xs font-mono text-tertiary font-bold">$400 / month flat rate</p>
             </div>

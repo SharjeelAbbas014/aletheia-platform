@@ -1,5 +1,29 @@
 import { Slot, component$ } from "@builder.io/qwik";
 import { Link, type RequestHandler, useLocation } from "@builder.io/qwik-city";
+import { 
+  RocketIcon, 
+  ZapIcon, 
+  LayoutDashboardIcon, 
+  DatabaseIcon, 
+  LayersIcon, 
+  HashIcon, 
+  NetworkIcon, 
+  CpuIcon, 
+  FileTextIcon, 
+  ClockIcon, 
+  RotateCcwIcon, 
+  Code2Icon, 
+  SearchIcon, 
+  HistoryIcon, 
+  Trash2Icon, 
+  TerminalIcon, 
+  CodeIcon, 
+  PackageIcon, 
+  BarChart3Icon, 
+  ShieldCheckIcon, 
+  WrenchIcon,
+  ExternalLinkIcon 
+} from "lucide-qwik";
 
 import { CONTACT_EMAIL, CONTACT_MAILTO } from "~/constants/contact";
 import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
@@ -9,6 +33,37 @@ import { docsNavigation } from "~/lib/docs";
 export const onRequest: RequestHandler = (event) => {
   setPublicEdgeCache(event);
 };
+
+const IconResolver = component$((props: { name?: string }) => {
+  const cn = "w-4 h-4";
+  switch (props.name) {
+    case "rocket_launch": return <RocketIcon class={cn} />;
+    case "bolt": return <ZapIcon class={cn} />;
+    case "psychology": return <RocketIcon class={cn} />;
+    case "dashboard": return <LayoutDashboardIcon class={cn} />;
+    case "dataset": return <DatabaseIcon class={cn} />;
+    case "category": return <LayersIcon class={cn} />;
+    case "tag": return <HashIcon class={cn} />;
+    case "hub": return <NetworkIcon class={cn} />;
+    case "memory": return <CpuIcon class={cn} />;
+    case "text_snippet": return <FileTextIcon class={cn} />;
+    case "auto_awesome": return <ZapIcon class={cn} />;
+    case "schedule": return <ClockIcon class={cn} />;
+    case "published_with_changes": return <RotateCcwIcon class={cn} />;
+    case "api": return <Code2Icon class={cn} />;
+    case "database": return <DatabaseIcon class={cn} />;
+    case "travel_explore": return <SearchIcon class={cn} />;
+    case "history": return <HistoryIcon class={cn} />;
+    case "delete": return <Trash2Icon class={cn} />;
+    case "terminal": return <TerminalIcon class={cn} />;
+    case "code": return <CodeIcon class={cn} />;
+    case "deployed_code": return <PackageIcon class={cn} />;
+    case "bar_chart": return <BarChart3Icon class={cn} />;
+    case "verified_user": return <ShieldCheckIcon class={cn} />;
+    case "build": return <WrenchIcon class={cn} />;
+    default: return <FileTextIcon class={cn} />;
+  }
+});
 
 export default component$(() => {
   const location = useLocation();
@@ -33,14 +88,7 @@ export default component$(() => {
         <div class="docs-shell-left-inner">
           <div class="docs-brand">
             <div class="docs-brand-icon">
-              <img
-                src="/icon-64.png"
-                alt="Aletheia icon"
-                width={32}
-                height={32}
-                loading="eager"
-                decoding="async"
-              />
+               <LayersIcon class="w-5 h-5 text-primary" />
             </div>
             <div>
               <p class="docs-brand-title">Docs</p>
@@ -62,9 +110,9 @@ export default component$(() => {
                         href={item.href}
                         class={`docs-nav-link ${isActive ? "docs-nav-link-active" : ""}`}
                       >
-                        <span class="material-symbols-outlined docs-nav-icon">
-                          {item.icon}
-                        </span>
+                        <div class="docs-nav-icon">
+                          <IconResolver name={item.icon} />
+                        </div>
                         <span class="docs-nav-text-wrap">
                           <span class="docs-nav-text-title">{item.title}</span>
                           {item.description ? (
@@ -157,7 +205,7 @@ export default component$(() => {
                   class="docs-repo-link"
                 >
                   <span>{repo.label}</span>
-                  <span class="material-symbols-outlined">open_in_new</span>
+                  <ExternalLinkIcon class="w-4 h-4 ml-auto text-tertiary" />
                 </a>
               ))}
             </div>

@@ -3,7 +3,17 @@ import {
   Link,
   type DocumentHead,
   type RequestHandler,
+  routeLoader$,
 } from "@builder.io/qwik-city";
+import { isAuthenticated } from "~/lib/auth";
+
+export const useAuthGuard = routeLoader$((event) => {
+  const authenticated = isAuthenticated(event.cookie);
+  if (authenticated) {
+    throw event.redirect(302, "/platform");
+  }
+});
+
 import {
   CALENDLY_30_MIN_URL,
   CONTACT_EMAIL,

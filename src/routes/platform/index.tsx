@@ -1,4 +1,17 @@
 import { component$, useSignal } from "@builder.io/qwik";
+import { 
+  LayoutDashboardIcon, 
+  NetworkIcon, 
+  BarChart3Icon, 
+  LogOutIcon, 
+  PlusIcon, 
+  ServerIcon,
+  CopyIcon,
+  CheckCircle2Icon,
+  Trash2Icon,
+  KeyIcon,
+  Loader2Icon
+} from "lucide-qwik";
 import {
   Form,
   Link,
@@ -92,27 +105,27 @@ export default component$(() => {
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
       {/* Side Navigation */}
-      <aside class="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-outline-variant/15 bg-surface-container-lowest font-body text-sm font-medium md:flex">
+      <aside class="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-outline-variant/15 bg-surface-container-lowest font-body text-sm font-medium md:flex pt-[104px]">
         <div class="p-6">
 
 
           <nav class="space-y-1">
             <a class="flex items-center gap-3 rounded-md bg-primary/10 px-4 py-2 text-primary transition-all" href="#">
-              <span class="material-symbols-outlined notranslate normal-case text-sm">dashboard</span>
+              <LayoutDashboardIcon class="w-4 h-4" />
               Mission Control
             </a>
             <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="#">
-              <span class="material-symbols-outlined notranslate normal-case text-sm">hub</span>
+              <NetworkIcon class="w-4 h-4" />
               Knowledge Graph
             </a>
             <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="#">
-              <span class="material-symbols-outlined notranslate normal-case text-sm">analytics</span>
+              <BarChart3Icon class="w-4 h-4" />
               Metric Vault
             </a>
           </nav>
         </div>
 
-        <div class="mt-auto p-6 border-t border-outline-variant/10">
+        <div class="mt-auto p-6 border-t border-outline-variant/10 mb-[104px]">
           <div class="flex items-center gap-3">
             <div class="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-on-secondary uppercase">
               {platformData.value.user.username.slice(0, 2)}
@@ -122,8 +135,8 @@ export default component$(() => {
               <p class="text-[10px] text-tertiary">Free Tier</p>
             </div>
             <form action="/logout" method="post">
-              <button type="submit" class="text-tertiary hover:text-on-surface">
-                <span class="material-symbols-outlined notranslate normal-case text-sm">logout</span>
+              <button type="submit" class="text-tertiary hover:text-on-surface mt-1">
+                <LogOutIcon class="w-4 h-4" />
               </button>
             </form>
           </div>
@@ -181,7 +194,7 @@ export default component$(() => {
               <div class="mb-6 flex items-center justify-between">
                 <h3 class="text-xl font-bold tracking-tight">Your Clusters</h3>
                 <Link href="/platform/clusters/new" class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20">
-                  <span class="material-symbols-outlined notranslate normal-case text-sm">add</span>
+                  <PlusIcon class="w-4 h-4" />
                   Deploy Cluster
                 </Link>
               </div>
@@ -189,7 +202,7 @@ export default component$(() => {
               <div class="space-y-4">
                 {clusters.length === 0 && (
                   <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
-                    <span class="material-symbols-outlined notranslate normal-case text-4xl text-outline-variant mb-4">dns</span>
+                    <ServerIcon class="w-10 h-10 text-outline-variant mb-4" />
                     <p class="text-tertiary mb-4">No clusters yet. Deploy one to start connecting your agents.</p>
                     <Link href="/platform/clusters/new" class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]">
                       Deploy First Cluster
@@ -200,7 +213,7 @@ export default component$(() => {
                   <div key={cluster.id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
                     <div class="flex items-center gap-4">
                       <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
-                        <span class="material-symbols-outlined notranslate normal-case text-xl">dns</span>
+                        <ServerIcon class="w-6 h-6" />
                       </div>
                       <div>
                         <div class="flex items-center gap-3">
@@ -232,18 +245,18 @@ export default component$(() => {
               {createKeyAction.value?.success && createKeyAction.value.key?.token && (
                 <div class="mb-8 rounded-2xl bg-primary/10 border border-primary/30 p-6 shadow-[0_0_30px_rgba(99,102,241,0.1)]">
                   <div class="flex items-center gap-3 mb-4 text-primary">
-                    <span class="material-symbols-outlined notranslate normal-case">verified</span>
+                    <CheckCircle2Icon class="w-5 h-5" />
                     <p class="font-bold">New Key Generated Successfully</p>
                   </div>
                   <p class="text-sm text-tertiary mb-4">Make sure to copy your API key now. You won't be able to see it again.</p>
                   <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-primary border border-primary/20">
                     <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
-                    <button
-                      class="p-2 hover:bg-primary/20 rounded transition-colors"
-                      onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
-                    >
-                      <span class="material-symbols-outlined notranslate normal-case text-sm">content_copy</span>
-                    </button>
+                      <button
+                        class="p-2 hover:bg-primary/20 rounded transition-colors"
+                        onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
+                      >
+                        <CopyIcon class="w-4 h-4" />
+                      </button>
                   </div>
                 </div>
               )}
@@ -251,16 +264,16 @@ export default component$(() => {
               <div class="space-y-4">
                 {keys.length === 0 && !createKeyAction.value?.success && (
                   <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
-                    <span class="material-symbols-outlined notranslate normal-case text-4xl text-outline-variant mb-4">vpn_key</span>
-                    <p class="text-tertiary">No active API keys found. Generate one to start building.</p>
+                    <KeyIcon class="w-10 h-10 text-outline-variant mb-4" />
+                    <p class="text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
                   </div>
                 )}
 
                 {keys.map((key) => (
                   <div key={key.key_id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
                     <div class="flex items-center gap-4">
-                      <div class="rounded-lg bg-surface-container-highest p-3 text-primary">
-                        <span class="material-symbols-outlined notranslate normal-case">key</span>
+                      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                        <KeyIcon class="w-5 h-5" />
                       </div>
                       <div>
                         <h4 class="font-bold text-on-surface">{key.name}</h4>
@@ -275,7 +288,7 @@ export default component$(() => {
                       <Form action={revokeKeyAction}>
                         <input type="hidden" name="id" value={key.key_id} />
                         <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white">
-                          <span class="material-symbols-outlined notranslate normal-case text-sm">delete</span>
+                          <Trash2Icon class="w-4 h-4" />
                         </button>
                       </Form>
                     </div>
@@ -295,8 +308,19 @@ export default component$(() => {
                     placeholder="Key identifier (e.g. Production Cluster 01)"
                     required
                   />
-                  <button type="submit" class="rounded-lg bg-primary px-8 py-3 font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20">
-                    Generate Key
+                  <button
+                    type="submit"
+                    disabled={createKeyAction.isRunning}
+                    class="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
+                  >
+                    {createKeyAction.isRunning ? (
+                      <>
+                        <Loader2Icon class="w-4 h-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      "Generate New Key"
+                    )}
                   </button>
                 </Form>
               </div>

@@ -1,14 +1,20 @@
 import { component$ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import { buildSeoHead } from "~/lib/seo";
+import { 
+  ArrowLeftIcon, 
+  RocketIcon, 
+  CopyIcon, 
+  KeyIcon 
+} from "lucide-qwik";
 
 export default component$(() => {
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
-      <main class="flex-1 overflow-y-auto p-8 lg:p-12 mb-20 max-w-5xl mx-auto w-full">
+      <main class="flex-1 overflow-y-auto p-8 lg:p-12 mb-20 max-w-5xl mx-auto w-full pt-[104px]">
         <header class="mb-12 flex flex-col gap-4">
             <Link href="/platform" class="text-tertiary hover:text-primary flex items-center gap-1 transition-colors w-fit">
-                <span class="material-symbols-outlined notranslate normal-case text-sm">arrow_back</span>
+                <ArrowLeftIcon class="w-4 h-4" />
                 Mission Control
             </Link>
             
@@ -24,7 +30,7 @@ export default component$(() => {
 
                 {/* Migrate Button */}
                 <button class="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-6 py-3 font-bold text-sm text-orange-400 transition-all hover:bg-orange-500 hover:text-white shadow-lg">
-                    <span class="material-symbols-outlined notranslate normal-case text-sm">rocket_launch</span>
+                    <RocketIcon class="w-4 h-4" />
                     Migrate to Dedicated
                 </button>
             </div>
@@ -40,7 +46,7 @@ export default component$(() => {
                         <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-primary border border-primary/20">
                             <span class="flex-1 truncate">https://api.aletheiadb.com/v1</span>
                             <button class="p-2 hover:bg-primary/20 rounded transition-colors text-primary">
-                                <span class="material-symbols-outlined notranslate normal-case text-sm">content_copy</span>
+                                <CopyIcon class="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -50,7 +56,7 @@ export default component$(() => {
                         <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-on-surface border border-outline-variant/20">
                             <span class="flex-1 truncate text-tertiary">••••••••••••••••••••••••••••••••</span>
                             <button class="p-2 hover:bg-surface-container-high rounded transition-colors">
-                                <span class="material-symbols-outlined notranslate normal-case text-sm">key</span>
+                                <KeyIcon class="w-4 h-4" />
                             </button>
                         </div>
                         <p class="text-xs text-tertiary mt-2">Manage keys in Mission Control.</p>
@@ -64,7 +70,7 @@ export default component$(() => {
                 <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-1">Compute Usage</p>
                 <div class="flex items-end gap-3">
                     <h3 class="text-4xl font-black text-on-surface">14.2M</h3>
-                    <p class="text-tertiary text-sm mb-1">vectors</p>
+                    <p class="text-tertiary text-sm mb-1">memories</p>
                 </div>
                 <div class="w-full bg-surface-container-highest rounded-full h-2 mt-4">
                     <div class="bg-primary h-2 rounded-full" style="width: 15%"></div>

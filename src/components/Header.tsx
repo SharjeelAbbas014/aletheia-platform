@@ -1,7 +1,19 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
+import type { AuthUser } from "~/lib/auth";
+import { 
+  LayersIcon, 
+  LayoutDashboardIcon, 
+  LogOutIcon,
+  MenuIcon,
+  XIcon
+} from "lucide-qwik";
 
-export const Header = component$(() => {
+export interface HeaderProps {
+  user?: AuthUser | null;
+}
+
+export const Header = component$((props: HeaderProps) => {
   const location = useLocation();
   const pathname = location.url.pathname;
   const mobileOpen = useSignal(false);
@@ -27,13 +39,9 @@ export const Header = component$(() => {
               mobileOpen.value = false;
             }}
           >
-            <img
-              src="/logo-64.png"
-              alt="Aletheia logo"
-              class="h-8 w-8 rounded object-contain"
-              loading="eager"
-              decoding="async"
-            />
+            <div class="flex h-8 w-8 items-center justify-center rounded bg-primary shadow-lg shadow-primary/20">
+               <LayersIcon class="w-5 h-5 text-on-primary" />
+            </div>
             <span>Aletheia</span>
           </Link>
           <nav class="hidden items-center gap-6 md:flex">
@@ -70,33 +78,52 @@ export const Header = component$(() => {
               mobileOpen.value = !mobileOpen.value;
             }}
           >
-            <span class={`app-topbar-menu-line ${mobileOpen.value ? "app-topbar-menu-line-top-open" : ""}`} />
-            <span class={`app-topbar-menu-line ${mobileOpen.value ? "app-topbar-menu-line-middle-open" : ""}`} />
-            <span class={`app-topbar-menu-line ${mobileOpen.value ? "app-topbar-menu-line-bottom-open" : ""}`} />
+            {mobileOpen.value ? <XIcon class="w-6 h-6" /> : <MenuIcon class="w-6 h-6" />}
           </button>
-          <div class="hidden items-center gap-3 md:flex">
-            <Link
-              href="/login"
-              class="text-xs font-bold text-tertiary transition-colors hover:text-on-surface"
-              onClick$={() => {
-                mobileOpen.value = false;
-              }}
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20"
-              onClick$={() => {
-                mobileOpen.value = false;
-              }}
-            >
-              Sign up
-            </Link>
+          
+          <div class="hidden items-center gap-4 md:flex">
+            {props.user ? (
+              <>
+                <Link
+                  href="/platform"
+                  class="text-xs font-bold text-tertiary transition-colors hover:text-on-surface flex items-center gap-2"
+                >
+                  <LayoutDashboardIcon class="w-4 h-4" />
+                  Console
+                </Link>
+                <form action="/logout" method="post">
+                   <button type="submit" class="text-tertiary hover:text-on-surface transition-colors mt-1">
+                      <LogOutIcon class="w-4 h-4" />
+                   </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  class="text-xs font-bold text-tertiary transition-colors hover:text-on-surface"
+                  onClick$={() => {
+                    mobileOpen.value = false;
+                  }}
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  class="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20"
+                  onClick$={() => {
+                    mobileOpen.value = false;
+                  }}
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
-          {/* Mobile Auth Button (just show signup for brevity or keep both) */}
+
           <div class="md:hidden">
-             <Link
+            {!props.user && (
+              <Link
                 href="/signup"
                 class="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary shadow-lg"
                 onClick$={() => {
@@ -105,6 +132,7 @@ export const Header = component$(() => {
               >
                 Sign up
               </Link>
+            )}
           </div>
         </div>
       </div>
@@ -131,24 +159,47 @@ export const Header = component$(() => {
               Blog
             </Link>
             <div class="h-px w-full bg-outline-variant/10 my-2" />
-            <Link
-              href="/login"
-              class="app-topbar-mobile-link text-tertiary"
-              onClick$={() => {
-                mobileOpen.value = false;
-              }}
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              class="app-topbar-mobile-link font-bold text-primary"
-              onClick$={() => {
-                mobileOpen.value = false;
-              }}
-            >
-              Sign up
-            </Link>
+            
+            {props.user ? (
+               <>
+                <Link
+                  href="/platform"
+                  class="app-topbar-mobile-link font-bold text-primary"
+                  onClick$={() => {
+                    mobileOpen.value = false;
+                  }}
+                >
+                  Console
+                </Link>
+                <form action="/logout" method="post" class="p-4">
+                   <button type="submit" class="text-tertiary flex items-center gap-2">
+                      <LogOutIcon class="w-4 h-4" />
+                      Log out
+                   </button>
+                </form>
+               </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  class="app-topbar-mobile-link text-tertiary"
+                  onClick$={() => {
+                    mobileOpen.value = false;
+                  }}
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  class="app-topbar-mobile-link font-bold text-primary"
+                  onClick$={() => {
+                    mobileOpen.value = false;
+                  }}
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       ) : null}
