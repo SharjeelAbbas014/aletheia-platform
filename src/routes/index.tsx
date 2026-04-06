@@ -70,6 +70,7 @@ export const MaterialIcon = component$(({ name, class: className }: { name: stri
 });
 
 const topTenFeatures = [
+  { title: "Rust-Powered Core", body: "Built in Rust completely from ground up for maximum performance." },
   { title: "Fact Supersession", body: "Newer truths automatically invalidate stale context." },
   { title: "Deterministic Aggregation", body: "Perfect math and counting queries at the engine level." },
   { title: "Predict-Calibrate Profiling", body: "Lean context windows through continuous delta-tracking." },
@@ -77,7 +78,6 @@ const topTenFeatures = [
   { title: "Implicit Preference Detection", body: "Autonomous discovery of user likes and habits." },
   { title: "Autonomous Knowledge Graph", body: "Self-organizing relationship lattice of user history." },
   { title: "Hybrid Retrieval Kernel", i: "Fuses semantic, lexical, and neural reranking signals." },
-  { title: "Local-First Rust Binary", body: "Sub-10ms iteration sidecar for rapid development." },
   { title: "OpenAI-Compatible Proxy", body: "Drop-in memory for any existing OpenAI agent." },
   { title: "Temporal Decay Policy", body: "Smart ranking that respects the arrow of time." },
 ];
@@ -85,7 +85,8 @@ const topTenFeatures = [
 export const SentientCheckbox = component$(({ delay }: { delay: string }) => {
   return (
     <div class="relative h-6 w-6 flex-shrink-0" style={{ animationDelay: delay }}>
-      <div class="absolute inset-0 rounded-md border-2 border-primary/30 bg-primary/5 transition-colors group-hover:border-primary/60" />
+      <div class="active-glow absolute inset-[-4px] rounded-md bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" style={{ animationDelay: delay }} />
+      <div class="absolute inset-0 rounded-md border-2 border-primary/30 bg-black transition-colors group-hover:border-primary/60" />
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -93,7 +94,7 @@ export const SentientCheckbox = component$(({ delay }: { delay: string }) => {
         stroke-width="4"
         stroke-linecap="round"
         stroke-linejoin="round"
-        class="animate-check absolute inset-0 text-primary"
+        class="animate-check absolute inset-0 text-primary p-0.5"
         style={{ animationDelay: `calc(${delay} + 300ms)` }}
       >
         <polyline points="20 6 9 17 4 12" />
@@ -214,6 +215,15 @@ const landingStyles = `
 .landing-v2 .distillation-path {
   stroke-dasharray: 10;
   animation: flow-line 2s linear infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.3; filter: blur(8px); }
+  50% { opacity: 0.6; filter: blur(12px); }
+}
+
+.landing-v2 .active-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 @keyframes check-draw {
@@ -893,25 +903,41 @@ export default component$(() => {
               </div>
             </div>
 
-            <div class="relative glass-panel rounded-[2.5rem] border border-primary/20 p-8 md:p-12 shadow-2xl bg-black/40 backdrop-blur-xl">
-               <div class="mb-8 flex items-center justify-between">
-                  <h2 class="text-xs font-black uppercase tracking-[0.3em] text-primary">Engine Capabilities</h2>
-                  <div class="h-1 w-24 bg-primary/20 rounded-full" />
+            <div class="relative glass-panel rounded-[2.5rem] border border-primary/20 p-8 md:p-12 shadow-2xl bg-black/40 backdrop-blur-xl group/container">
+               <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.05),transparent_70%)]" />
+               <div class="relative z-10 mb-10 flex items-center justify-between">
+                  <div>
+                    <h2 class="text-xs font-black uppercase tracking-[0.3em] text-primary">Engine Capabilities</h2>
+                    <p class="text-[10px] text-tertiary mt-1">Autonomous cognitive primitives established.</p>
+                  </div>
+                  <div class="flex gap-1">
+                    {[1,2,3].map(i => (
+                      <div key={i} class="h-1 w-4 bg-primary/20 rounded-full animate-pulse" style={{ animationDelay: `${i*200}ms` }} />
+                    ))}
+                  </div>
                </div>
-               <div class="grid grid-cols-1 gap-y-5">
+               <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
                   {topTenFeatures.map((f, i) => (
                     <div 
                       key={f.title} 
-                      class="feature-entrance flex gap-4 group"
-                      style={{ animationDelay: `${i * 150}ms` }}
+                      class="feature-entrance flex gap-4 group/item"
+                      style={{ animationDelay: `${i * 400}ms` }}
                     >
-                      <SentientCheckbox delay={`${i * 150}ms`} />
-                      <div>
-                        <span class="block text-sm font-black text-on-surface group-hover:text-primary transition-colors">{f.title}</span>
-                        <p class="text-[11px] text-tertiary leading-tight mt-0.5">{f.body || (f as any).i}</p>
+                      <SentientCheckbox delay={`${i * 400}ms`} />
+                      <div class="flex flex-col">
+                        <span class="text-[13px] font-black text-white group-hover/item:text-primary transition-colors tracking-tight uppercase">
+                          {f.title}
+                        </span>
+                        <p class="text-[10px] text-tertiary/80 leading-snug mt-1 group-hover/item:text-tertiary transition-colors">
+                          {f.body || (f as any).i}
+                        </p>
                       </div>
                     </div>
                   ))}
+               </div>
+               <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1 rounded-full border border-white/5 bg-white/5 backdrop-blur-md">
+                  <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  <span class="text-[9px] font-mono text-tertiary uppercase tracking-widest">Kernel v2.0 Optimal</span>
                </div>
             </div>
           </div>
