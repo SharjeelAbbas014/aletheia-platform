@@ -28,7 +28,7 @@ export const useSignupAction = routeAction$(async (data, event) => {
 
   if (password.length < 8) {
     return event.fail(400, {
-        message: "Password must be at least 8 characters long."
+      message: "Password must be at least 8 characters long."
     });
   }
 
@@ -63,15 +63,7 @@ export default component$(() => {
       <div class="relative hidden flex-col justify-between overflow-hidden bg-surface-container-lowest p-12 md:flex md:w-1/2">
         <div class="absolute right-0 top-0 h-96 w-96 translate-x-1/2 -translate-y-1/2 rounded-full bg-secondary/10 blur-[120px]"></div>
         <div class="absolute bottom-0 left-0 h-80 w-80 -translate-x-1/2 translate-y-1/2 rounded-full bg-primary/10 blur-[100px]"></div>
-        
-        <div class="relative z-10">
-          <Link href="/" class="flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-lg">
-              <span class="material-symbols-outlined notranslate normal-case text-on-primary font-bold">dataset</span>
-            </div>
-            <span class="text-2xl font-bold tracking-tighter text-on-surface">Aletheia</span>
-          </Link>
-        </div>
+
 
         <div class="relative z-10 max-w-lg">
           <h1 class="mb-6 text-5xl font-extrabold leading-tight tracking-tight">
@@ -119,7 +111,7 @@ export default component$(() => {
                 placeholder="How should we call you?"
               />
             </div>
-            
+
             <div class="space-y-1">
               <label class="text-[10px] font-bold uppercase tracking-widest text-tertiary" for="password">Password</label>
               <input
@@ -145,7 +137,7 @@ export default component$(() => {
           </Form>
 
           <p class="mt-8 text-center text-sm text-tertiary">
-            Already have an account? 
+            Already have an account?
             <Link href="/login" class="ml-1 text-primary font-bold hover:underline">Sign in</Link>
           </p>
         </div>

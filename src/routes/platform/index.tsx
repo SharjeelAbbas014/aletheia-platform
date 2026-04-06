@@ -52,7 +52,7 @@ export const onRequest: RequestHandler = (event) => {
 export const useCreateApiKeyAction = routeAction$(async (data, event) => {
   requireAuth(event);
   const name = String(data.name ?? "New API Key");
-  
+
   const newKey = await createApiKey(event, name);
 
   return {
@@ -94,13 +94,8 @@ export default component$(() => {
       {/* Side Navigation */}
       <aside class="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-outline-variant/15 bg-surface-container-lowest font-body text-sm font-medium md:flex">
         <div class="p-6">
-          <Link href="/" class="mb-12 flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-lg">
-              <span class="material-symbols-outlined notranslate normal-case text-on-primary font-bold">dataset</span>
-            </div>
-            <span class="text-xl font-black tracking-tighter text-on-surface">Aletheia</span>
-          </Link>
-          
+
+
           <nav class="space-y-1">
             <a class="flex items-center gap-3 rounded-md bg-primary/10 px-4 py-2 text-primary transition-all" href="#">
               <span class="material-symbols-outlined notranslate normal-case text-sm">dashboard</span>
@@ -116,22 +111,22 @@ export default component$(() => {
             </a>
           </nav>
         </div>
-        
+
         <div class="mt-auto p-6 border-t border-outline-variant/10">
-            <div class="flex items-center gap-3">
-                <div class="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-on-secondary uppercase">
-                    {platformData.value.user.username.slice(0, 2)}
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <p class="truncate text-xs font-bold">{platformData.value.user.username}</p>
-                    <p class="text-[10px] text-tertiary">Free Tier</p>
-                </div>
-                <form action="/logout" method="post">
-                    <button type="submit" class="text-tertiary hover:text-on-surface">
-                        <span class="material-symbols-outlined notranslate normal-case text-sm">logout</span>
-                    </button>
-                </form>
+          <div class="flex items-center gap-3">
+            <div class="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-on-secondary uppercase">
+              {platformData.value.user.username.slice(0, 2)}
             </div>
+            <div class="flex-1 overflow-hidden">
+              <p class="truncate text-xs font-bold">{platformData.value.user.username}</p>
+              <p class="text-[10px] text-tertiary">Free Tier</p>
+            </div>
+            <form action="/logout" method="post">
+              <button type="submit" class="text-tertiary hover:text-on-surface">
+                <span class="material-symbols-outlined notranslate normal-case text-sm">logout</span>
+              </button>
+            </form>
+          </div>
         </div>
       </aside>
 
@@ -159,7 +154,7 @@ export default component$(() => {
             <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Total Requests</p>
             <p class="mt-2 text-3xl font-black text-on-surface">{usage?.request_count || 0}</p>
           </div>
-          
+
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
             <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Memories Ingested</p>
             <p class="mt-2 text-3xl font-black text-on-surface">{usage?.ingest_count || 0}</p>
@@ -173,7 +168,7 @@ export default component$(() => {
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
             <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Last Activity</p>
             <p class="mt-2 text-lg font-bold text-on-surface">
-                {usage?.last_request_ms ? formatDate(usage.last_request_ms) : "Never"}
+              {usage?.last_request_ms ? formatDate(usage.last_request_ms) : "Never"}
             </p>
           </div>
         </section>
@@ -210,11 +205,10 @@ export default component$(() => {
                       <div>
                         <div class="flex items-center gap-3">
                           <h4 class="font-bold text-on-surface text-lg">{cluster.name}</h4>
-                          <span class={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest ${
-                            cluster.status === "active" ? "bg-green-500/10 text-green-400" :
-                            cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
-                            "bg-red-500/10 text-red-400"
-                          }`}>{cluster.status}</span>
+                          <span class={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest ${cluster.status === "active" ? "bg-green-500/10 text-green-400" :
+                              cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
+                                "bg-red-500/10 text-red-400"
+                            }`}>{cluster.status}</span>
                           <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">{cluster.tier}</span>
                         </div>
                         <p class="mt-1 font-mono text-xs text-tertiary">{cluster.endpoint_url}</p>
@@ -237,31 +231,31 @@ export default component$(() => {
 
               {createKeyAction.value?.success && createKeyAction.value.key?.token && (
                 <div class="mb-8 rounded-2xl bg-primary/10 border border-primary/30 p-6 shadow-[0_0_30px_rgba(99,102,241,0.1)]">
-                    <div class="flex items-center gap-3 mb-4 text-primary">
-                        <span class="material-symbols-outlined notranslate normal-case">verified</span>
-                        <p class="font-bold">New Key Generated Successfully</p>
-                    </div>
-                    <p class="text-sm text-tertiary mb-4">Make sure to copy your API key now. You won't be able to see it again.</p>
-                    <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-primary border border-primary/20">
-                        <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
-                        <button 
-                            class="p-2 hover:bg-primary/20 rounded transition-colors"
-                            onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
-                        >
-                            <span class="material-symbols-outlined notranslate normal-case text-sm">content_copy</span>
-                        </button>
-                    </div>
+                  <div class="flex items-center gap-3 mb-4 text-primary">
+                    <span class="material-symbols-outlined notranslate normal-case">verified</span>
+                    <p class="font-bold">New Key Generated Successfully</p>
+                  </div>
+                  <p class="text-sm text-tertiary mb-4">Make sure to copy your API key now. You won't be able to see it again.</p>
+                  <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-primary border border-primary/20">
+                    <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
+                    <button
+                      class="p-2 hover:bg-primary/20 rounded transition-colors"
+                      onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
+                    >
+                      <span class="material-symbols-outlined notranslate normal-case text-sm">content_copy</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
               <div class="space-y-4">
                 {keys.length === 0 && !createKeyAction.value?.success && (
-                    <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
-                        <span class="material-symbols-outlined notranslate normal-case text-4xl text-outline-variant mb-4">vpn_key</span>
-                        <p class="text-tertiary">No active API keys found. Generate one to start building.</p>
-                    </div>
+                  <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
+                    <span class="material-symbols-outlined notranslate normal-case text-4xl text-outline-variant mb-4">vpn_key</span>
+                    <p class="text-tertiary">No active API keys found. Generate one to start building.</p>
+                  </div>
                 )}
-                
+
                 {keys.map((key) => (
                   <div key={key.key_id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
                     <div class="flex items-center gap-4">
@@ -311,7 +305,7 @@ export default component$(() => {
 
           <aside class="space-y-8">
             <div class="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-8">
-               <div class="mb-4 flex items-center justify-between">
+              <div class="mb-4 flex items-center justify-between">
                 <h3 class="text-lg font-bold">Local Sidecar</h3>
                 <span class="rounded bg-primary/10 px-2 py-1 font-mono text-[10px] text-primary font-bold">Python SDK</span>
               </div>
