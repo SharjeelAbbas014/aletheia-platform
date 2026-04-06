@@ -23,8 +23,11 @@ export default component$(() => {
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
         <meta name="theme-color" content="#101117" />
+        <link rel="icon" href="/icon.png" type="image/png" />
         <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
-        <link rel="shortcut icon" href="/favicon-32.png" />
+        <link rel="icon" href="/icon-64.png" type="image/png" sizes="64x64" />
+        <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+        <link rel="shortcut icon" href="/icon.png" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         {commonHeadLinks.map((link) => (
           <link key={`global-link-${link.rel}-${link.href}`} {...link} />

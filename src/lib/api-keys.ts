@@ -1,5 +1,7 @@
 const ALETHEIA_URL = (process.env.ALETHEIA_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
+export const DEFAULT_TEST_API_KEY = "XXX1111AAA";
+
 export interface ApiKey {
   key_id: string;
   name: string;
