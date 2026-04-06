@@ -6,5 +6,5 @@ import { setPrivateNoStore } from "~/lib/cache";
 export const onPost: RequestHandler = (event) => {
   setPrivateNoStore(event);
   clearSession(event.cookie);
-  throw event.redirect(302, "/login");
+  throw event.redirect(302, "/");
 };

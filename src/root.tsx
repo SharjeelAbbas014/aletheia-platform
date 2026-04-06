@@ -33,10 +33,10 @@ export default component$(() => {
           <link key={`global-link-${link.rel}-${link.href}`} {...link} />
         ))}
         {commonHeadScripts.map((script) => {
-          const { script: content, ...props } = script;
+          const { key, props, script: content } = script;
           return (
             <script
-              key={`global-script-${script.key}`}
+              key={`global-script-${key}`}
               {...props}
               dangerouslySetInnerHTML={content}
             />

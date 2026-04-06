@@ -59,7 +59,7 @@ export default component$(() => {
   const signupAction = useSignupAction();
 
   return (
-    <main class="flex min-h-screen w-full flex-col md:flex-row bg-background text-on-surface font-body antialiased overflow-x-hidden">
+    <main class="flex min-h-[calc(100vh-104px)] w-full flex-col md:flex-row bg-background text-on-surface font-body antialiased overflow-x-hidden">
       {/* Brand Side */}
       <div class="relative hidden flex-col justify-between overflow-hidden bg-surface-container-lowest p-12 md:flex md:w-1/2">
         <div class="absolute right-0 top-0 h-96 w-96 translate-x-1/2 -translate-y-1/2 rounded-full bg-secondary/10 blur-[120px]"></div>
