@@ -16,16 +16,16 @@ import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
 
 export const useLoginAction = routeAction$(async (data, event) => {
-  const username = String(data.username ?? "").trim();
+  const email = String(data.email ?? "").trim();
   const password = String(data.password ?? "");
 
-  if (!username || !password) {
+  if (!email || !password) {
     return event.fail(400, {
-      message: "Username and password are required."
+      message: "Email and password are required."
     });
   }
 
-  const result = await loginUser(event, username, password);
+  const result = await loginUser(event, email, password);
   if (!result.ok) {
     return event.fail(401, {
       message: result.message || "Invalid credentials."
@@ -91,13 +91,13 @@ export default component$(() => {
 
           <Form action={loginAction} class="space-y-6">
             <div class="space-y-1">
-              <label class="text-[10px] font-bold uppercase tracking-widest text-tertiary" for="username">Username</label>
+              <label class="text-[10px] font-bold uppercase tracking-widest text-tertiary" for="email">Email</label>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors"
-                placeholder="Your username"
+                placeholder="you@example.com"
                 required
               />
             </div>

@@ -2,7 +2,7 @@
 -- Run this entire file in your Supabase SQL Editor
 -- ============================================================
 
--- 1. Create api_keys table (skip if already done)
+-- 1. Create api_keys table
 CREATE TABLE IF NOT EXISTS public.api_keys (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users NOT NULL,
@@ -15,16 +15,22 @@ CREATE TABLE IF NOT EXISTS public.api_keys (
 
 ALTER TABLE public.api_keys ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own API keys."
+-- Drop policies first to avoid duplicate errors, then recreate
+DROP POLICY IF EXISTS "Users can view their own API keys." ON public.api_keys;
+DROP POLICY IF EXISTS "Users can create their own API keys." ON public.api_keys;
+DROP POLICY IF EXISTS "Users can update their own API keys." ON public.api_keys;
+DROP POLICY IF EXISTS "Users can delete their own API keys." ON public.api_keys;
+
+CREATE POLICY "Users can view their own API keys."
   ON api_keys FOR SELECT USING ( auth.uid() = user_id );
 
-CREATE POLICY IF NOT EXISTS "Users can create their own API keys."
+CREATE POLICY "Users can create their own API keys."
   ON api_keys FOR INSERT WITH CHECK ( auth.uid() = user_id );
 
-CREATE POLICY IF NOT EXISTS "Users can update their own API keys."
+CREATE POLICY "Users can update their own API keys."
   ON api_keys FOR UPDATE USING ( auth.uid() = user_id );
 
-CREATE POLICY IF NOT EXISTS "Users can delete their own API keys."
+CREATE POLICY "Users can delete their own API keys."
   ON api_keys FOR DELETE USING ( auth.uid() = user_id );
 
 -- 2. Create cluster tier/status enums
@@ -52,16 +58,21 @@ CREATE TABLE IF NOT EXISTS public.clusters (
 
 ALTER TABLE public.clusters ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own clusters"
+DROP POLICY IF EXISTS "Users can view their own clusters" ON public.clusters;
+DROP POLICY IF EXISTS "Users can create their own clusters" ON public.clusters;
+DROP POLICY IF EXISTS "Users can update their own clusters" ON public.clusters;
+DROP POLICY IF EXISTS "Users can delete their own clusters" ON public.clusters;
+
+CREATE POLICY "Users can view their own clusters"
   ON public.clusters FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can create their own clusters"
+CREATE POLICY "Users can create their own clusters"
   ON public.clusters FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can update their own clusters"
+CREATE POLICY "Users can update their own clusters"
   ON public.clusters FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can delete their own clusters"
+CREATE POLICY "Users can delete their own clusters"
   ON public.clusters FOR DELETE USING (auth.uid() = user_id);
 
 -- 4. Link api_keys to clusters (nullable)

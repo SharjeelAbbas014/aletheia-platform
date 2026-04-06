@@ -16,12 +16,13 @@ import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
 
 export const useSignupAction = routeAction$(async (data, event) => {
-  const username = String(data.username ?? "").trim();
+  const email = String(data.email ?? "").trim();
+  const displayName = String(data.display_name ?? "").trim();
   const password = String(data.password ?? "");
 
-  if (!username || !password) {
+  if (!email || !password) {
     return event.fail(400, {
-      message: "Username and password are required."
+      message: "Email and password are required."
     });
   }
 
@@ -31,7 +32,7 @@ export const useSignupAction = routeAction$(async (data, event) => {
     });
   }
 
-  const result = await signupUser(event, username, password);
+  const result = await signupUser(event, email, password, displayName || undefined);
   if (!result.ok) {
     return event.fail(400, {
       message: result.message || "Failed to create account."
@@ -97,14 +98,25 @@ export default component$(() => {
 
           <Form action={signupAction} class="space-y-6">
             <div class="space-y-1">
-              <label class="text-[10px] font-bold uppercase tracking-widest text-tertiary" for="username">Username</label>
+              <label class="text-[10px] font-bold uppercase tracking-widest text-tertiary" for="email">Email</label>
               <input
-                id="username"
-                name="username"
+                id="email"
+                name="email"
+                type="email"
+                class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold uppercase tracking-widest text-tertiary" for="display_name">Display Name <span class="font-normal text-outline-variant normal-case">(optional)</span></label>
+              <input
+                id="display_name"
+                name="display_name"
                 type="text"
                 class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors"
-                placeholder="Choose a username"
-                required
+                placeholder="How should we call you?"
               />
             </div>
             
