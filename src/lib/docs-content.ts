@@ -829,6 +829,69 @@ t2: preferred_drink = tea      -> becomes current
     ]
   },
   {
+    slug: "memory-proxy",
+    eyebrow: "Ecosystem",
+    title: "The Aletheia Proxy",
+    lead: "An OpenAI-compatible gateway that automatically injects memory into your agent's system prompt.",
+    description: "Learn how to use the Aletheia Proxy to add long-term memory to any application with zero code changes.",
+    sections: [
+      {
+        heading: "Overview",
+        paragraphs: [
+          "The Aletheia Proxy (Memory Router) acts as a middleware between your application and your LLM provider. It intercepts standard OpenAI-style chat completion requests, retrieves the most relevant memories for the specified user, and injects them into the system prompt before forwarding the request to the upstream model.",
+          "This allows you to add Aletheia's persistent memory to any existing agent or application by simply changing the `base_url`."
+        ]
+      },
+      {
+        heading: "How it works",
+        steps: [
+          "Your app sends a request to `/v1/chat/completions` on the Aletheia engine.",
+          "Aletheia extracts the `user` field from the payload to identify the `entity_id`.",
+          "It performs a high-precision semantic lookup based on the latest user message.",
+          "The system prompt is augmented with a structured `[ALETHEIA PERSISTENT MEMORY]` block.",
+          "The augmented request is forwarded to OpenAI (or your configured provider).",
+          "The final response is returned to your application."
+        ]
+      },
+      {
+        heading: "Usage Example",
+        paragraphs: [
+          "To use the proxy, simply point your OpenAI client to your Aletheia instance. The `user` parameter is mapped to Aletheia's `entity_id`."
+        ],
+        codeBlocks: [
+          {
+            label: "Python (OpenAI SDK)",
+            language: "python",
+            code: `from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:3000/v1",
+    api_key="YOUR_ALETHEIA_API_KEY"
+)
+
+# Aletheia will automatically retrieve memories for 'user-42'
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "What was the name of that coffee I liked?"}],
+    user="user-42" 
+)`
+          }
+        ]
+      },
+      {
+        heading: "Configuration",
+        paragraphs: [
+          "The proxy behavior can be tuned using the following environment variables on the Aletheia engine:"
+        ],
+        bullets: [
+          "OPENAI_API_KEY: Your upstream provider key.",
+          "ALETHEIA_PROXY_TARGET_URL: The upstream endpoint (defaults to OpenAI).",
+          "ALETHEIA_PORT: The local port Aletheia is running on (for loopback lookups)."
+        ]
+      }
+    ]
+  },
+  {
     slug: "sdk-javascript",
     eyebrow: "SDK",
     title: "JavaScript SDK",

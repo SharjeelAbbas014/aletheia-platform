@@ -1,114 +1,80 @@
-import type { RequestEventCommon } from "@builder.io/qwik-city";
+const ALETHEIA_URL = (process.env.ALETHEIA_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
-type CookieStore = RequestEventCommon["cookie"];
-
-const API_KEYS_COOKIE = "aletheia_api_keys";
-
-export const DEFAULT_TEST_API_KEY = "XXX1111AAA";
-export const DEFAULT_TEST_API_KEY_ID = "aletheia-default-test-key";
-
-export type ApiKeyRecord = {
-  id: string;
+export interface ApiKey {
+  key_id: string;
   name: string;
-  token: string;
-  preview: string;
-  createdAt: string;
-  lastUsed: string;
-  scope: string;
-};
-
-const cookieBase = {
-  path: "/",
-  httpOnly: true,
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
-  maxAge: 60 * 60 * 24 * 30
-};
-
-function previewToken(token: string) {
-  return `${token.slice(0, 14)}...${token.slice(-6)}`;
+  key_prefix: string;
+  created_at_ms: number;
+  last_used_ms: number | null;
+  disabled: boolean;
+  token?: string; // Only returned on creation
 }
 
-function defaultApiKeyRecord(): ApiKeyRecord {
-  return {
-    id: DEFAULT_TEST_API_KEY_ID,
-    name: "Shared testing key",
-    token: DEFAULT_TEST_API_KEY,
-    preview: previewToken(DEFAULT_TEST_API_KEY),
-    createdAt: "2026-03-28T00:00:00.000Z",
-    lastUsed: "Ready for smoke tests",
-    scope: "read:memories write:memories"
-  };
+export interface UsageStats {
+    request_count: number;
+    ingest_count: number;
+    query_count: number;
+    temporal_query_count: number;
+    last_request_ms: number | null;
 }
 
-function parseKeys(raw: string | undefined): ApiKeyRecord[] {
-  if (!raw) {
-    return [];
-  }
-
+export async function getApiKeys(sessionToken: string): Promise<ApiKey[]> {
   try {
-    const parsed = JSON.parse(raw) as ApiKeyRecord[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
+    const response = await fetch(`${ALETHEIA_URL}/platform/api-keys`, {
+      headers: {
+        "Authorization": `Bearer ${sessionToken}`
+      }
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.api_keys || [];
+  } catch (e) {
     return [];
   }
 }
 
-function withoutDefaultKey(keys: ApiKeyRecord[]) {
-  return keys.filter(
-    (key) =>
-      key.id !== DEFAULT_TEST_API_KEY_ID && key.token !== DEFAULT_TEST_API_KEY
-  );
+export async function createApiKey(sessionToken: string, name: string): Promise<ApiKey | null> {
+  try {
+    const response = await fetch(`${ALETHEIA_URL}/platform/api-keys`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${sessionToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name })
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (e) {
+    return null;
+  }
 }
 
-function withDefaultKey(keys: ApiKeyRecord[]) {
-  return [defaultApiKeyRecord(), ...withoutDefaultKey(keys)].slice(0, 6);
+export async function revokeApiKey(sessionToken: string, keyId: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${ALETHEIA_URL}/platform/api-keys/${keyId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${sessionToken}`
+      }
+    });
+    return response.ok;
+  } catch (e) {
+    return false;
+  }
 }
 
-function persistKeys(cookie: CookieStore, keys: ApiKeyRecord[]) {
-  cookie.set(
-    API_KEYS_COOKIE,
-    JSON.stringify(withoutDefaultKey(keys)),
-    cookieBase
-  );
-}
-
-function makeToken() {
-  return `tm_live_${crypto.randomUUID().replace(/-/g, "")}${crypto
-    .randomUUID()
-    .replace(/-/g, "")
-    .slice(0, 12)}`;
-}
-
-export function getApiKeys(cookie: CookieStore) {
-  return withDefaultKey(parseKeys(cookie.get(API_KEYS_COOKIE)?.value));
-}
-
-export function createApiKey(cookie: CookieStore, name: string) {
-  const label = name.trim() || "Default production key";
-  const token = makeToken();
-  const keys = withoutDefaultKey(getApiKeys(cookie));
-
-  const nextKeys = withDefaultKey([
-    {
-      id: crypto.randomUUID(),
-      name: label,
-      token,
-      preview: previewToken(token),
-      createdAt: new Date().toISOString(),
-      lastUsed: "Never",
-      scope: "read:memories write:memories"
-    },
-    ...keys
-  ]);
-
-  persistKeys(cookie, nextKeys);
-}
-
-export function revokeApiKey(cookie: CookieStore, id: string) {
-  const keys = withoutDefaultKey(getApiKeys(cookie));
-  persistKeys(
-    cookie,
-    keys.filter((key) => key.id !== id)
-  );
+export async function getUsageStats(sessionToken: string): Promise<UsageStats | null> {
+    try {
+      const response = await fetch(`${ALETHEIA_URL}/platform/stats`, {
+        headers: {
+          "Authorization": `Bearer ${sessionToken}`
+        }
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data.usage;
+    } catch (e) {
+      return null;
+    }
 }

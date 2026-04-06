@@ -9,13 +9,13 @@ import {
 } from "@builder.io/qwik-city";
 
 import {
-  loginUser,
+  signupUser,
   isAuthenticated
 } from "~/lib/auth";
 import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
 
-export const useLoginAction = routeAction$(async (data, event) => {
+export const useSignupAction = routeAction$(async (data, event) => {
   const username = String(data.username ?? "").trim();
   const password = String(data.password ?? "");
 
@@ -25,10 +25,16 @@ export const useLoginAction = routeAction$(async (data, event) => {
     });
   }
 
-  const result = await loginUser(event, username, password);
+  if (password.length < 8) {
+    return event.fail(400, {
+        message: "Password must be at least 8 characters long."
+    });
+  }
+
+  const result = await signupUser(event, username, password);
   if (!result.ok) {
-    return event.fail(401, {
-      message: result.message || "Invalid credentials."
+    return event.fail(400, {
+      message: result.message || "Failed to create account."
     });
   }
 
@@ -48,7 +54,7 @@ export const onRequest: RequestHandler = (event) => {
 
 export default component$(() => {
   useAuthGuard();
-  const loginAction = useLoginAction();
+  const signupAction = useSignupAction();
 
   return (
     <main class="flex min-h-screen w-full flex-col md:flex-row bg-background text-on-surface font-body antialiased overflow-x-hidden">
@@ -68,11 +74,11 @@ export default component$(() => {
 
         <div class="relative z-10 max-w-lg">
           <h1 class="mb-6 text-5xl font-extrabold leading-tight tracking-tight">
-            Step into the <br />
-            <span class="italic text-primary">Intelligence</span> Epoch.
+            Create your <br />
+            <span class="italic text-primary">Identity</span> in the Graph.
           </h1>
           <p class="text-lg leading-relaxed text-tertiary">
-            Access the most advanced neural engine designed for security, precision, and sentient-grade interaction.
+            Join the decentralized truth layer and start building persistent, secure memory for your agents.
           </p>
         </div>
 
@@ -81,15 +87,15 @@ export default component$(() => {
         </div>
       </div>
 
-      {/* Login Form Side */}
+      {/* Signup Form Side */}
       <div class="relative flex flex-1 flex-col items-center justify-center bg-surface p-6 md:p-24">
         <div class="w-full max-w-md">
           <div class="mb-10">
-            <h2 class="mb-2 text-3xl font-bold tracking-tight text-on-surface">Welcome Back</h2>
-            <p class="text-tertiary">Access your persistent memory console.</p>
+            <h2 class="mb-2 text-3xl font-bold tracking-tight text-on-surface">Get Started</h2>
+            <p class="text-tertiary">Initialize your workspace and API keys.</p>
           </div>
 
-          <Form action={loginAction} class="space-y-6">
+          <Form action={signupAction} class="space-y-6">
             <div class="space-y-1">
               <label class="text-[10px] font-bold uppercase tracking-widest text-tertiary" for="username">Username</label>
               <input
@@ -97,7 +103,7 @@ export default component$(() => {
                 name="username"
                 type="text"
                 class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors"
-                placeholder="Your username"
+                placeholder="Choose a username"
                 required
               />
             </div>
@@ -109,26 +115,26 @@ export default component$(() => {
                 name="password"
                 type="password"
                 class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors"
-                placeholder="••••••••"
+                placeholder="At least 8 characters"
                 required
               />
             </div>
 
-            {loginAction.value?.message && (
-              <p class="text-sm text-red-400">{loginAction.value.message}</p>
+            {signupAction.value?.message && (
+              <p class="text-sm text-red-400">{signupAction.value.message}</p>
             )}
 
             <button
               type="submit"
               class="w-full rounded-lg bg-primary py-4 font-bold text-on-primary shadow-xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
             >
-              Sign In
+              Create Account
             </button>
           </Form>
 
           <p class="mt-8 text-center text-sm text-tertiary">
-            Don't have an account? 
-            <Link href="/signup" class="ml-1 text-primary font-bold hover:underline">Create one</Link>
+            Already have an account? 
+            <Link href="/login" class="ml-1 text-primary font-bold hover:underline">Sign in</Link>
           </p>
         </div>
       </div>
@@ -137,8 +143,8 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Log In | ALETHEIA",
-  description: "Sign in to the Aletheia platform.",
-  pathname: "/login",
+  title: "Sign Up | ALETHEIA",
+  description: "Create your Aletheia account.",
+  pathname: "/signup",
   noindex: true
 });

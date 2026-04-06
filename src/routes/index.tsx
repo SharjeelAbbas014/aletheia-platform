@@ -504,6 +504,27 @@ export const onRequest: RequestHandler = (event) => {
   setPublicEdgeCache(event);
 };
 
+const ecosystemItems = [
+  {
+    title: "OpenAI Proxy",
+    body: "An OpenAI-compatible gateway that automatically injects memories into your agent's system prompt. Zero code changes required.",
+    icon: "database",
+    link: "/docs/memory-proxy",
+  },
+  {
+    title: "Aletheia CLI",
+    body: "Unified command-line tool to manage your engine, run local benchmarks, and monitor memory logs in real-time.",
+    icon: "terminal",
+    link: "/docs/local-engine",
+  },
+  {
+    title: "MCP Server",
+    body: "Built-in support for the Model Context Protocol. Connect Aletheia directly to Claude Code, Cursor, and agentic IDEs.",
+    icon: "hub",
+    link: "/docs",
+  },
+];
+
 export default component$(() => {
   const pageRef = useSignal<HTMLElement>();
   const heroMessage = useSignal(
@@ -1850,6 +1871,37 @@ export default component$(() => {
                   Book a Workshop
                 </a>
               </div>
+            </div>
+          </div>
+        </section>
+        <section id="ecosystem" class="px-6 py-32 bg-surface-container-low/10 border-t border-outline-variant/10">
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-20 text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">The Aletheia Ecosystem</h2>
+              <h3 class="text-4xl font-black tracking-tight md:text-5xl">Integrate Memory <span class="italic text-primary">Anywhere.</span></h3>
+              <p class="mt-6 mx-auto max-w-2xl text-tertiary">We provide the tooling to make persistent memory a first-class citizen in your development workflow, from local testing to global scale.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {ecosystemItems.map((item) => (
+                <Link
+                  key={item.title}
+                  href={item.link}
+                  class="glass-panel group rounded-[2rem] border border-outline-variant/10 p-10 transition-all hover:border-primary/40 hover:bg-primary/5 shadow-xl hover:shadow-primary/10"
+                >
+                  <div class="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-container-highest transition-transform group-hover:scale-110 shadow-lg">
+                    <MaterialIcon name={item.icon} class=" text-2xl text-primary" />
+                  </div>
+                  <h4 class="mb-4 text-xl font-bold">{item.title}</h4>
+                  <p class="mb-8 text-sm leading-relaxed text-tertiary">
+                    {item.body}
+                  </p>
+                  <div class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                    Explore Docs
+                    <MaterialIcon name="arrow_forward" class=" text-sm" />
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
