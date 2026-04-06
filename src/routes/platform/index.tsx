@@ -15,6 +15,7 @@ import {
   getUsageStats,
   type ApiKey
 } from "~/lib/api-keys";
+import { getClusters, type Cluster } from "~/lib/clusters";
 import { requireAuth } from "~/lib/auth";
 import { CONTACT_MAILTO } from "~/constants/contact";
 import { setPrivateNoStore } from "~/lib/cache";
@@ -29,17 +30,18 @@ function formatDate(value: number) {
 
 export const usePlatformData = routeLoader$(async (event) => {
   const user = requireAuth(event);
-  const sessionToken = event.cookie.get("aletheia_session")?.value || "";
-  
-  const [keys, usage] = await Promise.all([
-    getApiKeys(sessionToken),
-    getUsageStats(sessionToken)
+
+  const [keys, usage, clusters] = await Promise.all([
+    getApiKeys(event),
+    getUsageStats(event),
+    getClusters(event)
   ]);
 
   return {
     user,
     keys,
-    usage
+    usage,
+    clusters
   };
 });
 
@@ -49,10 +51,9 @@ export const onRequest: RequestHandler = (event) => {
 
 export const useCreateApiKeyAction = routeAction$(async (data, event) => {
   requireAuth(event);
-  const sessionToken = event.cookie.get("aletheia_session")?.value || "";
   const name = String(data.name ?? "New API Key");
   
-  const newKey = await createApiKey(sessionToken, name);
+  const newKey = await createApiKey(event, name);
 
   return {
     success: !!newKey,
@@ -62,11 +63,10 @@ export const useCreateApiKeyAction = routeAction$(async (data, event) => {
 
 export const useRevokeApiKeyAction = routeAction$(async (data, event) => {
   requireAuth(event);
-  const sessionToken = event.cookie.get("aletheia_session")?.value || "";
   const id = String(data.id ?? "");
 
   if (id) {
-    await revokeApiKey(sessionToken, id);
+    await revokeApiKey(event, id);
   }
 
   return {
@@ -80,11 +80,14 @@ export default component$(() => {
   const revokeKeyAction = useRevokeApiKeyAction();
   const keys = platformData.value.keys;
   const usage = platformData.value.usage;
-  
+  const clusters = platformData.value.clusters;
+
   const showNewKey = useSignal<ApiKey | null>(null);
 
   // Use the newly created key if available
   const activeKey = createKeyAction.value?.key?.token || keys[0]?.token || "YOUR_API_KEY";
+  // Proxy base_url: users always hit the Qwik frontend which securely forwards to the Rust engine
+  const proxyBaseUrl = typeof window !== "undefined" ? window.location.origin + "/api" : "https://aletheiadb.com/api";
 
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
@@ -123,11 +126,11 @@ export default component$(() => {
                     <p class="truncate text-xs font-bold">{platformData.value.user.username}</p>
                     <p class="text-[10px] text-tertiary">Free Tier</p>
                 </div>
-                <Form action="/logout" method="post">
+                <form action="/logout" method="post">
                     <button type="submit" class="text-tertiary hover:text-on-surface">
                         <span class="material-symbols-outlined notranslate normal-case text-sm">logout</span>
                     </button>
-                </Form>
+                </form>
             </div>
         </div>
       </aside>
@@ -178,6 +181,55 @@ export default component$(() => {
         {/* API Keys and Quickstart */}
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div class="lg:col-span-2 space-y-8">
+            {/* Clusters Section */}
+            <section class="mb-12">
+              <div class="mb-6 flex items-center justify-between">
+                <h3 class="text-xl font-bold tracking-tight">Your Clusters</h3>
+                <Link href="/platform/clusters/new" class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20">
+                  <span class="material-symbols-outlined notranslate normal-case text-sm">add</span>
+                  Deploy Cluster
+                </Link>
+              </div>
+
+              <div class="space-y-4">
+                {clusters.length === 0 && (
+                  <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
+                    <span class="material-symbols-outlined notranslate normal-case text-4xl text-outline-variant mb-4">dns</span>
+                    <p class="text-tertiary mb-4">No clusters yet. Deploy one to start connecting your agents.</p>
+                    <Link href="/platform/clusters/new" class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]">
+                      Deploy First Cluster
+                    </Link>
+                  </div>
+                )}
+                {clusters.map((cluster: Cluster) => (
+                  <div key={cluster.id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
+                    <div class="flex items-center gap-4">
+                      <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                        <span class="material-symbols-outlined notranslate normal-case text-xl">dns</span>
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-3">
+                          <h4 class="font-bold text-on-surface text-lg">{cluster.name}</h4>
+                          <span class={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest ${
+                            cluster.status === "active" ? "bg-green-500/10 text-green-400" :
+                            cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
+                            "bg-red-500/10 text-red-400"
+                          }`}>{cluster.status}</span>
+                          <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">{cluster.tier}</span>
+                        </div>
+                        <p class="mt-1 font-mono text-xs text-tertiary">{cluster.endpoint_url}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <Link href={`/platform/clusters/${cluster.id}`} class="rounded-lg border border-outline-variant/20 px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high hover:border-primary/50">
+                        Manage
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             <section>
               <div class="mb-6 flex items-center justify-between">
                 <h3 class="text-xl font-bold tracking-tight">API Key Management</h3>
@@ -266,10 +318,10 @@ export default component$(() => {
               <p class="text-xs text-tertiary mb-4 leading-relaxed">Connect your local agent to the Aletheia engine using your provisioned key.</p>
               <pre class="overflow-x-auto rounded-xl bg-black/40 p-6 font-mono text-[10px] leading-relaxed text-primary/80 border border-primary/10">
                 <code>{`from aletheia import AletheiaClient
-                
+
 client = AletheiaClient(
   api_key="${activeKey}",
-  base_url="http://localhost:3000"
+  base_url="${proxyBaseUrl}"
 )
 
 # Ingest episodic memory

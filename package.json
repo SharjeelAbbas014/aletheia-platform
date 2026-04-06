@@ -15,9 +15,11 @@
   "dependencies": {
     "@builder.io/qwik": "^1.19.2",
     "@builder.io/qwik-city": "^1.19.2",
+    "@supabase/supabase-js": "^2.101.1",
     "@types/node": "^25.5.0",
     "@vercel/analytics": "^2.0.1",
     "d3": "^7.9.0",
+    "dotenv": "^17.4.1",
     "gray-matter": "^4.0.3",
     "ignore": "^7.0.5",
     "lucide-qwik": "^1.0.0",

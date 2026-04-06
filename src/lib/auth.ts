@@ -1,4 +1,5 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
+import { getSupabaseClient } from "./supabase";
 
 type CookieStore = RequestEventCommon["cookie"];
 
@@ -6,13 +7,11 @@ const SESSION_COOKIE = "aletheia_session";
 const USER_ID_COOKIE = "aletheia_user_id";
 const USERNAME_COOKIE = "aletheia_username";
 
-const ALETHEIA_URL = (process.env.ALETHEIA_URL ?? "http://localhost:3000").replace(/\/+$/, "");
-
 const cookieBase = {
   path: "/",
   httpOnly: true,
   sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
+  secure: import.meta.env.PROD,
   maxAge: 60 * 60 * 24 * 30
 };
 
@@ -23,60 +22,61 @@ export interface AuthUser {
 
 export async function loginUser(event: RequestEventCommon, username: string, password: string): Promise<{ ok: boolean; message?: string }> {
   try {
-    const response = await fetch(`${ALETHEIA_URL}/platform/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
+    const supabase = getSupabaseClient();
+    // Supabase needs an email. If the user types a username without an @, we pseudo-construct one.
+    const email = username.includes("@") ? username : `${username}@aletheia.local`;
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    if (!response.ok) {
-      return { ok: false, message: "Invalid username or password" };
+    if (error || !data.user || !data.session) {
+      return { ok: false, message: error?.message || "Invalid username or password" };
     }
 
-    const data = await response.json();
-    // In a real implementation, the backend would return a session token.
-    // For now, let's assume the backend provides a way to create one or we use user_id as a simple session.
-    // Let's call create_session on the backend if available.
-    
-    const sessionResponse = await fetch(`${ALETHEIA_URL}/v1/admin/create-session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": "XXX1111AAA" }, // Internal admin call
-        body: JSON.stringify({ user_id: data.user_id })
-    });
+    const actualUsername = data.user.user_metadata?.username || username;
 
-    let sessionToken = data.user_id; // Fallback
-    if (sessionResponse.ok) {
-        const sessionData = await sessionResponse.json();
-        sessionToken = sessionData.token;
-    }
-
-    event.cookie.set(SESSION_COOKIE, sessionToken, cookieBase);
-    event.cookie.set(USER_ID_COOKIE, data.user_id, cookieBase);
-    event.cookie.set(USERNAME_COOKIE, data.username, cookieBase);
+    event.cookie.set(SESSION_COOKIE, data.session.access_token, cookieBase);
+    event.cookie.set(USER_ID_COOKIE, data.user.id, cookieBase);
+    event.cookie.set(USERNAME_COOKIE, actualUsername, cookieBase);
 
     return { ok: true };
   } catch (e) {
-    return { ok: false, message: "Network error. Is the engine running?" };
+    return { ok: false, message: "Network error communicating with auth server." };
   }
 }
 
 export async function signupUser(event: RequestEventCommon, username: string, password: string): Promise<{ ok: boolean; message?: string }> {
-    try {
-      const response = await fetch(`${ALETHEIA_URL}/platform/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
-  
-      if (!response.ok) {
-        const err = await response.text();
-        return { ok: false, message: err || "Failed to create account" };
+  try {
+    const supabase = getSupabaseClient();
+    const email = username.includes("@") ? username : `${username}@aletheia.local`;
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username }
       }
-  
-      return await loginUser(event, username, password);
-    } catch (e) {
-      return { ok: false, message: "Network error. Is the engine running?" };
+    });
+
+    if (error) {
+      return { ok: false, message: error.message };
     }
+
+    // If session is returned directly (e.g. Email confirms disabled)
+    if (data.session) {
+      event.cookie.set(SESSION_COOKIE, data.session.access_token, cookieBase);
+      event.cookie.set(USER_ID_COOKIE, data.user!.id, cookieBase);
+      event.cookie.set(USERNAME_COOKIE, username, cookieBase);
+      return { ok: true };
+    }
+
+    // If confirmation is needed (session is null)
+    return { ok: false, message: "Check your email for the confirmation link to continue." };
+  } catch (e) {
+    return { ok: false, message: "Network error." };
+  }
 }
 
 export function clearSession(cookie: CookieStore) {
