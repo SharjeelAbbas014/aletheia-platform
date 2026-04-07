@@ -1,7 +1,11 @@
 import { Slot, component$ } from "@builder.io/qwik";
 import { Link, type RequestHandler, useLocation } from "@builder.io/qwik-city";
 
-import { CONTACT_EMAIL, CONTACT_MAILTO } from "~/constants/contact";
+import {
+  CONTACT_EMAIL,
+  CONTACT_MAILTO,
+  LINKEDIN_COMPANY_URL,
+} from "~/constants/contact";
 import { formatBlogDate, getAllBlogPosts, getBlogTagSummaries } from "~/lib/blog";
 import { setPublicEdgeCache } from "~/lib/cache";
 
@@ -152,6 +156,10 @@ export default component$(() => {
               Contact:{" "}
               <a href={CONTACT_MAILTO} target="_blank" rel="noreferrer">
                 {CONTACT_EMAIL}
+              </a>
+              {" · "}
+              <a href={LINKEDIN_COMPANY_URL} target="_blank" rel="noreferrer">
+                LinkedIn
               </a>
             </p>
           </div>

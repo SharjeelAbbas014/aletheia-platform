@@ -9,6 +9,7 @@ import {
   CALENDLY_30_MIN_URL,
   CONTACT_EMAIL,
   CONTACT_MAILTO,
+  LINKEDIN_COMPANY_URL,
 } from "~/constants/contact";
 import {
   privateRepositoryNote,
@@ -623,6 +624,7 @@ const companyLinks = [
   { label: "Privacy First", href: "/docs/security" },
   { label: "Security Audit", href: "/docs/security" },
   { label: "Open Source", href: "/docs" },
+  { label: "LinkedIn", href: LINKEDIN_COMPANY_URL },
   { label: "Contact", href: CONTACT_MAILTO },
 ];
 
@@ -2188,6 +2190,15 @@ export default component$(() => {
               >
                 <MaterialIcon name="edit_square" class=" text-sm" />
               </Link>
+              <a
+                href={LINKEDIN_COMPANY_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Aletheia on LinkedIn"
+                class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
+              >
+                <MaterialIcon name="business_center" class=" text-sm" />
+              </a>
             </div>
           </div>
 
@@ -2216,12 +2227,23 @@ export default component$(() => {
             <ul class="space-y-4 text-sm text-tertiary">
               {companyLinks.map((item) => (
                 <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    class="transition-colors hover:text-on-surface"
-                  >
-                    {item.label}
-                  </Link>
+                  {item.href.startsWith("http") || item.href.startsWith("mailto:") ? (
+                    <a
+                      href={item.href}
+                      target={item.href.startsWith("http") ? "_blank" : undefined}
+                      rel={item.href.startsWith("http") ? "noreferrer" : undefined}
+                      class="transition-colors hover:text-on-surface"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      class="transition-colors hover:text-on-surface"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

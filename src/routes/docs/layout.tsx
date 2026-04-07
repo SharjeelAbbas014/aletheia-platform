@@ -25,7 +25,11 @@ import {
   ExternalLinkIcon 
 } from "lucide-qwik";
 
-import { CONTACT_EMAIL, CONTACT_MAILTO } from "~/constants/contact";
+import {
+  CONTACT_EMAIL,
+  CONTACT_MAILTO,
+  LINKEDIN_COMPANY_URL,
+} from "~/constants/contact";
 import { privateRepositoryNote, publicRepositoryLinks } from "~/constants/repositories";
 import { setPublicEdgeCache } from "~/lib/cache";
 import { docsNavigation } from "~/lib/docs";
@@ -186,6 +190,10 @@ export default component$(() => {
               Contact:{" "}
               <a href={CONTACT_MAILTO} target="_blank" rel="noreferrer">
                 {CONTACT_EMAIL}
+              </a>
+              {" · "}
+              <a href={LINKEDIN_COMPANY_URL} target="_blank" rel="noreferrer">
+                LinkedIn
               </a>
             </p>
           </div>
