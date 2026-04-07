@@ -113,6 +113,7 @@ export default component$(() => {
   const usage = platformData.value.usage;
   const clusters = platformData.value.clusters;
 
+  const activeMissionTab = useSignal<"overview" | "api">("overview");
   const activeApiTab = useSignal<"keys" | "create">("keys");
   const newApiKeyName = useSignal("");
 
@@ -122,6 +123,7 @@ export default component$(() => {
 
     if (wasCreated && createdToken) {
       newApiKeyName.value = "";
+      activeMissionTab.value = "api";
       activeApiTab.value = "keys";
     }
   });
@@ -190,226 +192,277 @@ export default component$(() => {
           </div>
         </header>
 
-        {/* Stats Bento Grid */}
-        <section class="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Total Requests</p>
-            <p class="mt-2 text-3xl font-black text-on-surface">{usage?.request_count || 0}</p>
-          </div>
+        <div class="mb-10 inline-flex rounded-2xl border border-outline-variant/15 bg-surface-container-low p-1">
+          <button
+            type="button"
+            class={`flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold uppercase tracking-[0.24em] transition-colors ${
+              activeMissionTab.value === "overview"
+                ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                : "text-tertiary hover:text-on-surface"
+            }`}
+            onClick$={() => {
+              activeMissionTab.value = "overview";
+            }}
+          >
+            <LayoutDashboardIcon class="h-4 w-4" />
+            Overview
+          </button>
+          <button
+            type="button"
+            class={`flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold uppercase tracking-[0.24em] transition-colors ${
+              activeMissionTab.value === "api"
+                ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                : "text-tertiary hover:text-on-surface"
+            }`}
+            onClick$={() => {
+              activeMissionTab.value = "api";
+            }}
+          >
+            <KeyIcon class="h-4 w-4" />
+            API Access
+          </button>
+        </div>
 
-          <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Memories Ingested</p>
-            <p class="mt-2 text-3xl font-black text-on-surface">{usage?.ingest_count || 0}</p>
-          </div>
-
-          <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Semantic Queries</p>
-            <p class="mt-2 text-3xl font-black text-on-surface">{usage?.query_count || 0}</p>
-          </div>
-
-          <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Last Activity</p>
-            <p class="mt-2 text-lg font-bold text-on-surface">
-              <LocalDateTime value={usage?.last_request_ms ?? null} />
-            </p>
-          </div>
-        </section>
-
-        {/* API Keys and Quickstart */}
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div class="lg:col-span-2 space-y-8">
-            {/* Clusters Section */}
-            <section class="mb-12">
-              <div class="mb-6 flex items-center justify-between">
-                <h3 class="text-xl font-bold tracking-tight">Your Clusters</h3>
-                <Link href="/platform/clusters/new" class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20">
-                  <PlusIcon class="w-4 h-4" />
-                  Deploy Cluster
-                </Link>
+        {activeMissionTab.value === "overview" ? (
+          <>
+            <section class="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Total Requests</p>
+                <p class="mt-2 text-3xl font-black text-on-surface">{usage?.request_count || 0}</p>
               </div>
 
-              <div class="space-y-4">
-                {clusters.length === 0 && (
-                  <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
-                    <ServerIcon class="w-10 h-10 text-outline-variant mb-4" />
-                    <p class="text-tertiary mb-4">No clusters yet. Deploy one to start connecting your agents.</p>
-                    <Link href="/platform/clusters/new" class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]">
-                      Deploy First Cluster
-                    </Link>
-                  </div>
-                )}
-                {clusters.map((cluster: Cluster) => (
-                  <div key={cluster.id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
-                    <div class="flex items-center gap-4">
-                      <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
-                        <ServerIcon class="w-6 h-6" />
-                      </div>
-                      <div>
-                        <div class="flex items-center gap-3">
-                          <h4 class="font-bold text-on-surface text-lg">{cluster.name}</h4>
-                          <span class={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest ${cluster.status === "active" ? "bg-green-500/10 text-green-400" :
-                            cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
-                              "bg-red-500/10 text-red-400"
-                            }`}>{cluster.status}</span>
-                          <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">{cluster.tier}</span>
-                        </div>
-                        <p class="mt-1 font-mono text-xs text-tertiary">{cluster.endpoint_url}</p>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                      <Link href={`/platform/clusters/${cluster.id}`} class="rounded-lg border border-outline-variant/20 px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high hover:border-primary/50">
-                        Manage
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Memories Ingested</p>
+                <p class="mt-2 text-3xl font-black text-on-surface">{usage?.ingest_count || 0}</p>
+              </div>
+
+              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Semantic Queries</p>
+                <p class="mt-2 text-3xl font-black text-on-surface">{usage?.query_count || 0}</p>
+              </div>
+
+              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Last Activity</p>
+                <p class="mt-2 text-lg font-bold text-on-surface">
+                  <LocalDateTime value={usage?.last_request_ms ?? null} />
+                </p>
               </div>
             </section>
 
-            <section>
-              <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <h3 class="text-xl font-bold tracking-tight">API Key Management</h3>
-                <div class="inline-flex rounded-xl border border-outline-variant/15 bg-surface-container-low p-1">
-                  <button
-                    type="button"
-                    class={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
-                      activeApiTab.value === "keys"
-                        ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
-                        : "text-tertiary hover:text-on-surface"
-                    }`}
-                    onClick$={() => {
-                      activeApiTab.value = "keys";
-                    }}
-                  >
-                    Active Keys
-                  </button>
-                  <button
-                    type="button"
-                    class={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
-                      activeApiTab.value === "create"
-                        ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
-                        : "text-tertiary hover:text-on-surface"
-                    }`}
-                    onClick$={() => {
-                      activeApiTab.value = "create";
-                    }}
-                  >
-                    Create Key
-                  </button>
-                </div>
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+              <div class="lg:col-span-2 space-y-8">
+                <section class="mb-12">
+                  <div class="mb-6 flex items-center justify-between">
+                    <h3 class="text-xl font-bold tracking-tight">Your Clusters</h3>
+                    <Link href="/platform/clusters/new" class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20">
+                      <PlusIcon class="w-4 h-4" />
+                      Deploy Cluster
+                    </Link>
+                  </div>
+
+                  <div class="space-y-4">
+                    {clusters.length === 0 && (
+                      <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
+                        <ServerIcon class="w-10 h-10 text-outline-variant mb-4" />
+                        <p class="text-tertiary mb-4">No clusters yet. Deploy one to start connecting your agents.</p>
+                        <Link href="/platform/clusters/new" class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]">
+                          Deploy First Cluster
+                        </Link>
+                      </div>
+                    )}
+                    {clusters.map((cluster: Cluster) => (
+                      <div key={cluster.id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
+                        <div class="flex items-center gap-4">
+                          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                            <ServerIcon class="w-6 h-6" />
+                          </div>
+                          <div>
+                            <div class="flex items-center gap-3">
+                              <h4 class="font-bold text-on-surface text-lg">{cluster.name}</h4>
+                              <span class={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest ${cluster.status === "active" ? "bg-green-500/10 text-green-400" :
+                                cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
+                                  "bg-red-500/10 text-red-400"
+                                }`}>{cluster.status}</span>
+                              <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">{cluster.tier}</span>
+                            </div>
+                            <p class="mt-1 font-mono text-xs text-tertiary">{cluster.endpoint_url}</p>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                          <Link href={`/platform/clusters/${cluster.id}`} class="rounded-lg border border-outline-variant/20 px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high hover:border-primary/50">
+                            Manage
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
 
-              {createKeyAction.value?.success && createKeyAction.value.key?.token && (
-                <div class="mb-8 rounded-2xl bg-primary/10 border border-primary/30 p-6 shadow-[0_0_30px_rgba(99,102,241,0.1)]">
-                  <div class="flex items-center gap-3 mb-4 text-primary">
-                    <CheckCircle2Icon class="w-5 h-5" />
-                    <p class="font-bold">New Key Generated Successfully</p>
+              <aside class="space-y-8">
+                <div class="rounded-2xl bg-surface-container-high p-8 border border-primary/20">
+                  <h3 class="font-black text-xl mb-2 text-primary">Need Scale?</h3>
+                  <p class="text-sm text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region synchronization for massive agent deployments.</p>
+                  <a
+                    href={CONTACT_MAILTO}
+                    class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-primary py-3 text-sm font-bold text-on-primary shadow-xl transition-all hover:scale-[1.02] active:scale-[0.95]"
+                  >
+                    Contact Engineering
+                  </a>
+                </div>
+              </aside>
+            </div>
+          </>
+        ) : (
+          <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div class="lg:col-span-2 space-y-8">
+              <section>
+                <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h3 class="text-xl font-bold tracking-tight">API Key Management</h3>
+                    <p class="mt-2 text-sm text-tertiary">Generate, rotate, and segment access keys for every environment connected to your memory engine.</p>
                   </div>
-                  <p class="text-sm text-tertiary mb-4">Make sure to copy your API key now. You won't be able to see it again.</p>
-                  <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-primary border border-primary/20">
-                    <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
+                  <div class="inline-flex rounded-xl border border-outline-variant/15 bg-surface-container-low p-1">
                     <button
-                      class="p-2 hover:bg-primary/20 rounded transition-colors"
-                      onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
+                      type="button"
+                      class={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                        activeApiTab.value === "keys"
+                          ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                          : "text-tertiary hover:text-on-surface"
+                      }`}
+                      onClick$={() => {
+                        activeApiTab.value = "keys";
+                      }}
                     >
-                      <CopyIcon class="w-4 h-4" />
+                      Active Keys
+                    </button>
+                    <button
+                      type="button"
+                      class={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                        activeApiTab.value === "create"
+                          ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                          : "text-tertiary hover:text-on-surface"
+                      }`}
+                      onClick$={() => {
+                        activeApiTab.value = "create";
+                      }}
+                    >
+                      Create Key
                     </button>
                   </div>
                 </div>
-              )}
 
-              {activeApiTab.value === "keys" ? (
-                <div class="space-y-4">
-                  {keys.length === 0 && !createKeyAction.value?.success && (
-                    <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
-                      <KeyIcon class="w-10 h-10 text-outline-variant mb-4" />
-                      <p class="text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
+                {createKeyAction.value?.success && createKeyAction.value.key?.token && (
+                  <div class="mb-8 rounded-2xl bg-primary/10 border border-primary/30 p-6 shadow-[0_0_30px_rgba(99,102,241,0.1)]">
+                    <div class="flex items-center gap-3 mb-4 text-primary">
+                      <CheckCircle2Icon class="w-5 h-5" />
+                      <p class="font-bold">New Key Generated Successfully</p>
+                    </div>
+                    <p class="text-sm text-tertiary mb-4">Make sure to copy your API key now. You won't be able to see it again.</p>
+                    <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-primary border border-primary/20">
+                      <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
                       <button
-                        type="button"
-                        class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]"
-                        onClick$={() => {
-                          activeApiTab.value = "create";
-                        }}
+                        class="p-2 hover:bg-primary/20 rounded transition-colors"
+                        onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
                       >
-                        Create First Key
+                        <CopyIcon class="w-4 h-4" />
                       </button>
                     </div>
-                  )}
-
-                  {keys.map((key) => (
-                    <div key={key.key_id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
-                      <div class="flex items-center gap-4">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
-                          <KeyIcon class="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 class="font-bold text-on-surface">{key.name}</h4>
-                          <p class="mt-1 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-8">
-                        <div class="text-right">
-                          <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Created</p>
-                          <p class="font-mono text-[10px] text-on-surface">
-                            <LocalDateTime value={key.created_at_ms} />
-                          </p>
-                        </div>
-                        <Form action={revokeKeyAction}>
-                          <input type="hidden" name="id" value={key.key_id} />
-                          <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white">
-                            <Trash2Icon class="w-4 h-4" />
-                          </button>
-                        </Form>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <section>
-                  <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-8">
-                    <h3 class="text-lg font-bold mb-4">Provision Access</h3>
-                    <p class="text-sm text-tertiary mb-6">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
-                    <Form action={createKeyAction} class="flex flex-col gap-4 sm:flex-row">
-                      <input
-                        name="name"
-                        value={newApiKeyName.value}
-                        onInput$={(_, el) => {
-                          newApiKeyName.value = el.value;
-                        }}
-                        class="flex-1 rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors"
-                        placeholder="Key identifier (e.g. Production Cluster 01)"
-                        required
-                      />
-                      <button
-                        type="submit"
-                        disabled={createKeyAction.isRunning}
-                        class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
-                      >
-                        {createKeyAction.isRunning ? (
-                          <>
-                            <Loader2Icon class="w-4 h-4 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          "Generate New Key"
-                        )}
-                      </button>
-                    </Form>
                   </div>
-                </section>
-              )}
-            </section>
-          </div>
+                )}
 
-          <aside class="space-y-8">
-            <div class="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-8">
-              <div class="mb-4 flex items-center justify-between">
-                <h3 class="text-lg font-bold">Local Sidecar</h3>
-                <span class="rounded bg-primary/10 px-2 py-1 font-mono text-[10px] text-primary font-bold">Python SDK</span>
-              </div>
-              <p class="text-xs text-tertiary mb-4 leading-relaxed">Connect your local agent to the Aletheia engine using your provisioned key.</p>
-              <pre class="overflow-x-auto rounded-xl bg-black/40 p-6 font-mono text-[10px] leading-relaxed text-primary/80 border border-primary/10">
-                <code>{`from aletheia import AletheiaClient
+                {activeApiTab.value === "keys" ? (
+                  <div class="space-y-4">
+                    {keys.length === 0 && !createKeyAction.value?.success && (
+                      <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
+                        <KeyIcon class="w-10 h-10 text-outline-variant mb-4" />
+                        <p class="text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
+                        <button
+                          type="button"
+                          class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]"
+                          onClick$={() => {
+                            activeApiTab.value = "create";
+                          }}
+                        >
+                          Create First Key
+                        </button>
+                      </div>
+                    )}
+
+                    {keys.map((key) => (
+                      <div key={key.key_id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
+                        <div class="flex items-center gap-4">
+                          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                            <KeyIcon class="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 class="font-bold text-on-surface">{key.name}</h4>
+                            <p class="mt-1 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-8">
+                          <div class="text-right">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Created</p>
+                            <p class="font-mono text-[10px] text-on-surface">
+                              <LocalDateTime value={key.created_at_ms} />
+                            </p>
+                          </div>
+                          <Form action={revokeKeyAction}>
+                            <input type="hidden" name="id" value={key.key_id} />
+                            <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white">
+                              <Trash2Icon class="w-4 h-4" />
+                            </button>
+                          </Form>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <section>
+                    <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-8">
+                      <h3 class="text-lg font-bold mb-4">Provision Access</h3>
+                      <p class="text-sm text-tertiary mb-6">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
+                      <Form action={createKeyAction} class="flex flex-col gap-4 sm:flex-row">
+                        <input
+                          name="name"
+                          value={newApiKeyName.value}
+                          onInput$={(_, el) => {
+                            newApiKeyName.value = el.value;
+                          }}
+                          class="flex-1 rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors"
+                          placeholder="Key identifier (e.g. Production Cluster 01)"
+                          required
+                        />
+                        <button
+                          type="submit"
+                          disabled={createKeyAction.isRunning}
+                          class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
+                        >
+                          {createKeyAction.isRunning ? (
+                            <>
+                              <Loader2Icon class="w-4 h-4 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            "Generate New Key"
+                          )}
+                        </button>
+                      </Form>
+                    </div>
+                  </section>
+                )}
+              </section>
+            </div>
+
+            <aside class="space-y-8">
+              <div class="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-8">
+                <div class="mb-4 flex items-center justify-between">
+                  <h3 class="text-lg font-bold">Local Sidecar</h3>
+                  <span class="rounded bg-primary/10 px-2 py-1 font-mono text-[10px] text-primary font-bold">Python SDK</span>
+                </div>
+                <p class="text-xs text-tertiary mb-4 leading-relaxed">Connect your local agent to the Aletheia engine using your provisioned key.</p>
+                <pre class="overflow-x-auto rounded-xl bg-black/40 p-6 font-mono text-[10px] leading-relaxed text-primary/80 border border-primary/10">
+                  <code>{`from aletheia import AletheiaClient
 
 client = AletheiaClient(
   api_key="${activeKey}",
@@ -421,21 +474,22 @@ client.ingest(
   entity_id="u_99",
   text="I prefer jasmine tea."
 )`}</code>
-              </pre>
-            </div>
+                </pre>
+              </div>
 
-            <div class="rounded-2xl bg-surface-container-high p-8 border border-primary/20">
-              <h3 class="font-black text-xl mb-2 text-primary">Need Scale?</h3>
-              <p class="text-sm text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region synchronization for massive agent deployments.</p>
-              <a
-                href={CONTACT_MAILTO}
-                class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-primary py-3 text-sm font-bold text-on-primary shadow-xl transition-all hover:scale-[1.02] active:scale-[0.95]"
-              >
-                Contact Engineering
-              </a>
-            </div>
-          </aside>
-        </div>
+              <div class="rounded-2xl bg-surface-container-high p-8 border border-primary/20">
+                <h3 class="font-black text-xl mb-2 text-primary">Need Scale?</h3>
+                <p class="text-sm text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region synchronization for massive agent deployments.</p>
+                <a
+                  href={CONTACT_MAILTO}
+                  class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-primary py-3 text-sm font-bold text-on-primary shadow-xl transition-all hover:scale-[1.02] active:scale-[0.95]"
+                >
+                  Contact Engineering
+                </a>
+              </div>
+            </aside>
+          </div>
+        )}
       </main>
     </div>
   );
