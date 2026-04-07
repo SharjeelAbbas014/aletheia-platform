@@ -52,6 +52,7 @@ import {
   DatabaseIcon,
   ExternalLinkIcon,
   EditIcon,
+  LinkedinIcon,
 } from "lucide-qwik";
 
 const IconMap: Record<string, any> = {
@@ -624,7 +625,6 @@ const companyLinks = [
   { label: "Privacy First", href: "/docs/security" },
   { label: "Security Audit", href: "/docs/security" },
   { label: "Open Source", href: "/docs" },
-  { label: "LinkedIn", href: LINKEDIN_COMPANY_URL },
   { label: "Contact", href: CONTACT_MAILTO },
 ];
 
@@ -2162,7 +2162,7 @@ export default component$(() => {
       </main>
 
       <footer class="border-t border-outline-variant/10 bg-surface px-8 py-20">
-        <div class="container mx-auto grid grid-cols-1 gap-12 md:grid-cols-4">
+        <div class="container mx-auto grid grid-cols-1 gap-12 md:grid-cols-5">
           <div class="col-span-1 md:col-span-2">
             <span class="mb-6 block text-2xl font-black uppercase tracking-tighter text-on-surface">
               ALETHEIA
@@ -2190,15 +2190,6 @@ export default component$(() => {
               >
                 <MaterialIcon name="edit_square" class=" text-sm" />
               </Link>
-              <a
-                href={LINKEDIN_COMPANY_URL}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Aletheia on LinkedIn"
-                class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
-              >
-                <MaterialIcon name="business_center" class=" text-sm" />
-              </a>
             </div>
           </div>
 
@@ -2246,6 +2237,27 @@ export default component$(() => {
                   )}
                 </li>
               ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="mb-6 text-sm font-bold uppercase tracking-widest text-primary">
+              Social
+            </h4>
+            <ul class="space-y-4 text-sm text-tertiary">
+              <li>
+                <a
+                  href={LINKEDIN_COMPANY_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  class="inline-flex items-center gap-3 transition-colors hover:text-on-surface"
+                >
+                  <span class="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant/15 bg-surface-container-low text-primary">
+                    <LinkedinIcon class="h-4 w-4" />
+                  </span>
+                  <span>LinkedIn</span>
+                </a>
+              </li>
             </ul>
           </div>
         </div>
