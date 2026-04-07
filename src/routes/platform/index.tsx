@@ -1,10 +1,10 @@
-import { component$, useSignal } from "@builder.io/qwik";
-import { 
-  LayoutDashboardIcon, 
-  NetworkIcon, 
-  BarChart3Icon, 
-  LogOutIcon, 
-  PlusIcon, 
+import { component$, useSignal, useTask$, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  LayoutDashboardIcon,
+  NetworkIcon,
+  BarChart3Icon,
+  LogOutIcon,
+  PlusIcon,
   ServerIcon,
   CopyIcon,
   CheckCircle2Icon,
@@ -34,12 +34,30 @@ import { CONTACT_MAILTO } from "~/constants/contact";
 import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
 
-function formatDate(value: number) {
-  return new Intl.DateTimeFormat("en-US", {
+function formatDate(value: number, locale?: string) {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
 }
+
+const LocalDateTime = component$((props: { value: number | null }) => {
+  const label = useSignal(
+    props.value ? formatDate(props.value, "en-US") : "Never"
+  );
+
+  useVisibleTask$(({ track }) => {
+    track(() => props.value);
+    if (!props.value) {
+      label.value = "Never";
+      return;
+    }
+
+    label.value = formatDate(props.value);
+  });
+
+  return <>{label.value}</>;
+});
 
 export const usePlatformData = routeLoader$(async (event) => {
   const user = requireAuth(event);
@@ -95,7 +113,18 @@ export default component$(() => {
   const usage = platformData.value.usage;
   const clusters = platformData.value.clusters;
 
-  const showNewKey = useSignal<ApiKey | null>(null);
+  const activeApiTab = useSignal<"keys" | "create">("keys");
+  const newApiKeyName = useSignal("");
+
+  useTask$(({ track }) => {
+    const wasCreated = track(() => createKeyAction.value?.success);
+    const createdToken = track(() => createKeyAction.value?.key?.token);
+
+    if (wasCreated && createdToken) {
+      newApiKeyName.value = "";
+      activeApiTab.value = "keys";
+    }
+  });
 
   // Use the newly created key if available
   const activeKey = createKeyAction.value?.key?.token || keys[0]?.token || "YOUR_API_KEY";
@@ -181,7 +210,7 @@ export default component$(() => {
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
             <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Last Activity</p>
             <p class="mt-2 text-lg font-bold text-on-surface">
-              {usage?.last_request_ms ? formatDate(usage.last_request_ms) : "Never"}
+              <LocalDateTime value={usage?.last_request_ms ?? null} />
             </p>
           </div>
         </section>
@@ -219,8 +248,8 @@ export default component$(() => {
                         <div class="flex items-center gap-3">
                           <h4 class="font-bold text-on-surface text-lg">{cluster.name}</h4>
                           <span class={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest ${cluster.status === "active" ? "bg-green-500/10 text-green-400" :
-                              cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
-                                "bg-red-500/10 text-red-400"
+                            cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
+                              "bg-red-500/10 text-red-400"
                             }`}>{cluster.status}</span>
                           <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">{cluster.tier}</span>
                         </div>
@@ -238,8 +267,36 @@ export default component$(() => {
             </section>
 
             <section>
-              <div class="mb-6 flex items-center justify-between">
+              <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <h3 class="text-xl font-bold tracking-tight">API Key Management</h3>
+                <div class="inline-flex rounded-xl border border-outline-variant/15 bg-surface-container-low p-1">
+                  <button
+                    type="button"
+                    class={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                      activeApiTab.value === "keys"
+                        ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                        : "text-tertiary hover:text-on-surface"
+                    }`}
+                    onClick$={() => {
+                      activeApiTab.value = "keys";
+                    }}
+                  >
+                    Active Keys
+                  </button>
+                  <button
+                    type="button"
+                    class={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                      activeApiTab.value === "create"
+                        ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                        : "text-tertiary hover:text-on-surface"
+                    }`}
+                    onClick$={() => {
+                      activeApiTab.value = "create";
+                    }}
+                  >
+                    Create Key
+                  </button>
+                </div>
               </div>
 
               {createKeyAction.value?.success && createKeyAction.value.key?.token && (
@@ -251,79 +308,96 @@ export default component$(() => {
                   <p class="text-sm text-tertiary mb-4">Make sure to copy your API key now. You won't be able to see it again.</p>
                   <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-primary border border-primary/20">
                     <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
-                      <button
-                        class="p-2 hover:bg-primary/20 rounded transition-colors"
-                        onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
-                      >
-                        <CopyIcon class="w-4 h-4" />
-                      </button>
+                    <button
+                      class="p-2 hover:bg-primary/20 rounded transition-colors"
+                      onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
+                    >
+                      <CopyIcon class="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               )}
 
-              <div class="space-y-4">
-                {keys.length === 0 && !createKeyAction.value?.success && (
-                  <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
-                    <KeyIcon class="w-10 h-10 text-outline-variant mb-4" />
-                    <p class="text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
-                  </div>
-                )}
+              {activeApiTab.value === "keys" ? (
+                <div class="space-y-4">
+                  {keys.length === 0 && !createKeyAction.value?.success && (
+                    <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
+                      <KeyIcon class="w-10 h-10 text-outline-variant mb-4" />
+                      <p class="text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
+                      <button
+                        type="button"
+                        class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]"
+                        onClick$={() => {
+                          activeApiTab.value = "create";
+                        }}
+                      >
+                        Create First Key
+                      </button>
+                    </div>
+                  )}
 
-                {keys.map((key) => (
-                  <div key={key.key_id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
-                    <div class="flex items-center gap-4">
-                      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
-                        <KeyIcon class="w-5 h-5" />
+                  {keys.map((key) => (
+                    <div key={key.key_id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
+                      <div class="flex items-center gap-4">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
+                          <KeyIcon class="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 class="font-bold text-on-surface">{key.name}</h4>
+                          <p class="mt-1 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 class="font-bold text-on-surface">{key.name}</h4>
-                        <p class="mt-1 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
+                      <div class="flex items-center gap-8">
+                        <div class="text-right">
+                          <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Created</p>
+                          <p class="font-mono text-[10px] text-on-surface">
+                            <LocalDateTime value={key.created_at_ms} />
+                          </p>
+                        </div>
+                        <Form action={revokeKeyAction}>
+                          <input type="hidden" name="id" value={key.key_id} />
+                          <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white">
+                            <Trash2Icon class="w-4 h-4" />
+                          </button>
+                        </Form>
                       </div>
                     </div>
-                    <div class="flex items-center gap-8">
-                      <div class="text-right">
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Created</p>
-                        <p class="font-mono text-[10px] text-on-surface">{formatDate(key.created_at_ms)}</p>
-                      </div>
-                      <Form action={revokeKeyAction}>
-                        <input type="hidden" name="id" value={key.key_id} />
-                        <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white">
-                          <Trash2Icon class="w-4 h-4" />
-                        </button>
-                      </Form>
-                    </div>
+                  ))}
+                </div>
+              ) : (
+                <section>
+                  <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-8">
+                    <h3 class="text-lg font-bold mb-4">Provision Access</h3>
+                    <p class="text-sm text-tertiary mb-6">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
+                    <Form action={createKeyAction} class="flex flex-col gap-4 sm:flex-row">
+                      <input
+                        name="name"
+                        value={newApiKeyName.value}
+                        onInput$={(_, el) => {
+                          newApiKeyName.value = el.value;
+                        }}
+                        class="flex-1 rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors"
+                        placeholder="Key identifier (e.g. Production Cluster 01)"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        disabled={createKeyAction.isRunning}
+                        class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
+                      >
+                        {createKeyAction.isRunning ? (
+                          <>
+                            <Loader2Icon class="w-4 h-4 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          "Generate New Key"
+                        )}
+                      </button>
+                    </Form>
                   </div>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-8">
-                <h3 class="text-lg font-bold mb-4">Provision Access</h3>
-                <p class="text-sm text-tertiary mb-6">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
-                <Form action={createKeyAction} class="flex flex-col gap-4 sm:flex-row">
-                  <input
-                    name="name"
-                    class="flex-1 rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors"
-                    placeholder="Key identifier (e.g. Production Cluster 01)"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    disabled={createKeyAction.isRunning}
-                    class="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
-                  >
-                    {createKeyAction.isRunning ? (
-                      <>
-                        <Loader2Icon class="w-4 h-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      "Generate New Key"
-                    )}
-                  </button>
-                </Form>
-              </div>
+                </section>
+              )}
             </section>
           </div>
 
