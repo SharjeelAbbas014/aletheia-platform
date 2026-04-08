@@ -1023,195 +1023,6 @@ export default component$(() => {
         </section>
 
         <section
-          id="interactive-tester"
-          class="px-6 py-32 bg-surface-container-low/5 border-t border-outline-variant/10"
-        >
-          <div class="container mx-auto">
-            <div class="scroll-reveal mb-20 text-center">
-              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
-                Interactive Demo
-              </h2>
-              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
-                Live Memory <span class="italic text-primary">Simulation.</span>
-              </h3>
-              <p class="mt-6 mx-auto max-w-2xl text-tertiary">
-                Experience Aletheia's real-time ingestion and recall loop. Store
-                a fact, then retrieve it across model contexts.
-              </p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              {/* Left Side: Store/Warmup */}
-              <div class="glass-panel relative rounded-[2rem] border border-outline-variant/10 p-8 shadow-xl overflow-hidden">
-                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.05),transparent_50%)]" />
-                <div class="relative z-10 space-y-8">
-                  <div class="flex items-center gap-4 border-b border-outline-variant/10 pb-6">
-                    <div class="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                      <MaterialIcon name="input" class=" text-2xl" />
-                    </div>
-                    <div>
-                      <h4 class="text-xl font-bold">Input & Warm-up</h4>
-                      <p class="text-[10px] uppercase font-black tracking-widest text-tertiary">
-                        Ingestion Layer
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="rounded-[1.5rem] border border-white/5 bg-black/20 p-6">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-tertiary mb-4">
-                      Serverless Pulse
-                    </p>
-                    <p class="text-sm leading-relaxed text-on-surface mb-6">
-                      Ping the engine to reduce cold-start latency before
-                      testing the demo.
-                    </p>
-                    <button
-                      type="button"
-                      class="glass-panel inline-flex items-center gap-3 rounded-2xl px-6 py-3 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={heroWarmupRunning.value}
-                      onClick$={runHeroWarmup}
-                    >
-                      {heroWarmupRunning.value
-                        ? "Warming..."
-                        : "Warm Up Engine"}
-                      <MaterialIcon name="bolt" class=" text-base" />
-                    </button>
-                  </div>
-
-                  <div class="space-y-4">
-                    <label class="block text-[11px] font-bold uppercase tracking-[0.22em] text-tertiary">
-                      Message to Persist
-                    </label>
-                    <textarea
-                      class="min-h-[140px] w-full rounded-[1.5rem] border border-white/10 bg-black/25 px-5 py-4 text-base text-on-surface outline-none transition-colors placeholder:text-tertiary/55 focus:border-primary/60 shadow-inner"
-                      placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
-                      value={heroMessage.value}
-                      onInput$={(_, currentTarget) => {
-                        heroMessage.value = currentTarget.value;
-                      }}
-                      required
-                    />
-                    <button
-                      type="button"
-                      class="obsidian-gradient w-full inline-flex items-center justify-center gap-3 rounded-2xl py-4 text-sm font-bold text-white transition-all hover:shadow-[0_0_32px_rgba(99,102,241,0.35)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 shadow-xl"
-                      disabled={heroDemoRunning.value}
-                      onClick$={() => runHeroDemo("store")}
-                    >
-                      {heroDemoRunning.value && heroDemoMode.value === "store"
-                        ? "Processing..."
-                        : "Commit to Long-Term Memory"}
-                      <MaterialIcon
-                        name="published_with_changes"
-                        class=" text-lg"
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Side: Recall & Results */}
-              <div class="space-y-8">
-                <div class="glass-panel relative rounded-[2rem] border border-primary/20 p-8 shadow-xl overflow-hidden bg-primary/5">
-                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.1),transparent_50%)]" />
-                  <div class="relative z-10 space-y-6">
-                    <div class="flex items-center gap-4 border-b border-primary/10 pb-6">
-                      <div class="h-12 w-12 rounded-2xl obsidian-gradient flex items-center justify-center text-white shadow-xl">
-                        <MaterialIcon name="travel_explore" class=" text-2xl" />
-                      </div>
-                      <div>
-                        <h4 class="text-xl font-bold text-white">
-                          Truth Recall
-                        </h4>
-                        <p class="text-[10px] uppercase font-black tracking-widest text-primary">
-                          Retrieval Kernel
-                        </p>
-                      </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                      <div class="rounded-2xl border border-white/5 bg-black/20 p-4">
-                        <p class="text-[9px] font-bold uppercase tracking-widest text-tertiary">
-                          Ingest Latency
-                        </p>
-                        <p class="mt-1 text-xl font-black text-on-surface">
-                          {heroDemoResult.value?.ingestLabel ?? "---"}
-                        </p>
-                      </div>
-                      <div class="rounded-2xl border border-white/5 bg-black/20 p-4 border-primary/20">
-                        <p class="text-[9px] font-bold uppercase tracking-widest text-primary">
-                          Query Latency
-                        </p>
-                        <p class="mt-1 text-xl font-black text-white">
-                          {heroDemoResult.value?.queryLabel ?? "---"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      class="glass-panel w-full inline-flex items-center justify-center gap-3 rounded-2xl py-4 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 border border-white/10"
-                      disabled={heroDemoRunning.value}
-                      onClick$={() => runHeroDemo("recall")}
-                    >
-                      {heroDemoRunning.value && heroDemoMode.value === "recall"
-                        ? "Retrieving..."
-                        : "Query Memory Surface"}
-                      <MaterialIcon name="speed" class=" text-lg" />
-                    </button>
-
-                    <div class="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-inner">
-                      <div class="flex items-center justify-between mb-4">
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">
-                          Retrieved Memory Hits
-                        </p>
-                        {heroDemoResult.value?.memoryId && (
-                          <span class="px-2 py-1 rounded bg-primary/20 text-[9px] font-mono text-primary border border-primary/20">
-                            {heroDemoResult.value.entityId}
-                          </span>
-                        )}
-                      </div>
-                      <div class="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                        {heroDemoResult.value?.ok &&
-                        heroDemoResult.value.hits &&
-                        heroDemoResult.value.hits.length > 0 ? (
-                          heroDemoResult.value.hits.map((hit, idx) => (
-                            <div
-                              key={idx}
-                              class="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs text-tertiary leading-relaxed animate-fade-in"
-                            >
-                              {hit.textual_content}
-                            </div>
-                          ))
-                        ) : (
-                          <p class="text-xs text-tertiary italic text-center py-8">
-                            No memories retrieved yet. Ingest a fact first.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {heroDemoResult.value?.queryUnderBlink && (
-                  <div class="feature-entrance rounded-[1.5rem] border border-cyan-300/25 bg-cyan-400/5 p-6 flex items-start gap-4 shadow-lg shadow-cyan-500/5">
-                    <MaterialIcon name="verified" class=" text-cyan-400 mt-1" />
-                    <div>
-                      <h5 class="text-sm font-bold text-white">
-                        Sub-100ms Verified
-                      </h5>
-                      <p class="text-xs text-tertiary mt-1">
-                        This recall session operated faster than a human blink
-                        at the engine layer.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section
           id="memory-gap"
           class="border-y border-outline-variant/10 bg-surface-container-high/20 px-6 py-32"
         >
@@ -2037,6 +1848,195 @@ export default component$(() => {
                   </ul>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="interactive-tester"
+          class="px-6 py-32 bg-surface-container-low/5 border-t border-outline-variant/10"
+        >
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-20 text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                Interactive Demo
+              </h2>
+              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
+                Live Memory <span class="italic text-primary">Simulation.</span>
+              </h3>
+              <p class="mt-6 mx-auto max-w-2xl text-tertiary">
+                Experience Aletheia's real-time ingestion and recall loop. Store
+                a fact, then retrieve it across model contexts.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* Left Side: Store/Warmup */}
+              <div class="glass-panel relative rounded-[2rem] border border-outline-variant/10 p-8 shadow-xl overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.05),transparent_50%)]" />
+                <div class="relative z-10 space-y-8">
+                  <div class="flex items-center gap-4 border-b border-outline-variant/10 pb-6">
+                    <div class="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                      <MaterialIcon name="input" class=" text-2xl" />
+                    </div>
+                    <div>
+                      <h4 class="text-xl font-bold">Input & Warm-up</h4>
+                      <p class="text-[10px] uppercase font-black tracking-widest text-tertiary">
+                        Ingestion Layer
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="rounded-[1.5rem] border border-white/5 bg-black/20 p-6">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-tertiary mb-4">
+                      Serverless Pulse
+                    </p>
+                    <p class="text-sm leading-relaxed text-on-surface mb-6">
+                      Ping the engine to reduce cold-start latency before
+                      testing the demo.
+                    </p>
+                    <button
+                      type="button"
+                      class="glass-panel inline-flex items-center gap-3 rounded-2xl px-6 py-3 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={heroWarmupRunning.value}
+                      onClick$={runHeroWarmup}
+                    >
+                      {heroWarmupRunning.value
+                        ? "Warming..."
+                        : "Warm Up Engine"}
+                      <MaterialIcon name="bolt" class=" text-base" />
+                    </button>
+                  </div>
+
+                  <div class="space-y-4">
+                    <label class="block text-[11px] font-bold uppercase tracking-[0.22em] text-tertiary">
+                      Message to Persist
+                    </label>
+                    <textarea
+                      class="min-h-[140px] w-full rounded-[1.5rem] border border-white/10 bg-black/25 px-5 py-4 text-base text-on-surface outline-none transition-colors placeholder:text-tertiary/55 focus:border-primary/60 shadow-inner"
+                      placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
+                      value={heroMessage.value}
+                      onInput$={(_, currentTarget) => {
+                        heroMessage.value = currentTarget.value;
+                      }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      class="obsidian-gradient w-full inline-flex items-center justify-center gap-3 rounded-2xl py-4 text-sm font-bold text-white transition-all hover:shadow-[0_0_32px_rgba(99,102,241,0.35)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 shadow-xl"
+                      disabled={heroDemoRunning.value}
+                      onClick$={() => runHeroDemo("store")}
+                    >
+                      {heroDemoRunning.value && heroDemoMode.value === "store"
+                        ? "Processing..."
+                        : "Commit to Long-Term Memory"}
+                      <MaterialIcon
+                        name="published_with_changes"
+                        class=" text-lg"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side: Recall & Results */}
+              <div class="space-y-8">
+                <div class="glass-panel relative rounded-[2rem] border border-primary/20 p-8 shadow-xl overflow-hidden bg-primary/5">
+                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.1),transparent_50%)]" />
+                  <div class="relative z-10 space-y-6">
+                    <div class="flex items-center gap-4 border-b border-primary/10 pb-6">
+                      <div class="h-12 w-12 rounded-2xl obsidian-gradient flex items-center justify-center text-white shadow-xl">
+                        <MaterialIcon name="travel_explore" class=" text-2xl" />
+                      </div>
+                      <div>
+                        <h4 class="text-xl font-bold text-white">
+                          Truth Recall
+                        </h4>
+                        <p class="text-[10px] uppercase font-black tracking-widest text-primary">
+                          Retrieval Kernel
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="rounded-2xl border border-white/5 bg-black/20 p-4">
+                        <p class="text-[9px] font-bold uppercase tracking-widest text-tertiary">
+                          Ingest Latency
+                        </p>
+                        <p class="mt-1 text-xl font-black text-on-surface">
+                          {heroDemoResult.value?.ingestLabel ?? "---"}
+                        </p>
+                      </div>
+                      <div class="rounded-2xl border border-white/5 bg-black/20 p-4 border-primary/20">
+                        <p class="text-[9px] font-bold uppercase tracking-widest text-primary">
+                          Query Latency
+                        </p>
+                        <p class="mt-1 text-xl font-black text-white">
+                          {heroDemoResult.value?.queryLabel ?? "---"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="glass-panel w-full inline-flex items-center justify-center gap-3 rounded-2xl py-4 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 border border-white/10"
+                      disabled={heroDemoRunning.value}
+                      onClick$={() => runHeroDemo("recall")}
+                    >
+                      {heroDemoRunning.value && heroDemoMode.value === "recall"
+                        ? "Retrieving..."
+                        : "Query Memory Surface"}
+                      <MaterialIcon name="speed" class=" text-lg" />
+                    </button>
+
+                    <div class="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-inner">
+                      <div class="flex items-center justify-between mb-4">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">
+                          Retrieved Memory Hits
+                        </p>
+                        {heroDemoResult.value?.memoryId && (
+                          <span class="px-2 py-1 rounded bg-primary/20 text-[9px] font-mono text-primary border border-primary/20">
+                            {heroDemoResult.value.entityId}
+                          </span>
+                        )}
+                      </div>
+                      <div class="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                        {heroDemoResult.value?.ok &&
+                        heroDemoResult.value.hits &&
+                        heroDemoResult.value.hits.length > 0 ? (
+                          heroDemoResult.value.hits.map((hit, idx) => (
+                            <div
+                              key={idx}
+                              class="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs text-tertiary leading-relaxed animate-fade-in"
+                            >
+                              {hit.textual_content}
+                            </div>
+                          ))
+                        ) : (
+                          <p class="text-xs text-tertiary italic text-center py-8">
+                            No memories retrieved yet. Ingest a fact first.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {heroDemoResult.value?.queryUnderBlink && (
+                  <div class="feature-entrance rounded-[1.5rem] border border-cyan-300/25 bg-cyan-400/5 p-6 flex items-start gap-4 shadow-lg shadow-cyan-500/5">
+                    <MaterialIcon name="verified" class=" text-cyan-400 mt-1" />
+                    <div>
+                      <h5 class="text-sm font-bold text-white">
+                        Sub-100ms Verified
+                      </h5>
+                      <p class="text-xs text-tertiary mt-1">
+                        This recall session operated faster than a human blink
+                        at the engine layer.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
