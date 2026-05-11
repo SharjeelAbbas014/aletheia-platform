@@ -64,7 +64,7 @@ export default component$(() => {
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
       <main class="flex-1 overflow-y-auto p-8 lg:p-12 mb-20 max-w-4xl mx-auto w-full pt-[104px]">
         <h1 class="font-headline text-3xl font-extrabold mb-8">Context Templates</h1>
-        <p class="text-tertiary mb-8">Define how memories are formatted when sent to your LLM. Use markers like <code class="text-primary text-xs">%{"{}"}{facts limit=10}</code> to control output.</p>
+        <p class="text-tertiary mb-8">Define how memories are formatted when sent to your LLM. Use markers like <code class="text-primary text-xs">{'%{facts limit=10}'}</code> to control output.</p>
 
         {/* Predefined templates */}
         <div class="mb-8">
@@ -93,7 +93,7 @@ export default component$(() => {
             </div>
             <div>
               <label class="text-xs font-bold uppercase tracking-widest text-tertiary block mb-1">Template</label>
-              <p class="text-xs text-tertiary mb-2">Available markers: <code>%{"{}"}{facts limit=N}</code>, <code>%{"{}"}{user_summary}</code>, <code>%{"{}"}{graph_neighbors n=N}</code>, <code>%{"{}"}{temporal_range days=N}</code>, <code>%{"{}"}{related_entities}</code></p>
+              <p class="text-xs text-tertiary mb-2">Available markers: <code>{'%{facts limit=N}'}</code>, <code>{'%{user_summary}'}</code>, <code>{'%{graph_neighbors n=N}'}</code>, <code>{'%{temporal_range days=N}'}</code>, <code>{'%{related_entities}'}</code></p>
               <textarea name="template" bind:value={newTemplate} rows={6} class="w-full rounded-xl bg-black/40 border border-outline-variant/20 px-4 py-3 text-sm font-mono focus:outline-none focus:border-primary resize-none" placeholder="%{user_summary}%{facts limit=10}" required />
             </div>
             <div class="flex gap-3">
