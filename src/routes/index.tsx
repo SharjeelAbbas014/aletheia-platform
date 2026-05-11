@@ -53,6 +53,7 @@ import {
   ExternalLinkIcon,
   EditIcon,
   LinkedinIcon,
+  BarChart3Icon,
 } from "lucide-qwik";
 
 const IconMap: Record<string, any> = {
@@ -615,12 +616,12 @@ policy: ttl + decay + supersession
 sdk: python + javascript`;
 
 const platformLinks = [
-  { label: "Memory Lattice", href: "/#memory" },
   { label: "Mission Control", href: "/platform" },
-  { label: "Docs", href: "/docs/core" },
-  { label: "Rust SDK", href: "/docs/quickstart" },
-  { label: "Integrations", href: "/docs/api-auth" },
   { label: "Pricing", href: "/signup" },
+  { label: "Benchmarks", href: "/platform/benchmarks" },
+  { label: "Trust Center", href: "/platform/trust" },
+  { label: "Self-Hosting", href: "/platform/byoc" },
+  { label: "Docs", href: "/docs" },
 ];
 
 const companyLinks = [
@@ -919,113 +920,67 @@ export default component$(() => {
     <div ref={pageRef} class="landing-v2 bg-surface text-on-surface font-body">
       <div aria-hidden="true" class="progress-rail" />
       <main class="pt-4">
-        <section
-          data-hero
-          class="relative flex min-h-[95vh] items-center overflow-hidden px-6"
-        >
-          <div class="absolute inset-0 z-0">
-            <div class="interactive-aurora" />
-            <div class="hero-orb-left absolute left-[-25%] top-1/4 h-[600px] w-[600px] animate-pulse-slow rounded-full bg-primary/20 blur-[120px]" />
-            <div class="hero-orb-right absolute bottom-0 right-[-25%] h-[500px] w-[500px] rounded-full bg-indigo-900/20 blur-[100px]" />
-          </div>
-
-          <div class="container mx-auto relative z-10 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-            <div class="animate-fade-in-up">
-              <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-300/35 bg-emerald-400/10 px-4 py-1.5">
-                <span class="relative inline-flex h-2.5 w-2.5">
-                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
-                  <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,0.95)]" />
-                </span>
-                <span class="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-300">
-                  The Sentient Monolith
+        <section class="relative min-h-[85vh] flex items-center px-6 border-b border-border/10">
+          <div class="container mx-auto grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+            <div>
+              <div class="mb-6 inline-flex items-center gap-2 border border-primary/30 bg-primary/5 px-4 py-1.5 rounded-lg">
+                <span class="w-2 h-2 bg-primary rounded-sm" />
+                <span class="font-mono text-xs font-bold uppercase tracking-widest text-primary">
+                  v2.0 — Now Open Source
                 </span>
               </div>
 
-              <h1 class="mb-8 text-6xl font-black leading-[0.95] tracking-tight md:text-8xl text-white">
-                AGENTS <br />
-                THAT{" "}
-                <span class="italic text-[#7df9ff] [text-shadow:0_0_16px_rgba(125,249,255,0.45)]">
-                  REMEMBER.
-                </span>
+              <h1 class="mb-6 text-5xl font-black tracking-tight md:text-7xl text-on-surface">
+                Memory Engine<br />
+                <span class="text-primary">for AI Agents</span>
               </h1>
 
-              <p class="mb-10 max-w-xl text-xl leading-relaxed text-tertiary">
-                Stop treating every chat like a first date. Aletheia gives your
-                AI a persistent, evolving brain that learns who your users are
-                one interaction at a time.
+              <p class="mb-8 max-w-xl text-lg leading-relaxed text-tertiary">
+                Hybrid vector + BM25 search, knowledge graphs, deterministic analytics,
+                and fact supersession in a single Rust binary. Self-host or deploy on
+                our platform with one click.
               </p>
 
-              <p class="mb-10 max-w-xl text-base font-medium text-primary/90 border-l-2 border-primary/40 pl-4 italic">
-                The only memory engine that ships as a binary you can run in your own data center —
-                or deploy on our platform with one click.
-              </p>
-
-              <div class="flex flex-wrap gap-5">
-                <Link
-                  href="/signup"
-                  class="obsidian-gradient flex items-center gap-3 rounded-xl px-10 py-5 text-lg font-bold text-white transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] active:scale-95"
-                >
-                  Truth Disclosed
-                  <MaterialIcon name="bolt" class="" />
+              <div class="flex flex-wrap gap-4">
+                <Link href="/signup" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
+                  Get Started Free
+                  <ArrowRightIcon class="w-4 h-4" />
                 </Link>
-                <Link
-                  href="/login"
-                  class="glass-panel rounded-xl px-10 py-5 text-lg font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95"
-                >
-                  Mission Control
+                <Link href="/login" class="inline-flex items-center gap-2 px-6 py-3 border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-container-higher transition-colors">
+                  Sign In
                 </Link>
+                <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 px-6 py-3 border border-outline-variant text-tertiary font-bold rounded-lg hover:bg-surface-container-higher transition-colors text-sm">
+                  Book a Demo
+                  <ExternalLinkIcon class="w-3 h-3" />
+                </a>
               </div>
             </div>
 
-            <div class="relative glass-panel rounded-[2.5rem] border border-primary/20 p-8 md:p-12 shadow-2xl bg-black/40 backdrop-blur-xl group/container">
-              <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.05),transparent_70%)]" />
-              <div class="relative z-10 mb-10 flex items-center justify-between">
-                <div>
-                  <h2 class="text-xs font-black uppercase tracking-[0.3em] text-primary">
-                    Engine Capabilities
-                  </h2>
-                  <p class="text-[10px] text-tertiary mt-1">
-                    Autonomous cognitive primitives established.
-                  </p>
-                </div>
-                <div class="flex gap-1">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      class="h-1 w-4 bg-primary/20 rounded-full animate-pulse"
-                      style={{ animationDelay: `${i * 200}ms` }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
-                {topTenFeatures.map((f, i) => (
-                  <div
-                    key={f.title}
-                    class="feature-entrance flex gap-4 group/item"
-                    style={{ animationDelay: `${i * 400}ms` }}
-                  >
-                    <SentientCheckbox delay={`${i * 400}ms`} />
-                    <div class="flex flex-col">
-                      <span class="text-[13px] font-black text-white group-hover/item:text-primary transition-colors tracking-tight uppercase">
-                        {f.title}
-                      </span>
-                      <p class="text-[10px] text-tertiary/80 leading-snug mt-1 group-hover/item:text-tertiary transition-colors">
-                        {f.body || (f as any).i}
-                      </p>
+            <div class="border border-outline-variant rounded-xl bg-surface-container-lowest p-6 shadow-lg">
+              <div class="grid grid-cols-2 gap-4">
+                {[
+                  { icon: CpuIcon, label: "Rust Core", desc: "Single binary, zero deps" },
+                  { icon: DatabaseIcon, label: "5 Substrates", desc: "Vector, FTS, Graph, KV, Analytics" },
+                  { icon: ClockIcon, label: "Temporal", desc: "Timestamps, decay, supersession" },
+                  { icon: GitBranchIcon, label: "Knowledge Graph", desc: "Typed RDF with BFS traversal" },
+                  { icon: BarChart3Icon, label: "Analytics", desc: "Deterministic numeric queries" },
+                  { icon: ShieldCheckIcon, label: "Self-Hosted", desc: "Air-gapped, your infra" },
+                  { icon: GlobeIcon, label: "Managed Cloud", desc: "One-click deploy" },
+                  { icon: ZapIcon, label: "<50ms p99", desc: "Hybrid retrieval latency" },
+                ].map(({ icon: Icon, label, desc }) => (
+                  <div key={label} class="border border-outline-variant/20 rounded-lg p-4 hover:border-primary/40 transition-colors">
+                    <div class="flex items-center gap-2 mb-1">
+                      <Icon class="w-4 h-4 text-primary" />
+                      <span class="text-sm font-bold text-on-surface">{label}</span>
                     </div>
+                    <p class="text-xs text-tertiary">{desc}</p>
                   </div>
                 ))}
               </div>
-              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1 rounded-full border border-white/5 bg-white/5 backdrop-blur-md mt-2">
-                <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-                <span class="text-[9px] font-mono text-tertiary uppercase tracking-widest flex items-center justify-center">
-                  <a href="/docs" class="">
-                    Learn how are we doing it
-                  </a>
-                </span>
-              </div>
             </div>
+          </div>
+          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1 rounded-full border border-outline-variant/20 bg-surface-container-highest">
+            <a href="/docs" class="text-xs font-mono text-tertiary hover:text-primary transition-colors">Learn how the engine works →</a>
           </div>
         </section>
 
@@ -2084,37 +2039,30 @@ export default component$(() => {
         </section>
 
         <section class="px-6 py-32">
-          <div class="container mx-auto">
-            <div
-              id="cta"
-              class="glass-panel relative overflow-hidden rounded-[2rem] border-primary/20 p-12 text-center md:p-24"
-            >
-              <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-              <h2 class="relative z-10 mb-8 text-5xl font-black tracking-tight md:text-7xl">
-                UPGRADE TO
-                <br />
-                <span class="italic text-primary">TRUTH.</span>
+          <div class="container mx-auto max-w-4xl">
+            <div class="rounded-xl border border-primary/20 bg-primary/5 p-12 text-center md:p-20 shadow-lg">
+              <h2 class="mb-6 text-4xl font-black tracking-tight md:text-5xl text-on-surface">
+                Build Agents That<br />
+                <span class="text-primary">Actually Remember.</span>
               </h2>
-              <p class="relative z-10 mx-auto mb-12 max-w-2xl text-xl leading-relaxed text-tertiary">
-                Join the next generation of engineers building agents that
-                actually understand their users. Start your disclosure today and
-                let your AI finally{" "}
-                <span class="text-on-surface">remember</span>.
+              <p class="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-tertiary">
+                One binary, five memory substrates, zero lock-in. Start building
+                persistent, self-improving agents today.
               </p>
-              <div class="relative z-10 flex flex-col justify-center gap-6 sm:flex-row">
+              <div class="flex flex-col justify-center gap-4 sm:flex-row">
                 <Link
                   href="/signup"
-                  class="obsidian-gradient rounded-xl px-12 py-5 text-lg font-black uppercase tracking-wider text-white shadow-xl shadow-primary/30 transition-transform hover:scale-105"
+                  class="px-8 py-4 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
                 >
-                  Initialize Engine
+                  Get Started Free
                 </Link>
                 <a
                   href={CALENDLY_30_MIN_URL}
                   target="_blank"
                   rel="noreferrer"
-                  class="glass-panel rounded-xl px-12 py-5 text-lg font-bold uppercase tracking-wider text-on-surface transition-colors hover:bg-surface-container-high"
+                  class="px-8 py-4 border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-container-higher transition-colors"
                 >
-                  Book a Workshop
+                  Book a Demo
                 </a>
               </div>
             </div>
@@ -2124,24 +2072,16 @@ export default component$(() => {
         {/* Core vs Platform */}
         <section id="core-vs-platform" class="px-6 py-32 border-t border-outline-variant/10">
           <div class="container mx-auto max-w-5xl">
-            <div class="scroll-reveal mb-20 text-center">
-              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
-                Choose Your Path
-              </h2>
-              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
-                Two Ways to <span class="italic text-primary">Remember.</span>
-              </h3>
+            <div class="text-center mb-16">
+              <h2 class="mb-3 text-xs font-bold uppercase tracking-widest text-primary">Two Ways to Remember</h2>
+              <h3 class="text-4xl font-black tracking-tight">Engine <span class="text-primary">and</span> Platform</h3>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Core */}
-              <div class="glass-panel group rounded-[2rem] border border-outline-variant/10 p-10 transition-all hover:border-primary/30">
-                <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 shadow-lg">
-                  <CpuIcon class="text-2xl text-primary" />
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-8 transition-all hover:border-primary/30">
+                <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <CpuIcon class="text-xl text-primary" />
                 </div>
-                <h4 class="mb-2 text-2xl font-bold">
-                  <span class="text-primary">Aletheia</span> Core
-                </h4>
+                <h4 class="mb-2 text-2xl font-bold text-on-surface"><span class="text-primary">Aletheia</span> Core</h4>
                 <p class="mb-1 text-xs font-bold uppercase tracking-widest text-tertiary">Open Source Engine</p>
                 <p class="mb-6 text-sm leading-relaxed text-tertiary">
                   The Rust-powered temporal memory engine that runs anywhere. Hybrid
@@ -2178,9 +2118,9 @@ export default component$(() => {
               </div>
 
               {/* Platform */}
-              <div class="glass-panel group rounded-[2rem] border border-primary/20 p-10 transition-all hover:border-primary/50 bg-primary/5">
-                <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 shadow-lg">
-                  <GlobeIcon class="text-2xl text-primary" />
+              <div class="rounded-xl border border-primary/20 bg-primary/5 p-8 transition-all hover:border-primary/40">
+                <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                  <GlobeIcon class="text-xl text-primary" />
                 </div>
                 <h4 class="mb-2 text-2xl font-bold">
                   <span class="text-primary">Aletheia</span> Platform
@@ -2245,11 +2185,11 @@ export default component$(() => {
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
               {ecosystemItems.map((item) => (
-                <Link
-                  key={item.title}
-                  href={item.link}
-                  class="glass-panel group rounded-[2rem] border border-outline-variant/10 p-10 transition-all hover:border-primary/40 hover:bg-primary/5 shadow-xl hover:shadow-primary/10"
-                >
+                  <Link
+                    key={item.title}
+                    href={item.link}
+                    class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-8 transition-all hover:border-primary/40"
+                  >
                   <div class="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-container-highest transition-transform group-hover:scale-110 shadow-lg">
                     <MaterialIcon
                       name={item.icon}
