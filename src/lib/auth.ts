@@ -17,7 +17,7 @@ const cookieBase = {
 
 export interface AuthUser {
   user_id: string;
-  username: string; // display name stored in user_metadata
+  username: string;
 }
 
 export async function loginUser(
@@ -25,25 +25,30 @@ export async function loginUser(
   email: string,
   password: string
 ): Promise<{ ok: boolean; message?: string }> {
-  try {
-    const supabase = getSupabaseClient();
+  const supabase = getSupabaseClient();
+  if (!supabase) return { ok: false, message: "Supabase not configured. Check PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY in your environment." };
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error || !data.user || !data.session) {
-      return { ok: false, message: error?.message || "Invalid email or password." };
+  if (error) {
+    if (error.message.includes("Email not confirmed") || error.message.includes("email_not_confirmed")) {
+      return { ok: false, message: "Email not confirmed. Check your inbox (and spam) for the confirmation link, or ask the admin to confirm your account." };
     }
-
-    const displayName = data.user.user_metadata?.display_name || email.split("@")[0];
-
-    event.cookie.set(SESSION_COOKIE, data.session.access_token, cookieBase);
-    event.cookie.set(USER_ID_COOKIE, data.user.id, cookieBase);
-    event.cookie.set(USERNAME_COOKIE, displayName, cookieBase);
-
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, message: "Network error communicating with auth server." };
+    if (error.message.includes("Invalid login credentials")) {
+      return { ok: false, message: "Invalid email or password." };
+    }
+    return { ok: false, message: error.message };
   }
+
+  if (!data.user || !data.session) {
+    return { ok: false, message: "Login succeeded but no session was created. Try again." };
+  }
+
+  const displayName = data.user.user_metadata?.display_name || email.split("@")[0];
+  event.cookie.set(SESSION_COOKIE, data.session.access_token, cookieBase);
+  event.cookie.set(USER_ID_COOKIE, data.user.id, cookieBase);
+  event.cookie.set(USERNAME_COOKIE, displayName, cookieBase);
+  return { ok: true };
 }
 
 export async function signupUser(
@@ -52,34 +57,37 @@ export async function signupUser(
   password: string,
   displayName?: string
 ): Promise<{ ok: boolean; message?: string }> {
-  try {
-    const supabase = getSupabaseClient();
+  const supabase = getSupabaseClient();
+  if (!supabase) return { ok: false, message: "Supabase not configured. Check PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY in your environment." };
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { display_name: displayName || email.split("@")[0] }
-      }
-    });
-
-    if (error) {
-      return { ok: false, message: error.message };
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { display_name: displayName || email.split("@")[0] }
     }
+  });
 
-    // If email confirmation is disabled in Supabase, session is returned immediately
-    if (data.session) {
-      const name = displayName || email.split("@")[0];
-      event.cookie.set(SESSION_COOKIE, data.session.access_token, cookieBase);
-      event.cookie.set(USER_ID_COOKIE, data.user!.id, cookieBase);
-      event.cookie.set(USERNAME_COOKIE, name, cookieBase);
-      return { ok: true };
+  if (error) {
+    if (error.message.includes("User already registered")) {
+      return { ok: false, message: "An account with this email already exists. Try logging in instead." };
     }
-
-    return { ok: false, message: "Check your email for a confirmation link to complete sign up." };
-  } catch (e) {
-    return { ok: false, message: "Network error." };
+    return { ok: false, message: error.message };
   }
+
+  if (data.session) {
+    const name = displayName || email.split("@")[0];
+    event.cookie.set(SESSION_COOKIE, data.session.access_token, cookieBase);
+    event.cookie.set(USER_ID_COOKIE, data.user!.id, cookieBase);
+    event.cookie.set(USERNAME_COOKIE, name, cookieBase);
+    return { ok: true };
+  }
+
+  return {
+    ok: false,
+    message: "Account created! Check your email (and spam) for a confirmation link before logging in. "
+      + "If you don't see it, disable 'Enable email confirmations' in your Supabase Auth settings."
+  };
 }
 
 export function clearSession(cookie: CookieStore) {
