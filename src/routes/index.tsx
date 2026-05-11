@@ -955,6 +955,11 @@ export default component$(() => {
                 one interaction at a time.
               </p>
 
+              <p class="mb-10 max-w-xl text-base font-medium text-primary/90 border-l-2 border-primary/40 pl-4 italic">
+                The only memory engine that ships as a binary you can run in your own data center —
+                or deploy on our platform with one click.
+              </p>
+
               <div class="flex flex-wrap gap-5">
                 <Link
                   href="/signup"

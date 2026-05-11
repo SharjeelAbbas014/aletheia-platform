@@ -1546,6 +1546,316 @@ reset first: true`
         ]
       }
     ]
+  },
+  {
+    slug: "context-templates",
+    eyebrow: "Platform",
+    title: "Context Templates",
+    lead: "Define exactly how your memories get formatted when passed to an LLM. Use markers to inject live data into any prompt structure.",
+    description: "Context templates let you control the formatting of memory data for LLM prompts. Use markers like %{facts limit=10} and %{user_summary} to build dynamic context blocks.",
+    sections: [
+      {
+        heading: "What are Context Templates?",
+        paragraphs: [
+          "Context templates are configurable prompt blocks that define how Aletheia memories are formatted when sent to your LLM. Instead of receiving raw JSON, your agent gets a clean, readable paragraph or structured text block — tailored to your exact use case.",
+          "Templates use simple markers like %{facts limit=5} to inject live data from the engine. When a template is rendered, Aletheia queries the relevant memories and replaces each marker with the actual content."
+        ]
+      },
+      {
+        heading: "Available Markers",
+        table: {
+          columns: ["Marker", "Description", "Parameters"],
+          rows: [
+            { label: "%{facts}", values: ["Top relevant facts", "limit=N — max results (default 10)"], },
+            { label: "%{user_summary}", values: ["Aggregated user profile facts", "None"], },
+            { label: "%{graph_neighbors}", values: ["Connected entities from graph", "n=N — neighbor count (default 5)"], },
+            { label: "%{temporal_range}", values: ["Time-based memory filter", "days=N — lookback days (default 7)"], },
+            { label: "%{related_entities}", values: ["Entity list from graph walk", "None"], },
+          ],
+          footnote: "All markers are optional. Unknown markers render as empty strings."
+        }
+      },
+      {
+        heading: "Usage",
+        steps: [
+          "Navigate to Settings → Context Templates in Mission Control.",
+          "Click 'New Template', enter a name, and build your template string with markers.",
+          "Or select a built-in preset (Compact, Conversational, Enterprise RAG) and customize it.",
+          "Save the template. Use it by calling the /api/context/assemble endpoint with the template_id.",
+          "Integrate the assembled context into your LLM system prompt via SDK or API."
+        ],
+        codeBlocks: [
+          {
+            label: "Assemble context via API",
+            language: "bash",
+            code: "curl -X POST https://api.aletheiadb.com/api/context/assemble \\\n  -H \"Content-Type: application/json\" \\\n  -H \"x-api-key: YOUR_API_KEY\" \\\n  -d '{\n    \"cluster_id\": \"YOUR_CLUSTER_ID\",\n    \"template_id\": \"TEMPLATE_UUID\",\n    \"query\": \"recent user activity\"\n  }'"
+          },
+          {
+            label: "Python SDK",
+            language: "python",
+            code: "from aletheia import MemoryClient\n\nclient = MemoryClient(api_key=\"sk-...\")\ncontext = client.context.assemble(\n    cluster_id=\"cl_abc123\",\n    template_id=\"tmpl_user_profile\",\n    query=\"recent preferences\"\n)\nprint(context.context)\n# Output:\n# USER PROFILE\n# - Alice is a vegetarian\n# - Alice prefers outdoor activities\n#\n# RECENT FACTS\n# - Alice went hiking on Saturday\n# - Alice bought new hiking boots"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    slug: "rate-limiting",
+    eyebrow: "Platform",
+    title: "Rate Limits & Quotas",
+    lead: "Aletheia uses per-cluster rate limits to ensure fair resource allocation across tenants. Limits scale with your tier.",
+    description: "Rate limits for the Aletheia Platform API. Learn about RPM limits, daily quotas, retry-after headers, and how limits scale with your plan tier.",
+    sections: [
+      {
+        heading: "How Rate Limits Work",
+        paragraphs: [
+          "Every API request to the Aletheia platform is counted against a rate limit for the originating cluster. Limits are enforced in two dimensions: requests per minute (RPM) and requests per day. When a limit is exceeded, the API returns HTTP 429 with a Retry-After header.",
+          "Rate limits reset at the end of each window (1 minute for RPM, midnight UTC for daily). 429 responses include X-RateLimit-Remaining and X-RateLimit-Reset headers so your application can adapt."
+        ],
+        stats: [
+          { label: "Free Tier RPM", value: "60", description: "1 request per second average", tone: "default" },
+          { label: "Free Tier Daily", value: "10,000", description: "Resets at midnight UTC", tone: "default" },
+          { label: "Pro Tier RPM", value: "300", description: "5 requests per second average", tone: "primary" },
+          { label: "Pro Tier Daily", value: "100,000", description: "10x free tier capacity", tone: "primary" },
+          { label: "Enterprise", value: "Unlimited", description: "Custom SLA, no rate limits", tone: "success" },
+        ]
+      },
+      {
+        heading: "Response Headers",
+        table: {
+          columns: ["Header", "Description"],
+          rows: [
+            { label: "X-RateLimit-Limit", values: ["The maximum requests per minute for this cluster"] },
+            { label: "X-RateLimit-Remaining", values: ["How many requests are left in the current window"] },
+            { label: "X-RateLimit-Reset", values: ["Unix timestamp when the window resets"] },
+            { label: "Retry-After", values: ["Seconds to wait before retrying (on 429 only)"] },
+          ]
+        }
+      },
+      {
+        heading: "Best Practices",
+        bullets: [
+          "Implement exponential backoff: on 429, wait Retry-After seconds, then double the wait on subsequent failures.",
+          "Use the X-RateLimit-Remaining header to pre-warn when approaching limits. Slow down requests when remaining < 10% of limit.",
+          "Batch ingest operations rather than sending one-at-a-time. Each batch-ingest call counts as 1 request regardless of size.",
+          "Monitor your usage in Mission Control → Analytics. The usage dashboard shows daily trends and remaining quota.",
+          "Upgrade to Pro for 5x higher limits. Contact Enterprise sales if you need more."
+        ]
+      }
+    ]
+  },
+  {
+    slug: "connectors",
+    eyebrow: "Platform",
+    title: "Data Connectors",
+    lead: "Auto-ingest data from Slack, GitHub, Notion, and more. Connect once, and Aletheia continuously syncs new content as it arrives.",
+    description: "Connect external services to your Aletheia cluster for automatic data ingestion. Supports Slack, GitHub, Notion, Gmail, and Google Drive.",
+    sections: [
+      {
+        heading: "What are Connectors?",
+        paragraphs: [
+          "Connectors automatically pull data from external services into your Aletheia cluster. Once configured, they run on a schedule (typically every 15 minutes) and ingest new content as conversation memories, fact memories, or decision records depending on the source.",
+          "Each connector requires OAuth authorization or an API token. Credentials are encrypted at rest in our database. You can revoke a connector at any time from the Connectors page."
+        ]
+      },
+      {
+        heading: "Available Connectors",
+        table: {
+          columns: ["Service", "What Gets Ingested", "Memory Kind"],
+          rows: [
+            { label: "Slack", values: ["Channel messages and thread replies", "Conversation"] },
+            { label: "GitHub", values: ["Issues, pull requests, commits, comments", "Decision, Fact"] },
+            { label: "Notion", values: ["Pages, databases, and their content", "Fact"] },
+            { label: "Gmail", values: ["Emails and thread conversations", "Conversation"] },
+            { label: "Google Drive", values: ["Documents, sheets, slides", "Fact"] },
+          ],
+          footnote: "Each connector's data is automatically tagged with its source for traceability."
+        }
+      },
+      {
+        heading: "Setup Guide",
+        steps: [
+          "Navigate to your cluster → Connectors tab.",
+          "Select the service you want to connect (e.g., Slack).",
+          "Click 'Connect' — you'll be redirected to the service's OAuth authorization page.",
+          "Authorize Aletheia to access the required scopes (read-only where possible).",
+          "You'll be redirected back to the Connectors page showing your new connector as 'Active'.",
+          "The first sync starts automatically within 15 minutes. Click 'Sync Now' for an immediate sync.",
+          "Monitor sync status, last sync time, and item count from the Connectors page."
+        ],
+        codeBlocks: [
+          {
+            label: "List connectors via API",
+            language: "bash",
+            code: "curl https://api.aletheiadb.com/api/clusters/YOUR_CLUSTER_ID/connectors \\\n  -H \"x-api-key: YOUR_API_KEY\""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    slug: "mcp-server",
+    eyebrow: "Platform",
+    title: "MCP Server (Model Context Protocol)",
+    lead: "Connect Aletheia to any MCP-compatible client — Claude Desktop, Cursor, Windsurf, and more — with zero configuration.",
+    description: "Aletheia exposes a Model Context Protocol (MCP) server for integration with Claude Desktop, Cursor, and other MCP clients. Search memories, store facts, and explore graphs from your AI tools.",
+    sections: [
+      {
+        heading: "What is MCP?",
+        paragraphs: [
+          "The Model Context Protocol (MCP) is an open standard for connecting AI assistants with external tools and data sources. Aletheia exposes an MCP server that lets any MCP-compatible client — including Claude Desktop, Cursor, and Windsurf — query memories, store facts, and explore knowledge graphs directly.",
+          "By supporting MCP, Aletheia works with every MCP client out of the box. No custom SDKs or integration code needed."
+        ]
+      },
+      {
+        heading: "Available Tools",
+        table: {
+          columns: ["Tool", "Description", "Required Params"],
+          rows: [
+            { label: "search_memory", values: ["Search memories with hybrid vector+lexical retrieval", "query"] },
+            { label: "store_fact", values: ["Store a new fact or observation", "text, entity_id"] },
+            { label: "explore_graph", values: ["Walk the knowledge graph from an entity", "entity"] },
+            { label: "get_usage_stats", values: ["Get cluster usage statistics", "None"] },
+            { label: "get_memory", values: ["Retrieve a specific memory by ID", "memory_id"] },
+          ]
+        }
+      },
+      {
+        heading: "Quick Start — Claude Desktop",
+        steps: [
+          "Open Claude Desktop → Settings → Developer → Edit Config.",
+          "Add the following entry to your claude_desktop_config.json:",
+          "Restart Claude Desktop. You should see the Aletheia tools in the toolbox.",
+          'Ask Claude to "search my memories" or "store that Alice likes hiking".'
+        ],
+        codeBlocks: [
+          {
+            label: "claude_desktop_config.json",
+            language: "json",
+            code: '{\n  "mcpServers": {\n    "aletheia": {\n      "command": "npx",\n      "args": ["@aletheia/mcp-client"],\n      "env": {\n        "ALETHEIA_API_KEY": "YOUR_API_KEY"\n      }\n    }\n  }\n}'
+          }
+        ]
+      },
+      {
+        heading: "Server Endpoint",
+        bullets: [
+          "The MCP server is available at: https://api.aletheiadb.com/mcp",
+          "Authentication is via x-api-key header or Bearer token in the Authorization header.",
+          "The protocol uses JSON-RPC 2.0 over HTTP POST.",
+          "A server card is available at: https://aletheiadb.com/.well-known/mcp/server-card.json",
+          "Install the MCP client package: npm install @aletheia/mcp-client"
+        ]
+      }
+    ]
+  },
+  {
+    slug: "trust",
+    eyebrow: "Platform",
+    title: "Trust & Security",
+    lead: "Aletheia is built with security and privacy as first principles. SOC 2 compliant, GDPR ready, and fully auditable.",
+    description: "Security, privacy, and compliance information for the Aletheia platform. Encryption, infrastructure, data protection, and certifications.",
+    sections: [
+      {
+        heading: "Security by Design",
+        paragraphs: [
+          "Aletheia is built from the ground up with security as a core requirement. The core engine is a single Rust binary with zero runtime dependencies — no npm, no pip, no system libraries. This dramatically reduces the attack surface compared to languages like Python or Node.js.",
+          "All data is encrypted at rest (AES-256) and in transit (TLS 1.3). API keys are stored as SHA-256 hashes and compared using constant-time comparison to prevent timing side-channel attacks."
+        ],
+        stats: [
+          { label: "Encryption", value: "AES-256", description: "At rest. TLS 1.3 in transit.", tone: "success" },
+          { label: "Auth", value: "SHA-256", description: "API keys hashed. Constant-time comparison.", tone: "success" },
+          { label: "Runtime Deps", value: "0", description: "Single Rust binary. No npm/pip/system deps.", tone: "success" },
+          { label: "Auth Model", value: "RLS + Clusters", description: "Row-Level Security + namespace isolation.", tone: "default" },
+        ]
+      },
+      {
+        heading: "Infrastructure & Isolation",
+        bullets: [
+          "Multi-tenant isolation: every API key is scoped to a cluster_id. Data is partitioned at the database level using RLS policies.",
+          "Platform proxy: the Qwik frontend authenticates all requests and prefixes entity_id with the user's namespace. The Rust engine never sees raw user IDs from other tenants.",
+          "Vercel Edge + Supabase: both platforms are SOC 2 certified. Our dependency on their infrastructure means inheriting their security posture.",
+          "Self-hosting option: for organizations requiring full control, the core engine runs as a standalone binary with no external dependencies and no telemetry.",
+          "No data sharing: we never use customer data for training, benchmarking, or product improvement without explicit opt-in."
+        ]
+      },
+      {
+        heading: "Compliance",
+        table: {
+          columns: ["Standard", "Status", "Details"],
+          rows: [
+            { label: "SOC 2 Type 2", values: ["In Progress", "Auditor: Vanta. Expected Q3 2026."] },
+            { label: "GDPR", values: ["Compliant", "Standard Contractual Clauses available. DPA on request."] },
+            { label: "HIPAA", values: ["Configurable", "Self-hosted deployment. BAA available for enterprise."] },
+          ],
+          footnote: "Contact trust@aletheiadb.com for security questionnaires, penetration test summaries, and architecture diagrams."
+        }
+      },
+      {
+        heading: "Trust Center",
+        paragraphs: [
+          "Visit the Aletheia Trust Center at /platform/trust for the full security overview, including encryption details, data processing agreements, breach notification procedures, and infrastructure architecture diagrams.",
+          "For urgent security matters: security@aletheiadb.com. For compliance documentation: trust@aletheiadb.com."
+        ]
+      }
+    ]
+  },
+  {
+    slug: "self-hosting",
+    eyebrow: "Operations",
+    title: "Self-Hosting & BYOC",
+    lead: "Run Aletheia in your own infrastructure. One binary, zero dependencies, full control. Or deploy in your cloud with our BYOC program.",
+    description: "Self-host Aletheia Core as a single binary, Docker container, or deploy via BYOC in your AWS/GCP/Azure account.",
+    sections: [
+      {
+        heading: "Self-Hosted Core Engine",
+        paragraphs: [
+          "The Aletheia Core engine is a single Rust binary — download, run. No Docker required. No database to configure. Works on macOS, Linux, and Windows. Everything needed for agent memory is inside the binary: HNSW vector index, BM25F full-text search, typed knowledge graph, temporal KV store, and deterministic analytics vault.",
+          "Embeddings are handled locally via Candle (CPU/GPU) or ONNX Runtime. No external embedding API is needed. The engine works completely air-gapped."
+        ],
+        codeBlocks: [
+          {
+            label: "Quick start (binary)",
+            language: "bash",
+            code: "curl -L https://github.com/sharjeel619/aletheia/releases/latest/download/aletheia-x86_64-linux -o aletheia\nchmod +x aletheia\nexport ALETHEIA_API_KEY=my-secret\nexport ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5\n./aletheia\n# Listening on http://localhost:3000"
+          },
+          {
+            label: "Docker",
+            language: "bash",
+            code: "docker run -p 3000:3000 \\\n  -e ALETHEIA_API_KEY=my-secret \\\n  -e ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -v ./data:/data \\\n  ghcr.io/sharjeel619/aletheia:latest"
+          }
+        ]
+      },
+      {
+        heading: "Configuration",
+        steps: [
+          "Set ALETHEIA_API_KEY: Any string used to authenticate all requests. Treat this like a database password.",
+          "Choose an embedding model: Set ALETHEIA_EMBEDDING_MODEL to a HuggingFace model ID (e.g., BAAI/bge-small-en-v1.5). The model is downloaded on first run and cached locally.",
+          "Set the data directory: ALETHEIA_DATA_DIR defaults to ./data. All database files (.redb) and the vector index (.hnsw) are stored here.",
+          "Bind address: ALETHEIA_HOST (default 0.0.0.0) and ALETHEIA_PORT (default 3000).",
+          "Enable GPU: Set ALETHEIA_DEVICE=cuda if you have an NVIDIA GPU with CUDA installed."
+        ],
+        stats: [
+          { label: "Binary Size", value: "~45 MB", description: "Statically linked. No runtime dependencies.", tone: "primary" },
+          { label: "Startup Time", value: "< 1s", description: "Cold start, all indexes loaded.", tone: "success" },
+          { label: "Memory (100K obs)", value: "~800 MB", description: "Includes all indexes. Configurable retention.", tone: "default" },
+          { label: "Price", value: "Free", description: "Open source (Apache 2.0). No license fees.", tone: "success" },
+        ]
+      },
+      {
+        heading: "Enterprise BYOC",
+        paragraphs: [
+          "For organizations requiring dedicated infrastructure with full data sovereignty, we offer a Bring Your Own Cloud (BYOC) program. You provide the cloud account (AWS, GCP, or Azure); we provide Terraform modules that provision the Aletheia Core instance in your VPC. The management plane only receives health metrics — your data never leaves your infrastructure.",
+          "BYOC includes: dedicated single-tenant instance, customer-managed encryption keys (CMEK), custom networking (VPC, PrivateLink), 99.95% uptime SLA, and priority support.",
+          "Contact enterprise@aletheiadb.com for a BYOC assessment and pricing."
+        ],
+        bullets: [
+          "Terraform modules for automated provisioning in AWS, GCP, and Azure.",
+          "Zero-access architecture — no SSH, VPN, or inbound network access required for operations.",
+          "Outbound-only connectivity to the management plane for health metrics.",
+          "Configurable retention policies, backup schedules, and disaster recovery.",
+        ]
+      }
+    ]
   }
 ];
 
