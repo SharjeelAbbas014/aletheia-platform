@@ -616,9 +616,11 @@ sdk: python + javascript`;
 
 const platformLinks = [
   { label: "Memory Lattice", href: "/#memory" },
-  { label: "Vector Store", href: "/docs/local-engine" },
+  { label: "Mission Control", href: "/platform" },
+  { label: "Docs", href: "/docs/core" },
   { label: "Rust SDK", href: "/docs/quickstart" },
   { label: "Integrations", href: "/docs/api-auth" },
+  { label: "Pricing", href: "/signup" },
 ];
 
 const companyLinks = [
@@ -2113,6 +2115,109 @@ export default component$(() => {
             </div>
           </div>
         </section>
+
+        {/* Core vs Platform */}
+        <section id="core-vs-platform" class="px-6 py-32 border-t border-outline-variant/10">
+          <div class="container mx-auto max-w-5xl">
+            <div class="scroll-reveal mb-20 text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                Choose Your Path
+              </h2>
+              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
+                Two Ways to <span class="italic text-primary">Remember.</span>
+              </h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Core */}
+              <div class="glass-panel group rounded-[2rem] border border-outline-variant/10 p-10 transition-all hover:border-primary/30">
+                <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 shadow-lg">
+                  <CpuIcon class="text-2xl text-primary" />
+                </div>
+                <h4 class="mb-2 text-2xl font-bold">
+                  <span class="text-primary">Aletheia</span> Core
+                </h4>
+                <p class="mb-1 text-xs font-bold uppercase tracking-widest text-tertiary">Open Source Engine</p>
+                <p class="mb-6 text-sm leading-relaxed text-tertiary">
+                  The Rust-powered temporal memory engine that runs anywhere. Hybrid
+                  vector + BM25 search, knowledge graph traversal, deterministic
+                  analytics, and fact supersession — all in a single binary. No
+                  cloud dependency. No vendor lock-in.
+                </p>
+                <ul class="mb-8 space-y-2 text-sm text-tertiary">
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 text-xs text-primary">▸</span>
+                    Single binary — download and run
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 text-xs text-primary">▸</span>
+                    4 HNSW indexes + BM25F + redb KV + typed graph
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 text-xs text-primary">▸</span>
+                    Candle / ONNX embeddings, CPU or GPU
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 text-xs text-primary">▸</span>
+                    Embed in your stack, pitch to your customers
+                  </li>
+                </ul>
+                <div class="flex gap-3">
+                  <Link href="/docs/core" class="rounded-lg bg-primary/10 px-5 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-primary/20">
+                    Read the Docs
+                  </Link>
+                  <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" class="glass-panel rounded-lg px-5 py-2.5 text-sm font-bold text-tertiary transition-colors hover:text-on-surface">
+                    Contact Us
+                  </a>
+                </div>
+              </div>
+
+              {/* Platform */}
+              <div class="glass-panel group rounded-[2rem] border border-primary/20 p-10 transition-all hover:border-primary/50 bg-primary/5">
+                <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 shadow-lg">
+                  <GlobeIcon class="text-2xl text-primary" />
+                </div>
+                <h4 class="mb-2 text-2xl font-bold">
+                  <span class="text-primary">Aletheia</span> Platform
+                </h4>
+                <p class="mb-1 text-xs font-bold uppercase tracking-widest text-tertiary">Managed Cloud Service</p>
+                <p class="mb-6 text-sm leading-relaxed text-tertiary">
+                  A full SaaS experience on top of the core engine. Deploy clusters
+                  in one click, manage your team, track usage with analytics, explore
+                  knowledge graphs visually, and never worry about infrastructure.
+                </p>
+                <ul class="mb-8 space-y-2 text-sm text-tertiary">
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 text-xs text-primary">▸</span>
+                    One-click cluster provisioning — no config files
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 text-xs text-primary">▸</span>
+                    Stripe billing — pay as you go or flat-rate
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 text-xs text-primary">▸</span>
+                    Team management with invites and roles
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 text-xs text-primary">▸</span>
+                    Graph explorer, analytics, API playground
+                  </li>
+                </ul>
+                <div class="flex gap-3">
+                  <Link href="/signup" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90">
+                    Get Started Free
+                  </Link>
+                  <Link href="/docs/platform" class="glass-panel rounded-lg px-5 py-2.5 text-sm font-bold text-tertiary transition-colors hover:text-on-surface">
+                    Learn More
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Ecosystem */}
         <section
           id="ecosystem"
           class="px-6 py-32 bg-surface-container-low/10 border-t border-outline-variant/10"

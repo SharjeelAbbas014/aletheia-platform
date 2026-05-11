@@ -10,7 +10,9 @@ import {
   CheckCircle2Icon,
   Trash2Icon,
   KeyIcon,
-  Loader2Icon
+  Loader2Icon,
+  CreditCardIcon,
+  SettingsIcon
 } from "lucide-qwik";
 import {
   Form,
@@ -141,17 +143,17 @@ export default component$(() => {
 
 
           <nav class="space-y-1">
-            <a class="flex items-center gap-3 rounded-md bg-primary/10 px-4 py-2 text-primary transition-all" href="#">
+            <a class="flex items-center gap-3 rounded-md bg-primary/10 px-4 py-2 text-primary transition-all" href="/platform">
               <LayoutDashboardIcon class="w-4 h-4" />
               Mission Control
             </a>
-            <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="#">
-              <NetworkIcon class="w-4 h-4" />
-              Knowledge Graph
+            <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="/platform/billing">
+              <CreditCardIcon class="w-4 h-4" />
+              Billing
             </a>
-            <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="#">
-              <BarChart3Icon class="w-4 h-4" />
-              Metric Vault
+            <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="/platform/settings">
+              <SettingsIcon class="w-4 h-4" />
+              Settings
             </a>
           </nav>
         </div>

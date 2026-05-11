@@ -1,80 +1,97 @@
--- ============================================================
--- Run this entire file in your Supabase SQL Editor
--- ============================================================
+-- Aletheia Platform: Billing, Teams, Usage (run in Supabase SQL Editor)
 
--- 1. Create api_keys table
-CREATE TABLE IF NOT EXISTS public.api_keys (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users NOT NULL,
-  key_value TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL DEFAULT 'Default Key',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  last_used_at TIMESTAMP WITH TIME ZONE,
-  is_active BOOLEAN DEFAULT true
+-- 1. Teams
+create table if not exists public.teams (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  created_at timestamptz not null default now()
 );
 
-ALTER TABLE public.api_keys ENABLE ROW LEVEL SECURITY;
-
--- Drop policies first to avoid duplicate errors, then recreate
-DROP POLICY IF EXISTS "Users can view their own API keys." ON public.api_keys;
-DROP POLICY IF EXISTS "Users can create their own API keys." ON public.api_keys;
-DROP POLICY IF EXISTS "Users can update their own API keys." ON public.api_keys;
-DROP POLICY IF EXISTS "Users can delete their own API keys." ON public.api_keys;
-
-CREATE POLICY "Users can view their own API keys."
-  ON api_keys FOR SELECT USING ( auth.uid() = user_id );
-
-CREATE POLICY "Users can create their own API keys."
-  ON api_keys FOR INSERT WITH CHECK ( auth.uid() = user_id );
-
-CREATE POLICY "Users can update their own API keys."
-  ON api_keys FOR UPDATE USING ( auth.uid() = user_id );
-
-CREATE POLICY "Users can delete their own API keys."
-  ON api_keys FOR DELETE USING ( auth.uid() = user_id );
-
--- 2. Create cluster tier/status enums
-DO $$ BEGIN
-  CREATE TYPE cluster_tier AS ENUM ('fractional', 'dedicated_l4', 'dedicated_t4');
-EXCEPTION WHEN duplicate_object THEN null;
-END $$;
-
-DO $$ BEGIN
-  CREATE TYPE cluster_status AS ENUM ('provisioning', 'active', 'suspended', 'deleted');
-EXCEPTION WHEN duplicate_object THEN null;
-END $$;
-
--- 3. Create clusters table
-CREATE TABLE IF NOT EXISTS public.clusters (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) NOT NULL,
-  name TEXT NOT NULL,
-  tier cluster_tier DEFAULT 'fractional' NOT NULL,
-  status cluster_status DEFAULT 'active' NOT NULL,
-  endpoint_url TEXT NOT NULL,
-  region TEXT NOT NULL DEFAULT 'shared',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+create table if not exists public.team_members (
+  team_id uuid references public.teams(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  role text not null default 'member' check (role in ('owner', 'admin', 'member')),
+  created_at timestamptz not null default now(),
+  primary key (team_id, user_id)
 );
 
-ALTER TABLE public.clusters ENABLE ROW LEVEL SECURITY;
+create table if not exists public.invitations (
+  id uuid default gen_random_uuid() primary key,
+  team_id uuid references public.teams(id) on delete cascade not null,
+  email text not null,
+  role text not null default 'member' check (role in ('admin', 'member')),
+  token text not null unique,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now(),
+  accepted_at timestamptz
+);
 
-DROP POLICY IF EXISTS "Users can view their own clusters" ON public.clusters;
-DROP POLICY IF EXISTS "Users can create their own clusters" ON public.clusters;
-DROP POLICY IF EXISTS "Users can update their own clusters" ON public.clusters;
-DROP POLICY IF EXISTS "Users can delete their own clusters" ON public.clusters;
+-- 2. Subscriptions (Stripe)
+create table if not exists public.subscriptions (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  stripe_customer_id text unique,
+  stripe_subscription_id text unique,
+  stripe_price_id text,
+  tier text not null default 'fractional',
+  status text not null default 'incomplete',
+  current_period_start timestamptz,
+  current_period_end timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
 
-CREATE POLICY "Users can view their own clusters"
-  ON public.clusters FOR SELECT USING (auth.uid() = user_id);
+-- 3. Daily usage rollups
+create table if not exists public.usage_daily (
+  id uuid default gen_random_uuid() primary key,
+  cluster_id uuid references public.clusters(id) on delete cascade not null,
+  date date not null,
+  request_count integer not null default 0,
+  ingest_count integer not null default 0,
+  query_count integer not null default 0,
+  graph_ops integer not null default 0,
+  storage_bytes bigint not null default 0,
+  unique(cluster_id, date)
+);
 
-CREATE POLICY "Users can create their own clusters"
-  ON public.clusters FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- RLS
+alter table public.teams enable row level security;
+alter table public.team_members enable row level security;
+alter table public.subscriptions enable row level security;
+alter table public.usage_daily enable row level security;
 
-CREATE POLICY "Users can update their own clusters"
-  ON public.clusters FOR UPDATE USING (auth.uid() = user_id);
+-- Policies
+create policy "Users can read their teams"
+  on public.teams for select using (
+    id in (select team_id from public.team_members where user_id = auth.uid())
+  );
 
-CREATE POLICY "Users can delete their own clusters"
-  ON public.clusters FOR DELETE USING (auth.uid() = user_id);
+create policy "Members can read team members"
+  on public.team_members for select using (
+    team_id in (select team_id from public.team_members where user_id = auth.uid())
+  );
 
--- 4. Link api_keys to clusters (nullable)
-ALTER TABLE public.api_keys
-  ADD COLUMN IF NOT EXISTS cluster_id UUID REFERENCES public.clusters(id) ON DELETE SET NULL;
+create policy "Users can read own subscriptions"
+  on public.subscriptions for select using (user_id = auth.uid());
+
+create policy "Owners can read cluster usage"
+  on public.usage_daily for select using (
+    cluster_id in (select id from public.clusters where user_id = auth.uid())
+  );
+
+-- Auto-create a personal team on signup
+create or replace function public.handle_new_user()
+returns trigger as $$
+declare
+  team_id uuid;
+begin
+  insert into public.teams (name) values (coalesce(new.raw_user_meta_data->>'name', new.email) || '''s Team')
+    returning id into team_id;
+  insert into public.team_members (team_id, user_id, role) values (team_id, new.id, 'owner');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users for each row execute function public.handle_new_user();

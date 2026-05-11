@@ -1392,6 +1392,124 @@ reset first: true`
     ]
   },
   {
+    slug: "core",
+    eyebrow: "Product",
+    title: "Aletheia Core Engine",
+    lead: "The Rust-powered temporal memory engine that runs anywhere. Self-host, embed, or integrate.",
+    description: "Aletheia Core is the open-source, single-binary memory engine for AI agents. Hybrid vector + BM25 search, knowledge graphs, deterministic analytics, and fact supersession.",
+    sections: [
+      {
+        heading: "What is Aletheia Core?",
+        paragraphs: [
+          "Aletheia Core is a standalone Rust binary that provides persistent, temporal, multi-model memory for AI agents. It is designed to run on any machine — from a developer laptop to a production server — without requiring a cloud account, a database cluster, or an internet connection.",
+          "The engine combines four storage substrates under one roof: a vector index (HNSW via usearch), a full-text search index (BM25F on redb), a typed knowledge graph (RDF-style adjacency lists on redb), and a deterministic analytics vault for numeric metric extraction. All four are written into the same binary with zero external dependencies at runtime."
+        ]
+      },
+      {
+        heading: "How It Works",
+        paragraphs: [
+          "Think of Aletheia Core as a database purpose-built for agent memory. You send it observations (facts, conversations, events) via REST endpoints, and it indexes them across all four substrates simultaneously. When you query, it performs hybrid retrieval — fusing vector similarity scores with BM25F lexical scores using Reciprocal Rank Fusion — and returns temporally-ordered, fact-consistent results.",
+          "The engine tracks time natively. Every memory carries a timestamp, and the retrieval pipeline uses temporal recency scoring to prefer recent memories while still surfacing relevant historical facts. Facts can be superseded (new truth replaces old truth), creating a continuously updated world model."
+        ]
+      },
+      {
+        heading: "What Runs Where",
+        stats: [
+          { label: "Binary size", value: "~45 MB", description: "Single statically-linked executable, no runtime deps.", tone: "primary" },
+          { label: "Startup time", value: "< 1s", description: "Cold-start from scratch, all indexes in memory.", tone: "success" },
+          { label: "Memory per 100K observations", value: "~800 MB", description: "Includes all index overhead. Configurable via retention.", tone: "default" },
+          { label: "Query latency", value: "< 50ms p99", description: "Hybrid vector + lexical search with semantic rerank.", tone: "success" }
+        ]
+      },
+      {
+        heading: "Getting Started",
+        steps: [
+          "Download the binary from the GitHub releases page or build from source: cargo build --release.",
+          "Set your API key: export ALETHEIA_API_KEY=your-secret-key.",
+          "Choose an embedding model: export ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5.",
+          "Run: ./aletheia. The engine starts on port 3000 by default.",
+          "Ingest your first memory: POST /ingest with a JSON payload containing text, entity_id, and timestamp.",
+          "Query: POST /query with a textual_query and limit. The engine returns ranked, temporally-scored results."
+        ],
+        codeBlocks: [
+          {
+            label: "Docker quick start",
+            language: "bash",
+            code: "docker run -p 3000:3000 \\\n  -e ALETHEIA_API_KEY=my-secret \\\n  -e ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -v ./data:/data \\\n  ghcr.io/sharjeel619/aletheia:latest"
+          },
+          {
+            label: "First ingest",
+            language: "bash",
+            code: "curl -X POST http://localhost:3000/ingest \\\n  -H \"Content-Type: application/json\" \\\n  -H \"x-api-key: my-secret\" \\\n  -d '{\n    \"entity_id\": \"user-1\",\n    \"memory_id\": \"mem-001\",\n    \"timestamp\": 1700000000000,\n    \"textual_content\": \"Alice enjoys hiking in the mountains on weekends.\",\n    \"kind\": \"Fact\"\n  }'"
+          },
+          {
+            label: "First query",
+            language: "bash",
+            code: "curl -X POST http://localhost:3000/query \\\n  -H \"Content-Type: application/json\" \\\n  -H \"x-api-key: my-secret\" \\\n  -d '{\n    \"textual_query\": \"What does Alice enjoy?\",\n    \"limit\": 5\n  }'"
+          }
+        ]
+      },
+      {
+        heading: "Deployment Models",
+        bullets: [
+          "Self-hosted binary: Download, run. No cloud, no lock-in. Works on macOS, Linux, Windows.",
+          "Docker: Official container images with pre-baked models on GitHub Container Registry.",
+          "Embedded library: Link Aletheia as a Rust crate in your own application (coming soon).",
+          "Platform-managed: Deploy on the Aletheia Platform for one-click provisioning, billing, and team management."
+        ]
+      }
+    ]
+  },
+  {
+    slug: "platform",
+    eyebrow: "Product",
+    title: "Aletheia Platform",
+    lead: "The managed SaaS layer on top of Aletheia Core. Deploy clusters, manage teams, track usage, and never touch infrastructure.",
+    description: "The Aletheia Platform provides a full web console, Stripe billing, team management, graph visualization, and analytics on top of the core memory engine.",
+    sections: [
+      {
+        heading: "What is the Platform?",
+        paragraphs: [
+          "The Aletheia Platform is a managed cloud service built on top of the open-source Aletheia Core engine. While the core engine runs anywhere as a standalone binary, the Platform wraps it with authentication, billing, team collaboration, and a rich web dashboard — so you can focus on building agents, not managing servers."
+        ]
+      },
+      {
+        heading: "Platform vs Core",
+        stats: [
+          { label: "Core Engine", value: "Self-hosted", description: "Download and run on your own hardware. Open source, Apache 2.0.", tone: "primary" },
+          { label: "Platform", value: "Managed SaaS", description: "We run the engine for you. One-click deploy, automatic scaling.", tone: "success" },
+          { label: "Core Auth", value: "API Key", description: "Single admin key. You manage access yourself.", tone: "default" },
+          { label: "Platform Auth", value: "Full Stack", description: "Supabase Auth — login, teams, scoped API keys, RLS.", tone: "success" },
+          { label: "Core Pricing", value: "Free", description: "Open source. No license fees.", tone: "primary" },
+          { label: "Platform Pricing", value: "Pay-as-you-go", description: "$1/1M truths fractionally, $400/mo dedicated. Free tier available.", tone: "success" }
+        ]
+      },
+      {
+        heading: "What You Get",
+        bullets: [
+          "Mission Control dashboard: Real-time stats, cluster list, API key management in one screen.",
+          "One-click cluster deploy: Choose a tier (Fractional or Dedicated Pro), name your cluster, and deploy instantly.",
+          "Stripe billing: Pay-as-you-go or flat-rate. Manage payment methods, view invoices, upgrade/downgrade.",
+          "Team management: Invite colleagues, assign roles (owner/admin/member), collaborate on shared clusters.",
+          "Knowledge Graph Explorer: Search entities, walk graph neighborhoods, discover shared connections between subjects.",
+          "Analytics dashboard: Daily usage charts, query/ingest breakdowns, storage trends.",
+          "API Playground: Interactive request builder with code snippets for Python, cURL, and Node.js."
+        ]
+      },
+      {
+        heading: "Getting Started on the Platform",
+        steps: [
+          "Create an account at aletheiadb.com/signup. Your first cluster (Fractional tier) is provisioned automatically.",
+          "Copy your API key from Mission Control → API Keys. This key authenticates all requests to the platform.",
+          "Use the API Playground in your cluster's detail page to test ingest and query operations.",
+          "Invite team members from Settings → Team. They can access shared clusters based on their role.",
+          "Monitor usage from Analytics or the Billing page. Usage is tracked daily and available via the API.",
+          "Upgrade to Dedicated Pro for guaranteed performance, higher limits, and priority support."
+        ]
+      }
+    ]
+  },
+  {
     slug: "glossary",
     eyebrow: "Reference",
     title: "Glossary",
