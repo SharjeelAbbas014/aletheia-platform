@@ -746,14 +746,14 @@ export default component$(() => {
       )) as HeroDemoResult;
       heroDemoResult.value = nextResult.ok
         ? {
-            ...(heroDemoResult.value ?? {}),
-            ...nextResult,
-            message: undefined,
-          }
+          ...(heroDemoResult.value ?? {}),
+          ...nextResult,
+          message: undefined,
+        }
         : {
-            ...(heroDemoResult.value ?? {}),
-            ...nextResult,
-          };
+          ...(heroDemoResult.value ?? {}),
+          ...nextResult,
+        };
     } catch (error) {
       heroDemoResult.value = {
         ok: false,
@@ -966,7 +966,7 @@ export default component$(() => {
                   { icon: BarChart3Icon, label: "Analytics", desc: "Deterministic numeric queries" },
                   { icon: ShieldCheckIcon, label: "Self-Hosted", desc: "Air-gapped, your infra" },
                   { icon: GlobeIcon, label: "Managed Cloud", desc: "One-click deploy" },
-                  { icon: ZapIcon, label: "<50ms p99", desc: "Hybrid retrieval latency" },
+                  { icon: ZapIcon, label: "<100ms p99", desc: "Hybrid retrieval latency" },
                 ].map(({ icon: Icon, label, desc }) => (
                   <div key={label} class="border border-outline-variant/20 rounded-lg p-4 hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-2 mb-1">
@@ -1287,21 +1287,19 @@ export default component$(() => {
                   </div>
 
                   <div
-                    class={`mb-3 font-mono text-xs uppercase tracking-wider ${
-                      card.date === "Aletheia Ingests"
+                    class={`mb-3 font-mono text-xs uppercase tracking-wider ${card.date === "Aletheia Ingests"
                         ? "text-primary"
                         : "text-tertiary"
-                    }`}
+                      }`}
                   >
                     {card.date}
                   </div>
 
                   <p
-                    class={`mb-6 text-lg leading-relaxed ${
-                      card.facts
+                    class={`mb-6 text-lg leading-relaxed ${card.facts
                         ? "font-bold"
                         : "font-medium italic text-on-surface/90"
-                    }`}
+                      }`}
                   >
                     {card.quote}
                   </p>
@@ -1964,8 +1962,8 @@ export default component$(() => {
                       </div>
                       <div class="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                         {heroDemoResult.value?.ok &&
-                        heroDemoResult.value.hits &&
-                        heroDemoResult.value.hits.length > 0 ? (
+                          heroDemoResult.value.hits &&
+                          heroDemoResult.value.hits.length > 0 ? (
                           heroDemoResult.value.hits.map((hit, idx) => (
                             <div
                               key={idx}
@@ -2185,11 +2183,11 @@ export default component$(() => {
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
               {ecosystemItems.map((item) => (
-                  <Link
-                    key={item.title}
-                    href={item.link}
-                    class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-8 transition-all hover:border-primary/40"
-                  >
+                <Link
+                  key={item.title}
+                  href={item.link}
+                  class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-8 transition-all hover:border-primary/40"
+                >
                   <div class="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-container-highest transition-transform group-hover:scale-110 shadow-lg">
                     <MaterialIcon
                       name={item.icon}
