@@ -24,5 +24,6 @@ export function absoluteAssetUrl(pathname: string): string {
     return pathname;
   }
 
-  return absoluteUrl(pathname.startsWith("/") ? pathname : `/${pathname}`);
+  const normalized = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return new URL(normalized, SITE_ORIGIN).toString();
 }
