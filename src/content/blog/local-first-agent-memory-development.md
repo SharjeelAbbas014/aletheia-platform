@@ -57,4 +57,10 @@ That consistency prevents a common trap where local prototypes work, but product
 
 Teams that can debug memory behavior on a laptop tend to spend more time improving retrieval quality and less time chasing infrastructure friction.
 
+## Local development with Aletheia
+
+Aletheia's Rust engine runs as a single binary with no runtime dependencies, making it a natural fit for local-first workflows. The [local engine guide](/docs/local-engine) walks through installation and the [quickstart](/docs/quickstart) gets a memory instance running in under a minute.
+
+For teams that want to evaluate retrieval quality before deploying, the [benchmarking documentation](/docs/benchmarking) explains how to reproduce LongMemEval results on a laptop. The same API surface powers the [hosted platform](/platform), so nothing needs to be rewritten for production.
+
 That is one of the most underrated advantages in developer-facing AI products.

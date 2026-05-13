@@ -47,6 +47,10 @@ By offloading the aggregation work from the unpredictable LLM to Aletheia's dete
 *   **Reduced Context Window Costs**: You don't need to pass 50 chunks of text to the LLM to count them; Aletheia passes the final number.
 *   **Faster Latency**: Deterministic code in Rust is blazingly fast compared to an LLM trying to reason through arithmetic.
 
+## How deterministic aggregation fits the memory stack
+
+Deterministic aggregation solves the math problem. [Fact supersession](/blog/fact-supersession-for-agent-memory) solves the contradiction problem. [Temporal memory](/blog/temporal-memory-vs-vector-databases) solves the freshness problem. Together they form the retrieval layer that production agents need.
+
 Standard vector DBs are amnesiac and bad at math. Aletheia is built for the reality of human memory. 
 
-Ready to upgrade your agent's cognition? Check out our [Quickstart Guide](/docs/quickstart).
+Ready to upgrade your agent's cognition? Check out our [Quickstart Guide](/docs/quickstart) or explore the [benchmark results](/platform/benchmarks).

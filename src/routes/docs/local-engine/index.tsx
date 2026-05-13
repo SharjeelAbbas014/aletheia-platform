@@ -53,6 +53,13 @@ export default component$(() => {
 
 export const head = createHead(
   "Local-First AI Memory Engine | Aletheia",
-  "Run the Aletheia Rust engine locally as a sidecar for faster AI agent development and testing.",
-  "/docs/local-engine"
+  "Run the Aletheia Rust engine locally as a sidecar for faster AI agent development and testing without cloud dependencies.",
+  "/docs/local-engine",
+  [
+    "local AI memory engine",
+    "Rust sidecar for AI agents",
+    "local-first agent development",
+    "offline memory testing",
+    "self-hosted AI memory",
+  ]
 );

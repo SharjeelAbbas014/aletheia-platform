@@ -114,4 +114,11 @@ export const head: DocumentHead = buildSeoHead({
   title: "Trust Center | ALETHEIA",
   description: "Security, privacy, and compliance information for Aletheia. SOC 2, GDPR, HIPAA, encryption details.",
   pathname: "/trust",
+  keywords: [
+    "AI memory security",
+    "agent memory compliance",
+    "SOC 2 AI infrastructure",
+    "GDPR memory storage",
+    "encrypted memory engine",
+  ],
 });

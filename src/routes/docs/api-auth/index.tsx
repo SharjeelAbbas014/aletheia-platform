@@ -59,6 +59,13 @@ export default component$(() => {
 
 export const head = createHead(
   "API Authentication for AI Memory | Aletheia",
-  "Learn how to secure your hosted Aletheia memory engine with API keys and scoped access controls.",
-  "/docs/api-auth"
+  "Learn how to secure your hosted Aletheia memory engine with API keys and scoped access controls for AI agents.",
+  "/docs/api-auth",
+  [
+    "AI memory API authentication",
+    "memory engine API keys",
+    "secure memory retrieval",
+    "API access control agents",
+    "memory infrastructure security",
+  ]
 );

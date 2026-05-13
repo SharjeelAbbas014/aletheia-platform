@@ -107,4 +107,4 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = buildSeoHead({ title: "Benchmarks | ALETHEIA", description: "Aletheia benchmark results against Mem0, Zep, and HydraDB on LongMemEval-S.", pathname: "/platform/benchmarks" });
+export const head: DocumentHead = buildSeoHead({ title: "Benchmarks | ALETHEIA", description: "Aletheia benchmark results against Mem0, Zep, and HydraDB on LongMemEval-S. See how our memory engine performs on temporal reasoning and retrieval.", pathname: "/platform/benchmarks", keywords: [ "AI memory benchmarks", "memory engine comparison", "LongMemEval results", "temporal memory evaluation", "agent memory performance", "Mem0 alternative", "Zep alternative" ] });

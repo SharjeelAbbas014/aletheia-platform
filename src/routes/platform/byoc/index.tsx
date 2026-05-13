@@ -83,6 +83,13 @@ Engine listening on http://localhost:3000</pre>
 
 export const head: DocumentHead = buildSeoHead({
   title: "Deploy Anywhere | ALETHEIA",
-  description: "Run Aletheia in your own infrastructure. Single binary, zero dependencies, air-gapped ready.",
+  description: "Run Aletheia in your own infrastructure. Single binary, zero dependencies, air-gapped ready. Self-hosted AI memory engine.",
   pathname: "/platform/byoc",
+  keywords: [
+    "self-hosted memory engine",
+    "BYOC memory infrastructure",
+    "air-gapped AI memory",
+    "on-premise memory for agents",
+    "private memory deployment",
+  ],
 });

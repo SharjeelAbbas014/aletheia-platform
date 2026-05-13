@@ -59,6 +59,10 @@ By moving structure-extraction into the memory kernel, we give AI agents a "Syst
 *   **Deep Context**: A graph of relationships that survives model swaps.
 *   **Smarter Decay**: Preferences stay fresh forever, while conversational noise fades away.
 
+## The complete memory picture
+
+Neural-symbolic extraction is one layer of a broader memory stack. [Hybrid retrieval](/blog/hybrid-retrieval-for-exact-and-semantic-recall) ensures extracted facts can be found by both semantic and exact queries. [Deterministic aggregation](/blog/building-ai-agents-with-deterministic-aggregation) computes the numbers the Metric Vault stores. [Fact supersession](/blog/fact-supersession-for-agent-memory) keeps the knowledge graph clean when relationships change.
+
 Memory is not just a bag of words. It's a structured understanding of reality. 
 
-Check out the new [Analytics API Documentation](/docs/detailed/api-analytics) to start building math-perfect agents.
+Check out the [Analytics API](/docs/api-query-semantic) and the [knowledge graph documentation](/docs/architecture) to start building math-perfect agents.

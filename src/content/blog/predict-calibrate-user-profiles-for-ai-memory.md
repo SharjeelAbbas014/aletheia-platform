@@ -48,6 +48,10 @@ The Predict-Calibrate pattern is built into Aletheia's DNA. This means:
 *   **No Contradictions**: Because Aletheia patches the state and supersedes old facts, your LLM never gets confused about where the user currently lives.
 *   **Extreme Performance**: By computing only deltas, the background consolidation tasks run much faster and cheaper.
 
+## Predict-Calibrate in the broader memory system
+
+The Predict-Calibrate pattern depends on several underlying primitives. [Fact supersession](/blog/fact-supersession-for-agent-memory) provides the graph-based version lineage that tracks profile changes over time. [Neural-symbolic extraction](/blog/beyond-vector-similarity-neural-symbolic-extraction) identifies the entities and preferences that the profile tracks. [Temporal ranking](/docs/time-ranking) ensures the current profile state is preferred over historical snapshots during retrieval.
+
 Stop paying for bloated context windows filled with obsolete data. Build agents that remember like humans do.
 
-Explore how Aletheia manages state in our [Documentation](/docs).
+Explore how Aletheia manages state in our [Documentation](/docs) or try the [interactive demo](/#interactive-tester).

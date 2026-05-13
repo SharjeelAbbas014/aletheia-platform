@@ -1,5 +1,5 @@
 export const SITE_NAME = "Aletheia";
-export const SITE_ORIGIN = "https://aletheia.dev";
+export const SITE_ORIGIN = "https://aletheiadb.com";
 export const DEFAULT_SOCIAL_IMAGE = "/screen.png";
 export const DEFAULT_SOCIAL_IMAGE_ALT =
   "Aletheia dashboard and marketing experience";

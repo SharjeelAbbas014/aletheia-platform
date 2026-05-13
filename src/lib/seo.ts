@@ -61,6 +61,11 @@ export function buildSeoHead({
         content: description
       },
       {
+        key: "og-locale",
+        property: "og:locale",
+        content: "en_US"
+      },
+      {
         key: "meta-robots",
         name: "robots",
         content: robots

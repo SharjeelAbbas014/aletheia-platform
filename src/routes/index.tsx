@@ -1620,7 +1620,7 @@ export default component$(() => {
                   <img
                     class="h-full w-full rounded-2xl object-cover opacity-60 grayscale transition-all duration-1000 group-hover:grayscale-0"
                     src="/next-decade-ai.webp"
-                    alt="Close up of abstract circuit board with blue neon highlights"
+                    alt="Aletheia Rust-powered memory engine for AI agents — sub-100ms recall latency architecture diagram"
                     loading="lazy"
                     decoding="async"
                   />
@@ -2321,6 +2321,46 @@ export default component$(() => {
   );
 });
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://aletheiadb.com/#organization",
+      name: "Aletheia",
+      url: "https://aletheiadb.com",
+      logo: "https://aletheiadb.com/icon-192.png",
+      description:
+        "The persistent memory layer for AI agents. Hybrid vector + BM25 search, knowledge graphs, deterministic analytics, and fact supersession in a single Rust binary.",
+      sameAs: [
+        "https://github.com/sharjeel619/aletheia",
+        "https://linkedin.com/company/aletheia",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://aletheiadb.com/#website",
+      url: "https://aletheiadb.com",
+      name: "Aletheia",
+      publisher: { "@id": "https://aletheiadb.com/#organization" },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://aletheiadb.com/#software",
+      name: "Aletheia Memory Engine",
+      applicationCategory: "DeveloperApplication",
+      operatingSystem: "Linux, macOS, Windows",
+      description:
+        "Temporal memory database for AI agents with hybrid retrieval, fact supersession, and deterministic analytics.",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+    },
+  ],
+};
+
 export const head: DocumentHead = buildSeoHead({
   title: "ALETHEIA | Agents That Remember",
   description:
@@ -2332,7 +2372,10 @@ export const head: DocumentHead = buildSeoHead({
     "AI memory layer",
     "persistent memory for agents",
     "vector database alternative",
+    "memory for AI agents",
+    "AI agent memory management",
   ],
+  structuredData,
   styles: [
     {
       key: "landing-template-styles",

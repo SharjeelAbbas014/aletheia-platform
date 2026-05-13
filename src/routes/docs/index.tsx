@@ -68,5 +68,13 @@ export default component$(() => {
 export const head = createHead(
   "Overview | Aletheia Memory Engine",
   "Discover how Aletheia provides persistent, time-aware memory for AI agents, surpassing the limits of standard vector databases.",
-  "/docs"
+  "/docs",
+  [
+    "memory engine",
+    "AI agent memory",
+    "temporal memory database",
+    "hybrid retrieval",
+    "vector database alternative",
+    "fact supersession",
+  ]
 );

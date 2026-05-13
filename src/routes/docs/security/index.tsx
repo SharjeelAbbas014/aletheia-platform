@@ -49,6 +49,13 @@ export default component$(() => {
 
 export const head = createHead(
   "Security Model for AI Memory | Aletheia",
-  "Explore Aletheia's security model, from strict tenant scoping to signed Rust binaries and audit logs.",
-  "/docs/security"
+  "Explore Aletheia's security model, from strict tenant scoping to signed Rust binaries and audit logs for AI agent memory.",
+  "/docs/security",
+  [
+    "AI memory security",
+    "agent memory encryption",
+    "secure memory infrastructure",
+    "tenant isolation AI",
+    "memory audit logs",
+  ]
 );

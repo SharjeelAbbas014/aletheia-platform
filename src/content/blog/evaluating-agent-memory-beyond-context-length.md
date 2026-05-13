@@ -67,6 +67,12 @@ A practical benchmark suite should include:
 
 Those are the situations where naive memory systems start to break.
 
+## How this connects to the Aletheia approach
+
+Aletheia is built around the evaluation properties described above. The engine's [hybrid retrieval](/blog/hybrid-retrieval-for-exact-and-semantic-recall) fuses semantic and lexical scores, [temporal ranking](/docs/time-ranking) ensures freshness signals survive the retrieval pipeline, and [fact supersession](/blog/fact-supersession-for-agent-memory) prevents stale evidence from competing with current truth.
+
+For a deeper look at our scoring methodology, see the [benchmarking documentation](/docs/benchmarking) and our public [LongMemEval results](/platform/benchmarks).
+
 ## The takeaway
 
 Memory is not a bigger prompt. It is a retrieval and ranking discipline.

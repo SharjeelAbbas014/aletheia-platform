@@ -218,11 +218,15 @@ export const docsNavigation: DocsCategory[] = [
 export function createHead(
   title: string,
   description: string,
-  pathname = "/docs"
+  pathname = "/docs",
+  keywords?: string[],
+  structuredData?: Record<string, unknown>
 ): DocumentHead {
   return buildSeoHead({
     title,
     description,
-    pathname
+    pathname,
+    keywords,
+    structuredData
   });
 }

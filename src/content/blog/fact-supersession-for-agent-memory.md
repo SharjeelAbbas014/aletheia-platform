@@ -77,6 +77,12 @@ When the context window contains only current truth, the model does less reconci
 
 The retrieval layer becomes responsible for belief hygiene instead of forcing the model to clean it up.
 
+## How supersession fits into the larger memory stack
+
+Supersession works alongside other retrieval primitives. [Temporal ranking](/docs/time-ranking) applies freshness decay to all memories. [Deterministic aggregation](/blog/building-ai-agents-with-deterministic-aggregation) handles numeric queries that supersession alone cannot resolve. Together they form a retrieval layer that understands both change and precision.
+
+The documentation on [memory kinds](/docs/memory-kinds) explains how different fact types (preferences, episodes, summaries) interact with supersession rules.
+
 ## The product takeaway
 
 If your agent is meant to operate continuously, supersession should be part of the data model, not just a post-processing trick.

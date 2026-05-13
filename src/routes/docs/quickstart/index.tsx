@@ -61,5 +61,12 @@ hits = client.query("What coffee do I prefer?", entity_id="user-123")`}</code>
 export const head = createHead(
   "Quickstart | Aletheia AI Memory",
   "Learn how to quickly add persistent, long-term memory to your AI agents using the Aletheia SDK and Rust engine.",
-  "/docs/quickstart"
+  "/docs/quickstart",
+  [
+    "AI agent memory quickstart",
+    "persistent memory for LLMs",
+    "Rust memory engine setup",
+    "long-term memory SDK",
+    "agent memory tutorial",
+  ]
 );

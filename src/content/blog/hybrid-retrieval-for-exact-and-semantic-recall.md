@@ -87,4 +87,10 @@ Do not treat lexical retrieval as a legacy fallback. In many systems, it is the 
 
 The best retrieval stacks are not semantically pure. They are operationally correct.
 
+## Hybrid retrieval in Aletheia
+
+Aletheia implements the full fusion and reranking pipeline described here. The engine combines HNSW vector search with BM25 lexical scoring, then applies cross-encoder reranking and [temporal ranking](/docs/time-ranking) before returning results. The [architecture documentation](/docs/architecture) explains how these layers fit together.
+
+For agent memory specifically, hybrid retrieval pairs with [fact supersession](/blog/fact-supersession-for-agent-memory) to ensure that exact identifiers and temporal truth are both preserved. The [ingestion pipeline docs](/docs/ingestion-pipeline) describe how raw text flows through neural extraction before reaching the hybrid indexes.
+
 That means combining multiple signals and letting the ranking system decide which evidence matters most for the current query.

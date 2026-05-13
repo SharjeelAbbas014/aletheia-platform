@@ -169,9 +169,36 @@ export const head = ({ resolveValue }: DocumentHeadProps) => {
     });
   }
 
+  const docKeywords: Record<string, string[]> = {
+    install: ["install memory engine", "Rust memory engine setup", "AI memory infrastructure install"],
+    concepts: ["memory engine concepts", "temporal memory concepts", "AI agent memory architecture"],
+    architecture: ["memory engine architecture", "hybrid retrieval architecture", "vector search system design"],
+    "data-model": ["memory data model", "agent observation schema", "memory infrastructure data model"],
+    "memory-kinds": ["memory classification AI", "memory TTL policies", "episodic vs factual memory"],
+    "id-conventions": ["memory entity IDs", "session ID conventions", "AI agent scoping"],
+    "ingestion-pipeline": ["memory ingestion pipeline", "entity extraction AI", "fact distillation pipeline"],
+    "vector-index": ["HNSW indexing memory", "vector search engine", "semantic retrieval system"],
+    "lexical-index": ["BM25 search memory", "lexical search AI", "hybrid retrieval BM25"],
+    reranking: ["neural reranking", "cross-encoder reranking", "retrieval precision reranking"],
+    "time-ranking": ["temporal ranking", "time-aware retrieval", "memory decay policy"],
+    "fact-supersession": ["fact supersession", "temporal truth AI", "stale fact invalidation"],
+    "api-ingest": ["memory ingestion API", "store agent memories", "memory storage endpoint"],
+    "api-query-semantic": ["semantic query API", "hybrid retrieval endpoint", "memory search API"],
+    "api-query-temporal": ["temporal query API", "time-windowed retrieval", "memory timeline search"],
+    "api-delete": ["delete memory API", "memory removal endpoint", "memory management API"],
+    "sdk-javascript": ["JavaScript memory SDK", "Node.js memory client", "browser memory SDK"],
+    "sdk-python": ["Python memory SDK", "async memory ingestion", "Python agent memory"],
+    deployment: ["memory engine deployment", "production memory infrastructure", "memory scaling guide"],
+    observability: ["memory observability", "recall quality monitoring", "memory tracing metrics"],
+    benchmarking: ["memory benchmarking", "LongMemEval memory evaluation", "retrieval quality benchmarks"],
+    troubleshooting: ["memory troubleshooting", "memory engine debugging", "retrieval failure fixes"],
+    glossary: ["memory glossary", "retrieval terms", "AI memory definitions"],
+  };
+
   return buildSeoHead({
     title: `${page.title} | Aletheia`,
     description: page.description,
-    pathname: `/docs/${page.slug}`
+    pathname: `/docs/${page.slug}`,
+    keywords: docKeywords[page.slug] ?? ["memory engine documentation", "AI agent memory guide"]
   });
 };

@@ -87,4 +87,10 @@ If your product depends on long-lived conversations, the memory layer becomes pa
 
 Teams working on personal AI, support agents, sales copilots, and workflow assistants all hit the same wall: similarity alone is not enough.
 
+## Building temporal memory with Aletheia
+
+Aletheia implements each of the temporal primitives described above. The [time ranking system](/docs/time-ranking) applies configurable decay curves per memory kind. The [fact supersession engine](/blog/fact-supersession-for-agent-memory) marks stale claims explicitly. The [hybrid retrieval kernel](/blog/hybrid-retrieval-for-exact-and-semantic-recall) combines semantic and temporal signals at query time.
+
+For a practical walkthrough, see the [quickstart guide](/docs/quickstart) and the [core concepts documentation](/docs/concepts).
+
 That is why temporal memory is not a feature on top of retrieval. It is a different retrieval model.
