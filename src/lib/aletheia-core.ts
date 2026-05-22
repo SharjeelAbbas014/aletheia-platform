@@ -3,7 +3,7 @@ export function getAletheiaCoreUrl(): string {
 }
 
 export function getAdminKey(): string {
-  return import.meta.env.ALETHEIA_ADMIN_KEY || "XXX1111AAA";
+  return import.meta.env.ALETHEIA_ADMIN_KEY || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
 }
 
 export interface CoreClusterStats {

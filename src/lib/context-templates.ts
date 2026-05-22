@@ -91,7 +91,7 @@ function getCoreUrl() {
   return (import.meta.env.ALETHEIA_URL || "http://localhost:3000").replace(/\/+$/, "");
 }
 function getAdminKey() {
-  return import.meta.env.ALETHEIA_ADMIN_KEY || "XXX1111AAA";
+  return import.meta.env.ALETHEIA_ADMIN_KEY || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
 }
 
 export async function assembleContext(template: string, ctx: AssembleContext): Promise<string> {

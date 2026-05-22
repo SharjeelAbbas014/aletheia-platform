@@ -2,7 +2,7 @@ import type { RequestEventCommon } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "./supabase";
 import { getCurrentUser } from "./auth";
 
-export const DEFAULT_TEST_API_KEY = "XXX1111AAA";
+export const DEFAULT_TEST_API_KEY = "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
 
 export interface ApiKey {
   key_id: string;

@@ -2,8 +2,7 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { checkRateLimit, PLAN_RATE_LIMITS } from "~/lib/rate-limiter";
 import { recordUsage } from "~/lib/usage";
-
-const ALETHEIA_URL = (process.env.ALETHEIA_URL || "http://localhost:3000").replace(/\/+$/, "");
+// ALETHEIA_URL and admin key are dynamically resolved per-request to support serverless/edge environments
 
 export const onRequest: RequestHandler = async (event) => {
   const { request, env, url, params } = event;
@@ -23,6 +22,9 @@ export const onRequest: RequestHandler = async (event) => {
 
   // 2. Validate API Key against Supabase
   const supabase = getAdminSupabaseClient(env);
+  if (!supabase) {
+    throw event.error(500, "Internal Server Error - Database connection is offline");
+  }
   const { data, error } = await supabase
     .from("api_keys")
     .select("user_id, is_active, cluster_id")
@@ -82,10 +84,13 @@ export const onRequest: RequestHandler = async (event) => {
   }
 
   // 5. Proxy the request to the Rust engine
-  const proxyUrl = `${ALETHEIA_URL}/${params.catchall}${url.search}`;
+  const aletheiaUrl = (env.get("ALETHEIA_URL") || process.env.ALETHEIA_URL || "http://localhost:3000").replace(/\/+$/, "");
+  const aletheiaAdminKey = env.get("ALETHEIA_ADMIN_KEY") || env.get("ALETHEIA_API_KEY") || process.env.ALETHEIA_ADMIN_KEY || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
+
+  const proxyUrl = `${aletheiaUrl}/${params.catchall}${url.search}`;
   const headers = new Headers();
   headers.set("Content-Type", request.headers.get("content-type") || "application/json");
-  headers.set("x-api-key", "XXX1111AAA");
+  headers.set("x-api-key", aletheiaAdminKey);
 
   try {
     const proxyResponse = await fetch(proxyUrl, {
