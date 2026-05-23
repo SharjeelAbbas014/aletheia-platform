@@ -37,6 +37,10 @@ export const onPost: RequestHandler = async (event) => {
   const supabase = getAdminSupabaseClient(event.env);
   if (!supabase) throw event.error(500, "Internal Server Error - Database connection offline");
 
+  // Check if Stripe is in mock mode for local testing
+  const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
+  const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
+
   // 1. Get or create Stripe customer
   const { data: existingSub } = await supabase
     .from("subscriptions")
@@ -45,9 +49,13 @@ export const onPost: RequestHandler = async (event) => {
     .maybeSingle();
 
   let customerId = existingSub?.stripe_customer_id;
-  if (!customerId) {
+  if (!customerId && !isMockStripe) {
     try {
-      const customer = await createStripeCustomer(event.env, user.username, { user_id: user.user_id });
+      const { data: authData, error: authError } = await supabase.auth.admin.getUserById(user.user_id);
+      if (authError || !authData?.user?.email) {
+        throw event.error(400, "Could not retrieve user email for billing");
+      }
+      const customer = await createStripeCustomer(event.env, authData.user.email, { user_id: user.user_id });
       customerId = customer.id;
 
       // Upsert subscription record with customer ID
@@ -61,11 +69,9 @@ export const onPost: RequestHandler = async (event) => {
       console.error("Stripe customer creation error:", err);
       throw event.error(500, "Failed to initialize payment gateway");
     }
+  } else if (isMockStripe && !customerId) {
+    customerId = "cus_mock_123";
   }
-
-  // Check if Stripe is in mock mode for local testing
-  const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
-  const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
   if (isMockStripe) {
     const { data: sub } = await supabase
       .from("subscriptions")

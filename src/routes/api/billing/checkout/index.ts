@@ -24,6 +24,10 @@ export const onPost: RequestHandler = async (event) => {
     throw event.redirect(302, `/platform/clusters/${cluster.id}`);
   }
 
+  // Check if Stripe is in mock mode for local testing
+  const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
+  const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
+
   // 3. Paid tier — create or get Stripe customer, then checkout
   const { data: existingSub } = await supabase
     .from("subscriptions")
@@ -32,9 +36,15 @@ export const onPost: RequestHandler = async (event) => {
     .maybeSingle();
 
   let customerId = existingSub?.stripe_customer_id;
-  if (!customerId) {
-    const customer = await createStripeCustomer(event.env, user.username, { user_id: user.user_id });
+  if (!customerId && !isMockStripe) {
+    const { data: authData, error: authError } = await supabase.auth.admin.getUserById(user.user_id);
+    if (authError || !authData?.user?.email) {
+      throw event.error(400, "Could not retrieve user email for billing");
+    }
+    const customer = await createStripeCustomer(event.env, authData.user.email, { user_id: user.user_id });
     customerId = customer.id;
+  } else if (isMockStripe && !customerId) {
+    customerId = "cus_mock_123";
   }
 
   const vmConfigs: Record<string, { name: string; description: string; priceCents: number; size: string }> = {
@@ -69,9 +79,6 @@ export const onPost: RequestHandler = async (event) => {
     vm_monthly_price: vmConfig ? vmConfig.priceCents / 100 : undefined,
   }, { onConflict: "user_id" });
 
-  // Check if Stripe is in mock mode for local testing
-  const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
-  const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
   if (isMockStripe) {
     if (vmConfig) {
       await supabase.from("clusters").update({
