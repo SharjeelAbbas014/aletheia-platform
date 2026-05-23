@@ -55,7 +55,7 @@ export const onPost: RequestHandler = async (event) => {
         try {
           const sub = await retrieveStripeSubscription(event.env, subscriptionId);
           const priceId = sub.items.data[0]?.price.id;
-          const tier = sub.items.data[0]?.price.nickname?.toLowerCase() || "dedicated_l4";
+          const tier = (sub.metadata?.tier as string) || sub.items.data[0]?.price.nickname?.toLowerCase() || "dedicated_l4";
 
           await upsertSubscription(event.env, userId, {
             stripe_customer_id: customerId,
@@ -85,7 +85,7 @@ export const onPost: RequestHandler = async (event) => {
       const sub = stripeEvent.data.object;
       const subId = sub.id;
       const priceId = sub.items.data[0]?.price.id;
-      const tier = sub.items.data[0]?.price.nickname?.toLowerCase() || "dedicated_l4";
+      const tier = (sub.metadata?.tier as string) || sub.items.data[0]?.price.nickname?.toLowerCase() || "dedicated_l4";
 
       await supabase
         .from("subscriptions")

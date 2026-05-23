@@ -23,20 +23,60 @@ const plans = [
     name: "Fractional",
     price: "$1.00",
     unit: "/1M truths",
-    description: "Pay-as-you-go, shared infrastructure",
-    features: ["10K requests/day", "50 MB storage", "Basic query & ingest", "Shared compute", "Community support"],
+    description: "Pay-as-you-go, shared serverless database",
+    features: ["10K free operations/mo", "Pay-per-token refills", "Shared CPU substrate", "Zero cold starts"],
     cta: "Current Plan",
     highlighted: false,
   },
   {
-    id: "dedicated_l4",
-    name: "Dedicated Pro",
-    price: "$400",
+    id: "azure_micro",
+    name: "Developer Micro",
+    price: "$12.00",
     unit: "/month",
-    description: "Dedicated L4 instance, predictable pricing",
-    features: ["100K requests/day", "4 GB storage", "Graph visualization", "Analytics dashboard", "Priority support", "99.9% SLA"],
-    cta: "Upgrade",
+    description: "Azure Standard_B1s dedicated VM",
+    features: ["1 vCPU | 1 GiB RAM", "Isolated SQLite substrate", "Best for sandboxing & dev", "Aletheia cut included"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "azure_standard",
+    name: "Agent Standard",
+    price: "$40.00",
+    unit: "/month",
+    description: "Azure Standard_B2s dedicated VM",
+    features: ["2 vCPUs | 4 GiB RAM", "Multi-agent core substrate", "Isolated SQLite index", "Fast vector search"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "azure_pro",
+    name: "Production Core",
+    price: "$90.00",
+    unit: "/month",
+    description: "Azure Standard_D2as_v5 dedicated VM",
+    features: ["2 vCPUs | 8 GiB RAM", "50 GB Premium SSD", "Dedicated production load", "Zero noisy neighbors"],
+    cta: "Deploy VM",
     highlighted: true,
+  },
+  {
+    id: "azure_scale",
+    name: "Scale Master",
+    price: "$175.00",
+    unit: "/month",
+    description: "Azure Standard_D4as_v5 dedicated VM",
+    features: ["4 vCPUs | 16 GiB RAM", "100 GB Premium SSD", "Massive graph crawls", "Local re-ranking models"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "azure_gpu",
+    name: "GPU Superbrain",
+    price: "$450.00",
+    unit: "/month",
+    description: "Azure Standard_NC4as_T4 GPU VM",
+    features: ["4 vCPUs | 28 GiB RAM", "1 NVIDIA T4 GPU", "Ultra-low latency embeddings", "Local re-ranking inference"],
+    cta: "Deploy VM",
+    highlighted: false,
   },
   {
     id: "enterprise",
@@ -44,7 +84,7 @@ const plans = [
     price: "Custom",
     unit: "",
     description: "Custom deployment, on-premise option",
-    features: ["Unlimited requests", "Unlimited storage", "Dedicated infrastructure", "Custom SLA", "On-premise option", "24/7 support"],
+    features: ["Unlimited requests", "Unlimited storage", "Dedicated infrastructure", "Custom SLA", "24/7 priority support"],
     cta: "Contact Sales",
     highlighted: false,
     contact: true,
@@ -160,7 +200,7 @@ export default component$(() => {
         )}
 
         {/* Plan Cards */}
-        <div class="grid md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {plans.map((plan) => {
             const isCurrent = sub?.tier === plan.id;
             return (
@@ -195,12 +235,9 @@ export default component$(() => {
                     Contact Sales
                   </a>
                 ) : (
-                  <form method="post" action="/api/billing/checkout">
-                    <input type="hidden" name="tier" value={plan.id} />
-                    <button type="submit" class="w-full py-3 px-4 rounded-xl bg-primary text-on-primary text-sm font-bold hover:opacity-90 transition-opacity">
-                      {plan.cta}
-                    </button>
-                  </form>
+                  <Link href={`/platform/clusters/new?tier=${plan.id}`} class="block w-full text-center py-3 px-4 rounded-xl bg-primary text-on-primary text-sm font-bold hover:opacity-90 transition-opacity">
+                    {plan.cta}
+                  </Link>
                 )}
               </div>
             );

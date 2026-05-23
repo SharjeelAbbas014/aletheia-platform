@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import { routeLoader$, Link, type DocumentHead } from "@builder.io/qwik-city";
+import { routeLoader$, routeAction$, Form, Link, type DocumentHead } from "@builder.io/qwik-city";
 import { buildSeoHead } from "~/lib/seo";
 import { setPrivateNoStore } from "~/lib/cache";
 import type { RequestHandler } from "@builder.io/qwik-city";
@@ -36,9 +36,74 @@ export const useClusterDetail = routeLoader$(async (event) => {
   const coreStats = await getCoreClusterStats(cluster.id);
   return { cluster, coreStats, user };
 });
+export const useDeleteCluster = routeAction$(async (data, event) => {
+  const user = requireAuth(event);
+  const clusterId = String(data.cluster_id || "");
+  const supabase = getAdminSupabaseClient(event.env);
+  if (!supabase) throw event.error(500, "Database connection offline");
+
+  // 1. Get cluster detail to verify ownership
+  const { data: cluster } = await supabase
+    .from("clusters")
+    .select("user_id, tier")
+    .eq("id", clusterId)
+    .single();
+
+  if (!cluster || cluster.user_id !== user.user_id) {
+    throw event.error(404, "Cluster not found");
+  }
+
+  // 2. Cancel Stripe subscription if it's a dedicated VM and user has subscription
+  if (cluster.tier !== "fractional") {
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("stripe_subscription_id")
+      .eq("user_id", user.user_id)
+      .maybeSingle();
+
+    if (sub?.stripe_subscription_id) {
+      try {
+        const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
+        const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
+        if (!isMockStripe) {
+          const { getStripeClient } = await import("~/lib/stripe");
+          const stripe = getStripeClient(event.env);
+          await stripe.subscriptions.cancel(sub.stripe_subscription_id);
+        }
+      } catch (stripeErr) {
+        console.error("Failed to cancel Stripe subscription during cluster deletion:", stripeErr);
+      }
+    }
+
+    // Downgrade subscription record to fractional/canceled
+    await supabase
+      .from("subscriptions")
+      .update({
+        tier: "fractional",
+        status: "canceled",
+        vm_size: null,
+        vm_monthly_price: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.user_id);
+  }
+
+  // 3. Soft delete the cluster
+  const { error } = await supabase
+    .from("clusters")
+    .update({ status: "deleted", updated_at: new Date().toISOString() })
+    .eq("id", clusterId);
+
+  if (error) {
+    throw event.error(500, "Failed to delete cluster");
+  }
+
+  throw event.redirect(302, "/platform");
+});
 
 export default component$(() => {
   const data = useClusterDetail();
+  const deleteAction = useDeleteCluster();
   const cluster = data.value.cluster as any;
   const stats = data.value.coreStats as any;
 
@@ -142,6 +207,29 @@ export default component$(() => {
               <p class="text-xs text-tertiary mt-1">Manage keys in Mission Control.</p>
             </div>
           </div>
+        </section>
+
+        {/* Danger Zone */}
+        <section class="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 mt-8">
+          <h2 class="text-lg font-bold text-red-400 mb-2">Danger Zone</h2>
+          <p class="text-sm text-tertiary mb-4">
+            Deleting this cluster will permanently remove all stored memories, fact slots, and graph indexes. 
+            If this is a dedicated VM, it will immediately stop the virtual machine and cancel any active subscription.
+          </p>
+          <Form action={deleteAction}>
+            <input type="hidden" name="cluster_id" value={cluster.id} />
+            <button
+              type="submit"
+              onClick$={(e) => {
+                if (!confirm("Are you absolutely sure you want to delete this cluster? This action is irreversible.")) {
+                  e.preventDefault();
+                }
+              }}
+              class="rounded-lg bg-red-600 hover:bg-red-700 px-6 py-3 font-bold text-sm text-white transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-950/20"
+            >
+              Delete Cluster
+            </button>
+          </Form>
         </section>
       </main>
     </div>

@@ -53,10 +53,11 @@ export const onPost: RequestHandler = async (event) => {
     azure_pro: { name: "Production Core", description: "Azure Standard_D2as_v5 dedicated VM", priceCents: 9000, size: "Standard_D2as_v5" },
     azure_scale: { name: "Scale Master", description: "Azure Standard_D4as_v5 dedicated VM", priceCents: 17500, size: "Standard_D4as_v5" },
     azure_gpu: { name: "GPU Superbrain", description: "Azure Standard_NC4as_T4 dedicated VM", priceCents: 45000, size: "Standard_NC4as_T4" },
+    dedicated_l4: { name: "Dedicated Pro", description: "Dedicated L4 instance, predictable pricing", priceCents: 40000, size: "Standard_NC6s_v3" },
   };
 
   const vmConfig = vmConfigs[tier];
-  if (!vmConfig && tier !== "dedicated_l4") {
+  if (!vmConfig) {
     throw event.error(400, "Invalid tier selected for deployment");
   }
 
@@ -103,43 +104,32 @@ export const onPost: RequestHandler = async (event) => {
   const stripe = getStripeClient(event.env);
   const origin = event.url.origin;
 
-  let session;
-  if (vmConfig) {
-    session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: "subscription",
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `AletheiaDB - ${vmConfig.name}`,
-              description: vmConfig.description,
-            },
-            unit_amount: vmConfig.priceCents,
-            recurring: {
-              interval: "month",
-            },
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: "subscription",
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `AletheiaDB - ${vmConfig.name}`,
+            description: vmConfig.description,
           },
-          quantity: 1,
+          unit_amount: vmConfig.priceCents,
+          recurring: {
+            interval: "month",
+          },
         },
-      ],
-      success_url: `${origin}/platform/billing?success=true`,
-      cancel_url: `${origin}/platform/clusters/${cluster.id}?canceled=true`,
+        quantity: 1,
+      },
+    ],
+    subscription_data: {
       metadata: { user_id: user.user_id, cluster_id: cluster.id, tier },
-    });
-  } else {
-    const priceId = event.env.get("PUBLIC_STRIPE_PRO_PRICE_ID") || "";
-    if (!priceId) throw event.error(400, "Invalid pricing configuration");
-    session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/platform/billing?success=true`,
-      cancel_url: `${origin}/platform/clusters/${cluster.id}?canceled=true`,
-      metadata: { user_id: user.user_id, cluster_id: cluster.id, tier },
-    });
-  }
+    },
+    success_url: `${origin}/platform/billing?success=true`,
+    cancel_url: `${origin}/platform/clusters/${cluster.id}?canceled=true`,
+    metadata: { user_id: user.user_id, cluster_id: cluster.id, tier },
+  });
 
   throw event.redirect(302, session.url!);
 };

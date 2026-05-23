@@ -1,5 +1,5 @@
 import { component$, useSignal } from "@builder.io/qwik";
-import { Form, Link, type DocumentHead } from "@builder.io/qwik-city";
+import { Form, Link, type DocumentHead, useLocation } from "@builder.io/qwik-city";
 import { buildSeoHead } from "~/lib/seo";
 import { setPrivateNoStore } from "~/lib/cache";
 import type { RequestHandler } from "@builder.io/qwik-city";
@@ -18,7 +18,9 @@ export const onRequest: RequestHandler = (event) => {
 };
 
 export default component$(() => {
-  const selectedTier = useSignal<string>('fractional');
+  const loc = useLocation();
+  const initialTier = loc.url.searchParams.get("tier") || "fractional";
+  const selectedTier = useSignal<string>(initialTier);
   const clusterName = useSignal<string>('');
 
   return (
@@ -34,8 +36,6 @@ export default component$(() => {
         </header>
 
         <form action="/api/billing/checkout" method="post">
-          {/* Hidden fields */}
-          <input type="hidden" name="tier" value={selectedTier.value} />
 
           <section class="mb-12">
             <h2 class="text-xl font-bold mb-4">1. Cluster Name</h2>
@@ -140,10 +140,10 @@ export default component$(() => {
               ].map((tier) => {
                 const isSelected = selectedTier.value === tier.id;
                 return (
-                  <div
+                  <label
                     key={tier.id}
-                    class={`cursor-pointer rounded-2xl border-2 p-5 flex flex-col justify-between transition-all ${isSelected ? 'border-primary bg-primary/5' : 'border-outline-variant/10 bg-surface-container-low hover:border-primary/50'}`}
-                    onClick$={() => selectedTier.value = tier.id}
+                    class={`cursor-pointer rounded-2xl border-2 p-5 flex flex-col justify-between transition-all relative ${isSelected ? 'border-primary bg-primary/5' : 'border-outline-variant/10 bg-surface-container-low hover:border-primary/50'}`}
+                    onClick$={() => { selectedTier.value = tier.id; }}
                   >
                     <div>
                       <div class="flex justify-between items-start mb-3">
@@ -151,7 +151,17 @@ export default component$(() => {
                           <h3 class="font-bold text-lg text-on-surface">{tier.name}</h3>
                           <p class="text-xs text-tertiary">{tier.subName}</p>
                         </div>
-                        <span class={`rounded px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest ${tier.badgeClass}`}>{tier.badge}</span>
+                        <div class="flex items-center gap-2">
+                          <span class={`rounded px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest ${tier.badgeClass}`}>{tier.badge}</span>
+                          <input
+                            type="radio"
+                            name="tier"
+                            value={tier.id}
+                            checked={isSelected}
+                            onChange$={() => { selectedTier.value = tier.id; }}
+                            class="h-4 w-4 accent-primary cursor-pointer shrink-0"
+                          />
+                        </div>
                       </div>
                       <ul class="text-xs text-tertiary space-y-2 mb-6">
                         {tier.features.map((f, i) => (
@@ -163,7 +173,7 @@ export default component$(() => {
                       </ul>
                     </div>
                     <p class="text-xs font-mono text-on-surface font-bold border-t border-outline-variant/10 pt-3 mt-auto">{tier.priceText}</p>
-                  </div>
+                  </label>
                 );
               })}
             </div>
