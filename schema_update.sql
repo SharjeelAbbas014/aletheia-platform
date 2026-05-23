@@ -35,6 +35,10 @@ create table if not exists public.subscriptions (
   stripe_price_id text,
   tier text not null default 'fractional',
   status text not null default 'incomplete',
+  token_balance bigint not null default 10000,
+  free_tokens_granted_at timestamptz not null default now(),
+  vm_size text,
+  vm_monthly_price numeric(10, 2),
   current_period_start timestamptz,
   current_period_end timestamptz,
   created_at timestamptz not null default now(),
@@ -115,3 +119,13 @@ $$ language plpgsql security definer;
 
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users for each row execute function public.handle_new_user();
+
+-- 7. RPC Function for decrementing token/truth balances
+create or replace function public.decrement_token_balance(uid uuid, amount bigint)
+returns void as $$
+begin
+  update public.subscriptions
+  set token_balance = greatest(0, token_balance - amount)
+  where user_id = uid;
+end;
+$$ language plpgsql security definer;

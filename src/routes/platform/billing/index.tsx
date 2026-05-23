@@ -63,9 +63,69 @@ export default component$(() => {
             <ArrowLeftIcon class="w-4 h-4" />
             Mission Control
           </Link>
-          <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface mt-4">Billing</h1>
-          <p class="text-tertiary mt-2">Manage your plan and usage</p>
+          <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface mt-4">Billing & Prepaid Usage</h1>
+          <p class="text-tertiary mt-2">Manage your cognitive memory credits and hosting plans.</p>
         </header>
+
+        {/* Prepaid Token Balance & Monthly Free Allocation */}
+        <section class="mb-12 grid gap-6 md:grid-cols-2">
+          {/* Token Credits Status */}
+          <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 flex flex-col justify-between">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2 flex items-center gap-1">
+                <CheckIcon class="w-4 h-4 text-primary" /> Active Credits
+              </p>
+              <h2 class="text-3xl font-extrabold text-on-surface">
+                {sub?.token_balance !== undefined ? sub.token_balance.toLocaleString() : "10,000"}
+                <span class="text-sm font-medium text-tertiary ml-2">truths remaining</span>
+              </h2>
+              
+              {/* Monthly Free Tier Progress */}
+              {sub?.token_balance !== undefined && sub.token_balance <= 10000 ? (
+                <div class="mt-6">
+                  <div class="flex justify-between text-xs font-bold text-tertiary mb-1">
+                    <span>Monthly Free Allocation</span>
+                    <span>{sub.token_balance.toLocaleString()} / 10,000 left</span>
+                  </div>
+                  <div class="w-full bg-outline-variant/20 rounded-full h-2 overflow-hidden">
+                    <div 
+                      class="bg-primary h-full transition-all duration-500" 
+                      style={{ width: `${(sub.token_balance / 10000) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p class="text-[10px] text-tertiary mt-2">Resets automatically every 30 days. Ingestions and queries deduct 1 credit each.</p>
+                </div>
+              ) : (
+                <p class="text-xs text-green-400 font-medium mt-4">
+                  Free tier fully utilized. Active prepaid growth credits: {(((sub?.token_balance || 10000) - 10000)).toLocaleString()} truths.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Refill Tokens Selector */}
+          <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6">
+            <p class="text-xs font-bold uppercase tracking-widest text-tertiary mb-4">Refill Prepaid Tokens</p>
+            <div class="space-y-3">
+              {[
+                { id: "starter", name: "Starter Refill ($5.00)", desc: "3.1M truths (~$1.60/M)", tokens: 3125000 },
+                { id: "growth", name: "Growth Refill ($10.00)", desc: "6.6M truths (~$1.50/M)", tokens: 6666666 },
+                { id: "scale", name: "Scale Refill ($20.00)", desc: "15.0M truths (~$1.33/M)", tokens: 15000000 },
+              ].map((pack) => (
+                <form key={pack.id} method="post" action="/api/billing/buy-tokens" class="flex items-center justify-between p-3 rounded-xl border border-outline-variant/5 bg-black/20 hover:border-primary/30 transition-all">
+                  <input type="hidden" name="package_id" value={pack.id} />
+                  <div>
+                    <p class="text-sm font-bold">{pack.name}</p>
+                    <p class="text-[10px] text-tertiary">{pack.desc}</p>
+                  </div>
+                  <button type="submit" class="rounded-lg bg-primary px-4 py-2 font-bold text-xs text-on-primary hover:opacity-90 transition-opacity">
+                    Buy
+                  </button>
+                </form>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* Current Plan Info */}
         {sub && (

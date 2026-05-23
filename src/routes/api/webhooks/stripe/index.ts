@@ -17,6 +17,7 @@ export const onPost: RequestHandler = async (event) => {
   }
 
   const supabase = getAdminSupabaseClient(event.env);
+  if (!supabase) throw event.error(500, "Database connection offline");
 
   switch (stripeEvent.type) {
     case "checkout.session.completed": {
@@ -26,7 +27,31 @@ export const onPost: RequestHandler = async (event) => {
       const customerId = session.customer as string;
       const subscriptionId = session.subscription as string;
 
-      if (userId && subscriptionId) {
+      const isPrepaid = session.metadata?.type === "prepaid_tokens";
+      if (isPrepaid) {
+        const tokenCount = parseInt(session.metadata?.token_count || "0", 10);
+        if (userId && tokenCount > 0) {
+          try {
+            const { data: sub } = await supabase
+              .from("subscriptions")
+              .select("token_balance")
+              .eq("user_id", userId)
+              .maybeSingle();
+
+            const currentBalance = sub?.token_balance ?? 10000;
+            await supabase.from("subscriptions").upsert({
+              user_id: userId,
+              token_balance: currentBalance + tokenCount,
+              stripe_customer_id: customerId || undefined,
+              tier: "fractional",
+              status: "active",
+              updated_at: new Date().toISOString(),
+            }, { onConflict: "user_id" });
+          } catch (err) {
+            console.error("Failed to credit prepaid tokens:", err);
+          }
+        }
+      } else if (userId && subscriptionId) {
         try {
           const sub = await retrieveStripeSubscription(event.env, subscriptionId);
           const priceId = sub.items.data[0]?.price.id;

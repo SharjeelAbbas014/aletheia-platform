@@ -9,6 +9,8 @@ export interface SubscriptionInfo {
   stripe_price_id: string | null;
   tier: string;
   status: string;
+  token_balance?: number;
+  free_tokens_granted_at?: string;
   current_period_start: string | null;
   current_period_end: string | null;
 }

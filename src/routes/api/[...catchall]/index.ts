@@ -38,6 +38,34 @@ export const onRequest: RequestHandler = async (event) => {
   const userId = data.user_id;
   const clusterId = data.cluster_id;
 
+  // 3. Check and update prepaid token credits (with a 30-day lazy reset for the monthly 10k free tier tokens)
+  let { data: sub } = await supabase
+    .from("subscriptions")
+    .select("token_balance, free_tokens_granted_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  let tokenBalance = sub?.token_balance ?? 10000;
+  let lastGranted = sub?.free_tokens_granted_at ? new Date(sub.free_tokens_granted_at).getTime() : 0;
+  const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
+
+  if (Date.now() - lastGranted > oneMonthMs) {
+    tokenBalance = 10000;
+    lastGranted = Date.now();
+    await supabase.from("subscriptions").upsert({
+      user_id: userId,
+      token_balance: tokenBalance,
+      free_tokens_granted_at: new Date(lastGranted).toISOString(),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+  }
+
+  if (tokenBalance <= 0) {
+    throw event.json(402, {
+      error: "Payment Required - Prepaid token balance exhausted. Please visit https://aletheiadb.com/platform/billing to purchase credits.",
+    });
+  }
+
   // 3. Rate limiting — check tier limits
   if (clusterId) {
     const { data: cluster } = await supabase
@@ -104,13 +132,19 @@ export const onRequest: RequestHandler = async (event) => {
     newResponseHeaders.delete("content-encoding");
     newResponseHeaders.delete("transfer-encoding");
 
-    // 6. Record usage
+    // 6. Record usage and decrement token balance
     if (clusterId && proxyResponse.ok) {
       try {
         await recordUsage(env, clusterId, {
           requests: 1,
           queries: isQuery ? 1 : 0,
           ingests: isIngest ? 1 : 0,
+        });
+        
+        // Deduct 1 credit per truth/operation
+        await supabase.rpc("decrement_token_balance", {
+          uid: userId,
+          amount: 1,
         });
       } catch {}
     }

@@ -33,7 +33,7 @@ export default component$(() => {
           <p class="mt-2 text-tertiary">Select a tier and provision your cognitive subset.</p>
         </header>
 
-        <Form action="/api/billing/checkout" method="post">
+        <form action="/api/billing/checkout" method="post">
           {/* Hidden fields */}
           <input type="hidden" name="tier" value={selectedTier.value} />
 
@@ -51,46 +51,121 @@ export default component$(() => {
 
           <section class="mb-12">
             <h2 class="text-xl font-bold mb-4">2. Select Compute Tier</h2>
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Fractional Tier */}
-              <div
-                class={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${selectedTier.value === 'fractional' ? 'border-primary bg-primary/5' : 'border-outline-variant/10 bg-surface-container-low hover:border-primary/50'}`}
-                onClick$={() => selectedTier.value = 'fractional'}
-              >
-                <div class="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 class="font-bold text-xl text-on-surface">Fractional</h3>
-                    <p class="text-sm text-tertiary">Shared Infrastructure</p>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  id: "fractional",
+                  name: "Fractional",
+                  subName: "Shared Serverless",
+                  badge: "Free Tier",
+                  badgeClass: "bg-primary/10 text-primary",
+                  features: [
+                    "Free 10K truths/month",
+                    "Pay-per-token refills",
+                    "Shared CPU substrate",
+                    "Zero cold starts"
+                  ],
+                  priceText: "Free + Prepaid Credit"
+                },
+                {
+                  id: "azure_micro",
+                  name: "Developer Micro",
+                  subName: "Azure Standard_B1s",
+                  badge: "Dedicated VM",
+                  badgeClass: "bg-green-500/10 text-green-400",
+                  features: [
+                    "1 vCPU | 1 GiB RAM",
+                    "Dedicated instance",
+                    "Aletheia cut included",
+                    "Best for sandboxing & dev"
+                  ],
+                  priceText: "$12.00 / month"
+                },
+                {
+                  id: "azure_standard",
+                  name: "Agent Standard",
+                  subName: "Azure Standard_B2s",
+                  badge: "Production VM",
+                  badgeClass: "bg-blue-500/10 text-blue-400",
+                  features: [
+                    "2 vCPUs | 4 GiB RAM",
+                    "Multi-agent core",
+                    "Isolated SQLite index",
+                    "Fast vector search"
+                  ],
+                  priceText: "$40.00 / month"
+                },
+                {
+                  id: "azure_pro",
+                  name: "Production Core",
+                  subName: "Azure Standard_D2as_v5",
+                  badge: "High Performance",
+                  badgeClass: "bg-orange-500/10 text-orange-400",
+                  features: [
+                    "2 vCPUs | 8 GiB RAM",
+                    "50 GB Premium SSD",
+                    "Dedicated prod load",
+                    "Zero noisy neighbors"
+                  ],
+                  priceText: "$90.00 / month"
+                },
+                {
+                  id: "azure_scale",
+                  name: "Scale Master",
+                  subName: "Azure Standard_D4as_v5",
+                  badge: "Enterprise VM",
+                  badgeClass: "bg-purple-500/10 text-purple-400",
+                  features: [
+                    "4 vCPUs | 16 GiB RAM",
+                    "100 GB Premium SSD",
+                    "Massive graph crawls",
+                    "Local re-ranking models"
+                  ],
+                  priceText: "$175.00 / month"
+                },
+                {
+                  id: "azure_gpu",
+                  name: "GPU Superbrain",
+                  subName: "Azure Standard_NC4as_T4",
+                  badge: "GPU Accelerated",
+                  badgeClass: "bg-rose-500/10 text-rose-400",
+                  features: [
+                    "4 vCPUs | 28 GiB RAM",
+                    "1 NVIDIA T4 GPU",
+                    "Ultra-low latency embeddings",
+                    "Local re-ranking inference"
+                  ],
+                  priceText: "$450.00 / month"
+                }
+              ].map((tier) => {
+                const isSelected = selectedTier.value === tier.id;
+                return (
+                  <div
+                    key={tier.id}
+                    class={`cursor-pointer rounded-2xl border-2 p-5 flex flex-col justify-between transition-all ${isSelected ? 'border-primary bg-primary/5' : 'border-outline-variant/10 bg-surface-container-low hover:border-primary/50'}`}
+                    onClick$={() => selectedTier.value = tier.id}
+                  >
+                    <div>
+                      <div class="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 class="font-bold text-lg text-on-surface">{tier.name}</h3>
+                          <p class="text-xs text-tertiary">{tier.subName}</p>
+                        </div>
+                        <span class={`rounded px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest ${tier.badgeClass}`}>{tier.badge}</span>
+                      </div>
+                      <ul class="text-xs text-tertiary space-y-2 mb-6">
+                        {tier.features.map((f, i) => (
+                          <li key={i} class="flex items-center gap-1.5">
+                            <CheckCircle2Icon class="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <p class="text-xs font-mono text-on-surface font-bold border-t border-outline-variant/10 pt-3 mt-auto">{tier.priceText}</p>
                   </div>
-                  <span class="rounded bg-primary/10 px-2 py-1 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">Free</span>
-                </div>
-                <ul class="text-sm text-tertiary space-y-2 mb-6">
-                  <li class="flex items-center gap-2"><CheckCircle2Icon class="w-4 h-4 text-primary" /> Spins up instantly</li>
-                  <li class="flex items-center gap-2"><CheckCircle2Icon class="w-4 h-4 text-primary" /> Multi-tenant isolation</li>
-                  <li class="flex items-center gap-2"><CheckCircle2Icon class="w-4 h-4 text-primary" /> Best for MVP and testing</li>
-                </ul>
-                <p class="text-xs font-mono text-tertiary font-bold">$1.00 per 1M truths</p>
-              </div>
-
-              {/* Dedicated Pro Tier */}
-              <div
-                class={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${selectedTier.value === 'dedicated_l4' ? 'border-primary bg-primary/5' : 'border-outline-variant/10 bg-surface-container-low hover:border-primary/50'}`}
-                onClick$={() => selectedTier.value = 'dedicated_l4'}
-              >
-                <div class="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 class="font-bold text-xl text-on-surface">Dedicated Pro</h3>
-                    <p class="text-sm text-tertiary">Isolated Hardware</p>
-                  </div>
-                  <span class="rounded bg-orange-500/10 px-2 py-1 font-mono text-[10px] text-orange-400 font-bold uppercase tracking-widest">Single Tenant</span>
-                </div>
-                <ul class="text-sm text-tertiary space-y-2 mb-6">
-                  <li class="flex items-center gap-2"><RocketIcon class="w-4 h-4 text-orange-400" /> Dedicated Container</li>
-                  <li class="flex items-center gap-2"><LockIcon class="w-4 h-4 text-orange-400" /> Complete Data Isolation</li>
-                  <li class="flex items-center gap-2"><ZapIcon class="w-4 h-4 text-orange-400" /> Zero Noisy Neighbors</li>
-                </ul>
-                <p class="text-xs font-mono text-tertiary font-bold">$400 / month flat rate</p>
-              </div>
+                );
+              })}
             </div>
           </section>
 
@@ -103,7 +178,7 @@ export default component$(() => {
               {selectedTier.value === 'fractional' ? 'Deploy Free Cluster' : 'Proceed to Checkout'}
             </button>
           </section>
-        </Form>
+        </form>
       </main>
     </div>
   );
