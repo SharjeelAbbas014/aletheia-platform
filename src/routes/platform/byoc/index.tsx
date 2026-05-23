@@ -18,7 +18,7 @@ export default component$(() => {
             <span class="font-mono text-xs font-bold uppercase tracking-widest text-primary">Self-Hosted</span>
           </div>
           <h1 class="font-headline text-5xl font-extrabold tracking-tighter">Deploy Anywhere</h1>
-          <p class="text-tertiary mt-4 max-w-2xl mx-auto">Run Aletheia in your own infrastructure. One binary, zero dependencies, full control.</p>
+          <p class="text-tertiary mt-4 max-w-2xl mx-auto">Run AletheiaDB in your own infrastructure. One binary, zero dependencies, full control.</p>
         </header>
 
         <div class="grid lg:grid-cols-3 gap-6 mb-12">
@@ -49,8 +49,8 @@ chmod +x aletheia</pre>
             </div>
             <div>
               <p class="text-xs font-bold uppercase tracking-widest text-tertiary mb-2">2. Set your API key</p>
-              <pre class="bg-black/40 rounded-lg p-4 text-sm text-tertiary overflow-x-auto">export ALETHEIA_API_KEY=your-secret-key
-export ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5</pre>
+              <pre class="bg-black/40 rounded-lg p-4 text-sm text-tertiary overflow-x-auto">export ALETHEIADB_API_KEY=your-secret-key
+export ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5</pre>
             </div>
             <div>
               <p class="text-xs font-bold uppercase tracking-widest text-tertiary mb-2">3. Run</p>
@@ -82,8 +82,8 @@ Engine listening on http://localhost:3000</pre>
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Deploy Anywhere | ALETHEIA",
-  description: "Run Aletheia in your own infrastructure. Single binary, zero dependencies, air-gapped ready. Self-hosted AI memory engine.",
+  title: "Deploy Anywhere | ALETHEIADB",
+  description: "Run AletheiaDB in your own infrastructure. Single binary, zero dependencies, air-gapped ready. Self-hosted AI memory engine.",
   pathname: "/platform/byoc",
   keywords: [
     "self-hosted memory engine",

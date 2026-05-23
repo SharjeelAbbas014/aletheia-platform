@@ -96,7 +96,7 @@ export default component$(() => {
             </div>
             <div>
               <p class="docs-brand-title">Docs</p>
-              <p class="docs-brand-subtitle">Aletheia Guide</p>
+              <p class="docs-brand-subtitle">AletheiaDB Guide</p>
             </div>
           </div>
 

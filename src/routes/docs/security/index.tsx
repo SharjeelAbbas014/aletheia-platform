@@ -8,15 +8,15 @@ export default component$(() => {
       <div class="eyebrow">Security & Trust</div>
       <h1>Building Trusted Long-Term Memory</h1>
       <p class="doc-lead">
-        Aletheia is strongest when security and privacy are treated as foundational elements of the system, not afterthoughts. Here's how we protect the core truth of your users.
+        AletheiaDB is strongest when security and privacy are treated as foundational elements of the system, not afterthoughts. Here's how we protect the core truth of your users.
       </p>
 
       <h2>Our Hosted Security Guidance</h2>
       <p>
-        Building a trusted AI agent means ensuring that memory is only accessible to the entity that owns it. Aletheia's architecture enforces strict boundaries between tenants and sessions.
+        Building a trusted AI agent means ensuring that memory is only accessible to the entity that owns it. AletheiaDB's architecture enforces strict boundaries between tenants and sessions.
       </p>
       <ul>
-        <li><strong>Strict Scope Enforcement:</strong> We never trust payload scope alone. Aletheia applies tenant and project claims before any retrieval logic begins, preventing data leaks.</li>
+        <li><strong>Strict Scope Enforcement:</strong> We never trust payload scope alone. AletheiaDB applies tenant and project claims before any retrieval logic begins, preventing data leaks.</li>
         <li><strong>Immutable Audit Logs:</strong> Every memory operation—ingestion, query, and deletion—is logged. This creates an unchangeable audit trail for your peace of mind.</li>
         <li><strong>End-to-End Traceability:</strong> All requests are assigned a unique ID, making it simple to trace the origin and lifecycle of a specific memory chunk.</li>
       </ul>
@@ -32,7 +32,7 @@ export default component$(() => {
 
       <h2>The Platform Story</h2>
       <p>
-        Aletheia's platform is the central hub for your public trust story. We provide all the tools you need to manage your memory security effortlessly:
+        AletheiaDB's platform is the central hub for your public trust story. We provide all the tools you need to manage your memory security effortlessly:
       </p>
       <ul>
         <li><strong>Secure Onboarding:</strong> Seamless sign-up and login flows that prioritize user protection.</li>
@@ -41,15 +41,15 @@ export default component$(() => {
       </ul>
       
       <p>
-        Your user's memories are their most personal data. At Aletheia, we build the walls to keep them safe.
+        Your user's memories are their most personal data. At AletheiaDB, we build the walls to keep them safe.
       </p>
     </>
   );
 });
 
 export const head = createHead(
-  "Security Model for AI Memory | Aletheia",
-  "Explore Aletheia's security model, from strict tenant scoping to signed Rust binaries and audit logs for AI agent memory.",
+  "Security Model for AI Memory | AletheiaDB",
+  "Explore AletheiaDB's security model, from strict tenant scoping to signed Rust binaries and audit logs for AI agent memory.",
   "/docs/security",
   [
     "AI memory security",

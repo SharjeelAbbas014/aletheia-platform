@@ -57,16 +57,16 @@ export const detailedDocsPages: DocsPage[] = [
   {
     slug: "install",
     eyebrow: "Setup",
-    title: "Install Aletheia",
+    title: "Install AletheiaDB",
     lead:
-      "Set up the Aletheia engine locally with predictable binaries, model downloads, and SDK wiring.",
+      "Set up the AletheiaDB engine locally with predictable binaries, model downloads, and SDK wiring.",
     description:
-      "Installation guide for Aletheia including prerequisites, build flow, and first health check.",
+      "Installation guide for AletheiaDB including prerequisites, build flow, and first health check.",
     sections: [
       {
         heading: "Prerequisites",
         paragraphs: [
-          "Aletheia is built as a Rust service with optional SDK clients. For a smooth start, install Rust stable and keep at least 4GB free disk for model and index artifacts.",
+          "AletheiaDB is built as a Rust service with optional SDK clients. For a smooth start, install Rust stable and keep at least 4GB free disk for model and index artifacts.",
           "Use a dedicated workspace directory for cache and data files so benchmarks and local testing can be reset without touching your main development environment."
         ],
         bullets: [
@@ -82,7 +82,7 @@ export const detailedDocsPages: DocsPage[] = [
           "The release build gives realistic performance for retrieval and reranking tests. Development builds are fine for functional checks but not for latency decisions."
         ],
         steps: [
-          "Clone the monorepo and open `Aletheia`.",
+          "Clone the monorepo and open `AletheiaDB`.",
           "Build release binary with Cargo.",
           "Start the API server on loopback.",
           "Call `/health` before sending ingest/query traffic."
@@ -120,12 +120,12 @@ export const detailedDocsPages: DocsPage[] = [
     lead:
       "Understand the core memory concepts before tuning retrieval or shipping integrations.",
     description:
-      "Conceptual overview of Aletheia memory, companion memories, and hybrid retrieval behavior.",
+      "Conceptual overview of AletheiaDB memory, companion memories, and hybrid retrieval behavior.",
     sections: [
       {
         heading: "Memory is multi-representation",
         paragraphs: [
-          "Aletheia stores a memory event in multiple forms: raw text, embedding vector, lexical index terms, and graph relationships. This is why exact terms and paraphrases can both be recovered without scanning full transcripts.",
+          "AletheiaDB stores a memory event in multiple forms: raw text, embedding vector, lexical index terms, and graph relationships. This is why exact terms and paraphrases can both be recovered without scanning full transcripts.",
           "The engine is not just an ANN index. It is a retrieval system that fuses multiple signals into one ranked result list."
         ]
       },
@@ -155,9 +155,9 @@ export const detailedDocsPages: DocsPage[] = [
     eyebrow: "Architecture",
     title: "System Architecture",
     lead:
-      "Aletheia combines temporal storage, vector retrieval, lexical scoring, and graph lineage in one service.",
+      "AletheiaDB combines temporal storage, vector retrieval, lexical scoring, and graph lineage in one service.",
     description:
-      "Detailed architecture of Aletheia components and request flow.",
+      "Detailed architecture of AletheiaDB components and request flow.",
     sections: [
       {
         heading: "Runtime components",
@@ -347,7 +347,7 @@ user-42::session-7::1000003   # summary companion`
     eyebrow: "Pipeline",
     title: "Ingestion Pipeline",
     lead:
-      "Ingestion transforms raw events into durable, queryable Aletheia memory with deduplication and lineage.",
+      "Ingestion transforms raw events into durable, queryable AletheiaDB memory with deduplication and lineage.",
     description:
       "Step-by-step ingest pipeline including embedding, dedup, indexing, and graph updates.",
     sections: [
@@ -394,7 +394,7 @@ user-42::session-7::1000003   # summary companion`
     lead:
       "The vector index provides fast semantic candidate retrieval for paraphrase-heavy queries.",
     description:
-      "How Aletheia uses vector embeddings and HNSW ANN search.",
+      "How AletheiaDB uses vector embeddings and HNSW ANN search.",
     sections: [
       {
         heading: "Embedding path",
@@ -482,7 +482,7 @@ user-42::session-7::1000003   # summary companion`
     lead:
       "Reranking improves top-k relevance by scoring query and passage jointly.",
     description:
-      "How and when to apply cross-encoder reranking in Aletheia.",
+      "How and when to apply cross-encoder reranking in AletheiaDB.",
     sections: [
       {
         heading: "Where reranking fits",
@@ -522,14 +522,14 @@ user-42::session-7::1000003   # summary companion`
     eyebrow: "Temporal",
     title: "Time-Aware Ranking",
     lead:
-      "Aletheia ranks by relevance and freshness so outdated context does not dominate.",
+      "AletheiaDB ranks by relevance and freshness so outdated context does not dominate.",
     description:
       "How TTL and decay are applied during query ranking.",
     sections: [
       {
         heading: "Temporal scoring",
         paragraphs: [
-          "After retrieval and optional reranking, Aletheia applies temporal policy. Expired memories are filtered; surviving memories can be decayed based on age and kind.",
+          "After retrieval and optional reranking, AletheiaDB applies temporal policy. Expired memories are filtered; surviving memories can be decayed based on age and kind.",
           "This reduces stale recall while preserving long-lived facts and preferences."
         ]
       },
@@ -564,7 +564,7 @@ if age > ttl(kind): drop`
     lead:
       "Fact supersession marks older conflicting facts as invalid so latest truth wins.",
     description:
-      "How Aletheia tracks and enforces fact supersession over time.",
+      "How AletheiaDB tracks and enforces fact supersession over time.",
     sections: [
       {
         heading: "Current fact slots",
@@ -605,7 +605,7 @@ t2: preferred_drink = tea      -> becomes current
     lead:
       "Ingest stores one or more memory events and optionally emits companion memories.",
     description:
-      "API contract for ingesting memories into Aletheia.",
+      "API contract for ingesting memories into AletheiaDB.",
     sections: [
       {
         heading: "Request contract",
@@ -657,7 +657,7 @@ t2: preferred_drink = tea      -> becomes current
     lead:
       "Semantic query retrieves memories by intent and meaning, then applies temporal policy.",
     description:
-      "API contract for semantic/hybrid query in Aletheia.",
+      "API contract for semantic/hybrid query in AletheiaDB.",
     sections: [
       {
         heading: "Request fields",
@@ -750,7 +750,7 @@ t2: preferred_drink = tea      -> becomes current
     lead:
       "Delete removes a memory from retrieval surfaces and records an audit trail for reconstruction.",
     description:
-      "Deletion and index repair behavior for Aletheia memory records.",
+      "Deletion and index repair behavior for AletheiaDB memory records.",
     sections: [
       {
         heading: "Delete contract",
@@ -792,12 +792,12 @@ t2: preferred_drink = tea      -> becomes current
     eyebrow: "Intelligence",
     title: "Cognitive Extraction Pipeline",
     lead: "Transform raw episodic text into structured knowledge triples and verified entities.",
-    description: "Overview of Aletheia's neural entity extraction and autonomous relationship discovery.",
+    description: "Overview of AletheiaDB's neural entity extraction and autonomous relationship discovery.",
     sections: [
       {
         heading: "Neural Entity Extraction",
         paragraphs: [
-          "Aletheia integrates a local BERT-based model for Named Entity Recognition (NER). During ingestion, episodic text is scanned to identify core entities without requiring external LLM calls.",
+          "AletheiaDB integrates a local BERT-based model for Named Entity Recognition (NER). During ingestion, episodic text is scanned to identify core entities without requiring external LLM calls.",
           "Entities are classified into standard categories (Person, Organization, Location, Miscellaneous), allowing for precise scoping and relationship mapping."
         ],
         bullets: [
@@ -817,7 +817,7 @@ t2: preferred_drink = tea      -> becomes current
       {
         heading: "Implicit Preference Detection",
         paragraphs: [
-          "Aletheia identifies sentiment and preference signals (love, hate, prefer, favorite) automatically. When detected, the memory is elevated to a `Preference` kind, exempting it from standard time-decay policies to ensure core user identity persists."
+          "AletheiaDB identifies sentiment and preference signals (love, hate, prefer, favorite) automatically. When detected, the memory is elevated to a `Preference` kind, exempting it from standard time-decay policies to ensure core user identity persists."
         ]
       }
     ]
@@ -827,12 +827,12 @@ t2: preferred_drink = tea      -> becomes current
     eyebrow: "Analytics",
     title: "The Metric Vault",
     lead: "Track and aggregate numeric truth with absolute deterministic precision.",
-    description: "How to use the Aletheia Analytics API for range-based sums and counts of extracted metrics.",
+    description: "How to use the AletheiaDB Analytics API for range-based sums and counts of extracted metrics.",
     sections: [
       {
         heading: "Deterministic Metric Extraction",
         paragraphs: [
-          "Beyond semantic recall, Aletheia uses deterministic regex extractors to identify numeric values during ingestion. These are stored in the Metric Vault—a specialized B-Tree index optimized for temporal range scans."
+          "Beyond semantic recall, AletheiaDB uses deterministic regex extractors to identify numeric values during ingestion. These are stored in the Metric Vault—a specialized B-Tree index optimized for temporal range scans."
         ],
         bullets: [
           "Currency ($50, 100 EUR): Track user spending habits.",
@@ -863,24 +863,24 @@ t2: preferred_drink = tea      -> becomes current
   {
     slug: "memory-proxy",
     eyebrow: "Ecosystem",
-    title: "The Aletheia Proxy",
+    title: "The AletheiaDB Proxy",
     lead: "An OpenAI-compatible gateway that automatically injects memory into your agent's system prompt.",
-    description: "Learn how to use the Aletheia Proxy to add long-term memory to any application with zero code changes.",
+    description: "Learn how to use the AletheiaDB Proxy to add long-term memory to any application with zero code changes.",
     sections: [
       {
         heading: "Overview",
         paragraphs: [
-          "The Aletheia Proxy (Memory Router) acts as a middleware between your application and your LLM provider. It intercepts standard OpenAI-style chat completion requests, retrieves the most relevant memories for the specified user, and injects them into the system prompt before forwarding the request to the upstream model.",
-          "This allows you to add Aletheia's persistent memory to any existing agent or application by simply changing the `base_url`."
+          "The AletheiaDB Proxy (Memory Router) acts as a middleware between your application and your LLM provider. It intercepts standard OpenAI-style chat completion requests, retrieves the most relevant memories for the specified user, and injects them into the system prompt before forwarding the request to the upstream model.",
+          "This allows you to add AletheiaDB's persistent memory to any existing agent or application by simply changing the `base_url`."
         ]
       },
       {
         heading: "How it works",
         steps: [
-          "Your app sends a request to `/v1/chat/completions` on the Aletheia engine.",
-          "Aletheia extracts the `user` field from the payload to identify the `entity_id`.",
+          "Your app sends a request to `/v1/chat/completions` on the AletheiaDB engine.",
+          "AletheiaDB extracts the `user` field from the payload to identify the `entity_id`.",
           "It performs a high-precision semantic lookup based on the latest user message.",
-          "The system prompt is augmented with a structured `[ALETHEIA PERSISTENT MEMORY]` block.",
+          "The system prompt is augmented with a structured `[ALETHEIADB PERSISTENT MEMORY]` block.",
           "The augmented request is forwarded to OpenAI (or your configured provider).",
           "The final response is returned to your application."
         ]
@@ -888,7 +888,7 @@ t2: preferred_drink = tea      -> becomes current
       {
         heading: "Usage Example",
         paragraphs: [
-          "To use the proxy, simply point your OpenAI client to your Aletheia instance. The `user` parameter is mapped to Aletheia's `entity_id`."
+          "To use the proxy, simply point your OpenAI client to your AletheiaDB instance. The `user` parameter is mapped to AletheiaDB's `entity_id`."
         ],
         codeBlocks: [
           {
@@ -898,10 +898,10 @@ t2: preferred_drink = tea      -> becomes current
 
 client = OpenAI(
     base_url="http://localhost:3000/v1",
-    api_key="YOUR_ALETHEIA_API_KEY"
+    api_key="YOUR_ALETHEIADB_API_KEY"
 )
 
-# Aletheia will automatically retrieve memories for 'user-42'
+# AletheiaDB will automatically retrieve memories for 'user-42'
 response = client.chat.completions.create(
     model="gpt-4o",
     messages=[{"role": "user", "content": "What was the name of that coffee I liked?"}],
@@ -913,12 +913,12 @@ response = client.chat.completions.create(
       {
         heading: "Configuration",
         paragraphs: [
-          "The proxy behavior can be tuned using the following environment variables on the Aletheia engine:"
+          "The proxy behavior can be tuned using the following environment variables on the AletheiaDB engine:"
         ],
         bullets: [
           "OPENAI_API_KEY: Your upstream provider key.",
-          "ALETHEIA_PROXY_TARGET_URL: The upstream endpoint (defaults to OpenAI).",
-          "ALETHEIA_PORT: The local port Aletheia is running on (for loopback lookups)."
+          "ALETHEIADB_PROXY_TARGET_URL: The upstream endpoint (defaults to OpenAI).",
+          "ALETHEIADB_PORT: The local port AletheiaDB is running on (for loopback lookups)."
         ]
       }
     ]
@@ -942,11 +942,11 @@ response = client.chat.completions.create(
           {
             label: "Create client",
             language: "ts",
-            code: `import { AletheiaClient } from "@aletheia/sdk";
+            code: `import { AletheiaDBClient } from "@aletheia/sdk";
 
-const client = new AletheiaClient({
-  baseUrl: process.env.ALETHEIA_URL!,
-  apiKey: process.env.ALETHEIA_API_KEY!
+const client = new AletheiaDBClient({
+  baseUrl: process.env.ALETHEIADB_URL!,
+  apiKey: process.env.ALETHEIADB_API_KEY!
 });`
           }
         ]
@@ -996,9 +996,9 @@ const results = await client.querySemantic({
           {
             label: "Initialize client",
             language: "python",
-            code: `from aletheia import AletheiaClient
+            code: `from aletheia import AletheiaDBClient
 
-client = AletheiaClient(
+client = AletheiaDBClient(
     base_url="http://127.0.0.1:3000",
     api_key="XXX1111AAA",
     timeout_s=10,
@@ -1045,12 +1045,12 @@ for item in batch:
     lead:
       "Production deployment should preserve durability first, then optimize for latency and throughput.",
     description:
-      "Practical deployment recommendations for Aletheia in production.",
+      "Practical deployment recommendations for AletheiaDB in production.",
     sections: [
       {
         heading: "Deployment topology",
         paragraphs: [
-          "A common topology runs Aletheia as a dedicated memory service behind an internal API gateway. Keep data directories on persistent volumes with regular backups.",
+          "A common topology runs AletheiaDB as a dedicated memory service behind an internal API gateway. Keep data directories on persistent volumes with regular backups.",
           "Avoid ephemeral disks for primary data unless you have robust replication and recovery strategy."
         ]
       },
@@ -1072,7 +1072,7 @@ for item in batch:
             language: "bash",
             code: `docker run --rm -p 3000:3000 \\
   -v /srv/aletheia-data:/data \\
-  -e ALETHEIA_DATA_DIR=/data \\
+  -e ALETHEIADB_DATA_DIR=/data \\
   ghcr.io/aletheia/aletheia:latest`
           }
         ]
@@ -1086,7 +1086,7 @@ for item in batch:
     lead:
       "Track recall quality and service health together; latency alone is not enough for memory systems.",
     description:
-      "Metrics, logs, traces, and quality indicators for Aletheia.",
+      "Metrics, logs, traces, and quality indicators for AletheiaDB.",
     sections: [
       {
         heading: "Metrics that matter",
@@ -1139,7 +1139,7 @@ for item in batch:
     lead:
       "Benchmark memory quality with repeatable datasets, fixed configurations, and a clear split between preliminary signal and publishable scorecards.",
     description:
-      "How to benchmark Aletheia retrieval quality and latency reliably.",
+      "How to benchmark AletheiaDB retrieval quality and latency reliably.",
     sections: [
       {
         heading: "Current benchmark status",
@@ -1325,7 +1325,7 @@ reset first: true`
       {
         heading: "What still needs to happen before we call benchmarking complete",
         paragraphs: [
-          "A proper benchmark page for Aletheia should not stop at one preliminary retrieval run. We still need a full matrix across datasets, retrieval settings, optional reranking, answer-generation layers, and judge-model evaluation so the results are defensible outside the repo.",
+          "A proper benchmark page for AletheiaDB should not stop at one preliminary retrieval run. We still need a full matrix across datasets, retrieval settings, optional reranking, answer-generation layers, and judge-model evaluation so the results are defensible outside the repo.",
           "In practice, that means LoCoMo is only the first published checkpoint. LongMemEval, ablations, and answer-quality scoring are the next layer."
         ],
         steps: [
@@ -1394,21 +1394,21 @@ reset first: true`
   {
     slug: "core",
     eyebrow: "Product",
-    title: "Aletheia Core Engine",
+    title: "AletheiaDB Core Engine",
     lead: "The Rust-powered temporal memory engine that runs anywhere. Self-host, embed, or integrate.",
-    description: "Aletheia Core is the open-source, single-binary memory engine for AI agents. Hybrid vector + BM25 search, knowledge graphs, deterministic analytics, and fact supersession.",
+    description: "AletheiaDB Core is the open-source, single-binary memory engine for AI agents. Hybrid vector + BM25 search, knowledge graphs, deterministic analytics, and fact supersession.",
     sections: [
       {
-        heading: "What is Aletheia Core?",
+        heading: "What is AletheiaDB Core?",
         paragraphs: [
-          "Aletheia Core is a standalone Rust binary that provides persistent, temporal, multi-model memory for AI agents. It is designed to run on any machine — from a developer laptop to a production server — without requiring a cloud account, a database cluster, or an internet connection.",
+          "AletheiaDB Core is a standalone Rust binary that provides persistent, temporal, multi-model memory for AI agents. It is designed to run on any machine — from a developer laptop to a production server — without requiring a cloud account, a database cluster, or an internet connection.",
           "The engine combines four storage substrates under one roof: a vector index (HNSW via usearch), a full-text search index (BM25F on redb), a typed knowledge graph (RDF-style adjacency lists on redb), and a deterministic analytics vault for numeric metric extraction. All four are written into the same binary with zero external dependencies at runtime."
         ]
       },
       {
         heading: "How It Works",
         paragraphs: [
-          "Think of Aletheia Core as a database purpose-built for agent memory. You send it observations (facts, conversations, events) via REST endpoints, and it indexes them across all four substrates simultaneously. When you query, it performs hybrid retrieval — fusing vector similarity scores with BM25F lexical scores using Reciprocal Rank Fusion — and returns temporally-ordered, fact-consistent results.",
+          "Think of AletheiaDB Core as a database purpose-built for agent memory. You send it observations (facts, conversations, events) via REST endpoints, and it indexes them across all four substrates simultaneously. When you query, it performs hybrid retrieval — fusing vector similarity scores with BM25F lexical scores using Reciprocal Rank Fusion — and returns temporally-ordered, fact-consistent results.",
           "The engine tracks time natively. Every memory carries a timestamp, and the retrieval pipeline uses temporal recency scoring to prefer recent memories while still surfacing relevant historical facts. Facts can be superseded (new truth replaces old truth), creating a continuously updated world model."
         ]
       },
@@ -1425,8 +1425,8 @@ reset first: true`
         heading: "Getting Started",
         steps: [
           "Download the binary from the GitHub releases page or build from source: cargo build --release.",
-          "Set your API key: export ALETHEIA_API_KEY=your-secret-key.",
-          "Choose an embedding model: export ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5.",
+          "Set your API key: export ALETHEIADB_API_KEY=your-secret-key.",
+          "Choose an embedding model: export ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5.",
           "Run: ./aletheia. The engine starts on port 3000 by default.",
           "Ingest your first memory: POST /ingest with a JSON payload containing text, entity_id, and timestamp.",
           "Query: POST /query with a textual_query and limit. The engine returns ranked, temporally-scored results."
@@ -1435,7 +1435,7 @@ reset first: true`
           {
             label: "Docker quick start",
             language: "bash",
-            code: "docker run -p 3000:3000 \\\n  -e ALETHEIA_API_KEY=my-secret \\\n  -e ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -v ./data:/data \\\n  ghcr.io/sharjeel619/aletheia:latest"
+            code: "docker run -p 3000:3000 \\\n  -e ALETHEIADB_API_KEY=my-secret \\\n  -e ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -v ./data:/data \\\n  ghcr.io/sharjeel619/aletheia:latest"
           },
           {
             label: "First ingest",
@@ -1454,8 +1454,8 @@ reset first: true`
         bullets: [
           "Self-hosted binary: Download, run. No cloud, no lock-in. Works on macOS, Linux, Windows.",
           "Docker: Official container images with pre-baked models on GitHub Container Registry.",
-          "Embedded library: Link Aletheia as a Rust crate in your own application (coming soon).",
-          "Platform-managed: Deploy on the Aletheia Platform for one-click provisioning, billing, and team management."
+          "Embedded library: Link AletheiaDB as a Rust crate in your own application (coming soon).",
+          "Platform-managed: Deploy on the AletheiaDB Platform for one-click provisioning, billing, and team management."
         ]
       }
     ]
@@ -1463,14 +1463,14 @@ reset first: true`
   {
     slug: "platform",
     eyebrow: "Product",
-    title: "Aletheia Platform",
-    lead: "The managed SaaS layer on top of Aletheia Core. Deploy clusters, manage teams, track usage, and never touch infrastructure.",
-    description: "The Aletheia Platform provides a full web console, Stripe billing, team management, graph visualization, and analytics on top of the core memory engine.",
+    title: "AletheiaDB Platform",
+    lead: "The managed SaaS layer on top of AletheiaDB Core. Deploy clusters, manage teams, track usage, and never touch infrastructure.",
+    description: "The AletheiaDB Platform provides a full web console, Stripe billing, team management, graph visualization, and analytics on top of the core memory engine.",
     sections: [
       {
         heading: "What is the Platform?",
         paragraphs: [
-          "The Aletheia Platform is a managed cloud service built on top of the open-source Aletheia Core engine. While the core engine runs anywhere as a standalone binary, the Platform wraps it with authentication, billing, team collaboration, and a rich web dashboard — so you can focus on building agents, not managing servers."
+          "The AletheiaDB Platform is a managed cloud service built on top of the open-source AletheiaDB Core engine. While the core engine runs anywhere as a standalone binary, the Platform wraps it with authentication, billing, team collaboration, and a rich web dashboard — so you can focus on building agents, not managing servers."
         ]
       },
       {
@@ -1514,9 +1514,9 @@ reset first: true`
     eyebrow: "Reference",
     title: "Glossary",
     lead:
-      "A quick reference for recurring Aletheia terms in docs, APIs, and benchmarking.",
+      "A quick reference for recurring AletheiaDB terms in docs, APIs, and benchmarking.",
     description:
-      "Glossary of Aletheia and retrieval terminology.",
+      "Glossary of AletheiaDB and retrieval terminology.",
     sections: [
       {
         heading: "Core terms",
@@ -1557,8 +1557,8 @@ reset first: true`
       {
         heading: "What are Context Templates?",
         paragraphs: [
-          "Context templates are configurable prompt blocks that define how Aletheia memories are formatted when sent to your LLM. Instead of receiving raw JSON, your agent gets a clean, readable paragraph or structured text block — tailored to your exact use case.",
-          "Templates use simple markers like %{facts limit=5} to inject live data from the engine. When a template is rendered, Aletheia queries the relevant memories and replaces each marker with the actual content."
+          "Context templates are configurable prompt blocks that define how AletheiaDB memories are formatted when sent to your LLM. Instead of receiving raw JSON, your agent gets a clean, readable paragraph or structured text block — tailored to your exact use case.",
+          "Templates use simple markers like %{facts limit=5} to inject live data from the engine. When a template is rendered, AletheiaDB queries the relevant memories and replaces each marker with the actual content."
         ]
       },
       {
@@ -1603,13 +1603,13 @@ reset first: true`
     slug: "rate-limiting",
     eyebrow: "Platform",
     title: "Rate Limits & Quotas",
-    lead: "Aletheia uses per-cluster rate limits to ensure fair resource allocation across tenants. Limits scale with your tier.",
-    description: "Rate limits for the Aletheia Platform API. Learn about RPM limits, daily quotas, retry-after headers, and how limits scale with your plan tier.",
+    lead: "AletheiaDB uses per-cluster rate limits to ensure fair resource allocation across tenants. Limits scale with your tier.",
+    description: "Rate limits for the AletheiaDB Platform API. Learn about RPM limits, daily quotas, retry-after headers, and how limits scale with your plan tier.",
     sections: [
       {
         heading: "How Rate Limits Work",
         paragraphs: [
-          "Every API request to the Aletheia platform is counted against a rate limit for the originating cluster. Limits are enforced in two dimensions: requests per minute (RPM) and requests per day. When a limit is exceeded, the API returns HTTP 429 with a Retry-After header.",
+          "Every API request to the AletheiaDB platform is counted against a rate limit for the originating cluster. Limits are enforced in two dimensions: requests per minute (RPM) and requests per day. When a limit is exceeded, the API returns HTTP 429 with a Retry-After header.",
           "Rate limits reset at the end of each window (1 minute for RPM, midnight UTC for daily). 429 responses include X-RateLimit-Remaining and X-RateLimit-Reset headers so your application can adapt."
         ],
         stats: [
@@ -1648,13 +1648,13 @@ reset first: true`
     slug: "connectors",
     eyebrow: "Platform",
     title: "Data Connectors",
-    lead: "Auto-ingest data from Slack, GitHub, Notion, and more. Connect once, and Aletheia continuously syncs new content as it arrives.",
-    description: "Connect external services to your Aletheia cluster for automatic data ingestion. Supports Slack, GitHub, Notion, Gmail, and Google Drive.",
+    lead: "Auto-ingest data from Slack, GitHub, Notion, and more. Connect once, and AletheiaDB continuously syncs new content as it arrives.",
+    description: "Connect external services to your AletheiaDB cluster for automatic data ingestion. Supports Slack, GitHub, Notion, Gmail, and Google Drive.",
     sections: [
       {
         heading: "What are Connectors?",
         paragraphs: [
-          "Connectors automatically pull data from external services into your Aletheia cluster. Once configured, they run on a schedule (typically every 15 minutes) and ingest new content as conversation memories, fact memories, or decision records depending on the source.",
+          "Connectors automatically pull data from external services into your AletheiaDB cluster. Once configured, they run on a schedule (typically every 15 minutes) and ingest new content as conversation memories, fact memories, or decision records depending on the source.",
           "Each connector requires OAuth authorization or an API token. Credentials are encrypted at rest in our database. You can revoke a connector at any time from the Connectors page."
         ]
       },
@@ -1678,7 +1678,7 @@ reset first: true`
           "Navigate to your cluster → Connectors tab.",
           "Select the service you want to connect (e.g., Slack).",
           "Click 'Connect' — you'll be redirected to the service's OAuth authorization page.",
-          "Authorize Aletheia to access the required scopes (read-only where possible).",
+          "Authorize AletheiaDB to access the required scopes (read-only where possible).",
           "You'll be redirected back to the Connectors page showing your new connector as 'Active'.",
           "The first sync starts automatically within 15 minutes. Click 'Sync Now' for an immediate sync.",
           "Monitor sync status, last sync time, and item count from the Connectors page."
@@ -1697,14 +1697,14 @@ reset first: true`
     slug: "mcp-server",
     eyebrow: "Platform",
     title: "MCP Server (Model Context Protocol)",
-    lead: "Connect Aletheia to any MCP-compatible client — Claude Desktop, Cursor, Windsurf, and more — with zero configuration.",
-    description: "Aletheia exposes a Model Context Protocol (MCP) server for integration with Claude Desktop, Cursor, and other MCP clients. Search memories, store facts, and explore graphs from your AI tools.",
+    lead: "Connect AletheiaDB to any MCP-compatible client — Claude Desktop, Cursor, Windsurf, and more — with zero configuration.",
+    description: "AletheiaDB exposes a Model Context Protocol (MCP) server for integration with Claude Desktop, Cursor, and other MCP clients. Search memories, store facts, and explore graphs from your AI tools.",
     sections: [
       {
         heading: "What is MCP?",
         paragraphs: [
-          "The Model Context Protocol (MCP) is an open standard for connecting AI assistants with external tools and data sources. Aletheia exposes an MCP server that lets any MCP-compatible client — including Claude Desktop, Cursor, and Windsurf — query memories, store facts, and explore knowledge graphs directly.",
-          "By supporting MCP, Aletheia works with every MCP client out of the box. No custom SDKs or integration code needed."
+          "The Model Context Protocol (MCP) is an open standard for connecting AI assistants with external tools and data sources. AletheiaDB exposes an MCP server that lets any MCP-compatible client — including Claude Desktop, Cursor, and Windsurf — query memories, store facts, and explore knowledge graphs directly.",
+          "By supporting MCP, AletheiaDB works with every MCP client out of the box. No custom SDKs or integration code needed."
         ]
       },
       {
@@ -1725,14 +1725,14 @@ reset first: true`
         steps: [
           "Open Claude Desktop → Settings → Developer → Edit Config.",
           "Add the following entry to your claude_desktop_config.json:",
-          "Restart Claude Desktop. You should see the Aletheia tools in the toolbox.",
+          "Restart Claude Desktop. You should see the AletheiaDB tools in the toolbox.",
           'Ask Claude to "search my memories" or "store that Alice likes hiking".'
         ],
         codeBlocks: [
           {
             label: "claude_desktop_config.json",
             language: "json",
-            code: '{\n  "mcpServers": {\n    "aletheia": {\n      "command": "npx",\n      "args": ["@aletheia/mcp-client"],\n      "env": {\n        "ALETHEIA_API_KEY": "YOUR_API_KEY"\n      }\n    }\n  }\n}'
+            code: '{\n  "mcpServers": {\n    "aletheia": {\n      "command": "npx",\n      "args": ["@aletheia/mcp-client"],\n      "env": {\n        "ALETHEIADB_API_KEY": "YOUR_API_KEY"\n      }\n    }\n  }\n}'
           }
         ]
       },
@@ -1752,13 +1752,13 @@ reset first: true`
     slug: "trust",
     eyebrow: "Platform",
     title: "Trust & Security",
-    lead: "Aletheia is built with security and privacy as first principles. SOC 2 compliant, GDPR ready, and fully auditable.",
-    description: "Security, privacy, and compliance information for the Aletheia platform. Encryption, infrastructure, data protection, and certifications.",
+    lead: "AletheiaDB is built with security and privacy as first principles. SOC 2 compliant, GDPR ready, and fully auditable.",
+    description: "Security, privacy, and compliance information for the AletheiaDB platform. Encryption, infrastructure, data protection, and certifications.",
     sections: [
       {
         heading: "Security by Design",
         paragraphs: [
-          "Aletheia is built from the ground up with security as a core requirement. The core engine is a single Rust binary with zero runtime dependencies — no npm, no pip, no system libraries. This dramatically reduces the attack surface compared to languages like Python or Node.js.",
+          "AletheiaDB is built from the ground up with security as a core requirement. The core engine is a single Rust binary with zero runtime dependencies — no npm, no pip, no system libraries. This dramatically reduces the attack surface compared to languages like Python or Node.js.",
           "All data is encrypted at rest (AES-256) and in transit (TLS 1.3). API keys are stored as SHA-256 hashes and compared using constant-time comparison to prevent timing side-channel attacks."
         ],
         stats: [
@@ -1793,7 +1793,7 @@ reset first: true`
       {
         heading: "Trust Center",
         paragraphs: [
-          "Visit the Aletheia Trust Center at /platform/trust for the full security overview, including encryption details, data processing agreements, breach notification procedures, and infrastructure architecture diagrams.",
+          "Visit the AletheiaDB Trust Center at /platform/trust for the full security overview, including encryption details, data processing agreements, breach notification procedures, and infrastructure architecture diagrams.",
           "For urgent security matters: security@aletheiadb.com. For compliance documentation: trust@aletheiadb.com."
         ]
       }
@@ -1803,36 +1803,36 @@ reset first: true`
     slug: "self-hosting",
     eyebrow: "Operations",
     title: "Self-Hosting & BYOC",
-    lead: "Run Aletheia in your own infrastructure. One binary, zero dependencies, full control. Or deploy in your cloud with our BYOC program.",
-    description: "Self-host Aletheia Core as a single binary, Docker container, or deploy via BYOC in your AWS/GCP/Azure account.",
+    lead: "Run AletheiaDB in your own infrastructure. One binary, zero dependencies, full control. Or deploy in your cloud with our BYOC program.",
+    description: "Self-host AletheiaDB Core as a single binary, Docker container, or deploy via BYOC in your AWS/GCP/Azure account.",
     sections: [
       {
         heading: "Self-Hosted Core Engine",
         paragraphs: [
-          "The Aletheia Core engine is a single Rust binary — download, run. No Docker required. No database to configure. Works on macOS, Linux, and Windows. Everything needed for agent memory is inside the binary: HNSW vector index, BM25F full-text search, typed knowledge graph, temporal KV store, and deterministic analytics vault.",
+          "The AletheiaDB Core engine is a single Rust binary — download, run. No Docker required. No database to configure. Works on macOS, Linux, and Windows. Everything needed for agent memory is inside the binary: HNSW vector index, BM25F full-text search, typed knowledge graph, temporal KV store, and deterministic analytics vault.",
           "Embeddings are handled locally via Candle (CPU/GPU) or ONNX Runtime. No external embedding API is needed. The engine works completely air-gapped."
         ],
         codeBlocks: [
           {
             label: "Quick start (binary)",
             language: "bash",
-            code: "curl -L https://github.com/sharjeel619/aletheia/releases/latest/download/aletheia-x86_64-linux -o aletheia\nchmod +x aletheia\nexport ALETHEIA_API_KEY=my-secret\nexport ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5\n./aletheia\n# Listening on http://localhost:3000"
+            code: "curl -L https://github.com/sharjeel619/aletheia/releases/latest/download/aletheia-x86_64-linux -o aletheia\nchmod +x aletheia\nexport ALETHEIADB_API_KEY=my-secret\nexport ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5\n./aletheia\n# Listening on http://localhost:3000"
           },
           {
             label: "Docker",
             language: "bash",
-            code: "docker run -p 3000:3000 \\\n  -e ALETHEIA_API_KEY=my-secret \\\n  -e ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -v ./data:/data \\\n  ghcr.io/sharjeel619/aletheia:latest"
+            code: "docker run -p 3000:3000 \\\n  -e ALETHEIADB_API_KEY=my-secret \\\n  -e ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -v ./data:/data \\\n  ghcr.io/sharjeel619/aletheia:latest"
           }
         ]
       },
       {
         heading: "Configuration",
         steps: [
-          "Set ALETHEIA_API_KEY: Any string used to authenticate all requests. Treat this like a database password.",
-          "Choose an embedding model: Set ALETHEIA_EMBEDDING_MODEL to a HuggingFace model ID (e.g., BAAI/bge-small-en-v1.5). The model is downloaded on first run and cached locally.",
-          "Set the data directory: ALETHEIA_DATA_DIR defaults to ./data. All database files (.redb) and the vector index (.hnsw) are stored here.",
-          "Bind address: ALETHEIA_HOST (default 0.0.0.0) and ALETHEIA_PORT (default 3000).",
-          "Enable GPU: Set ALETHEIA_DEVICE=cuda if you have an NVIDIA GPU with CUDA installed."
+          "Set ALETHEIADB_API_KEY: Any string used to authenticate all requests. Treat this like a database password.",
+          "Choose an embedding model: Set ALETHEIADB_EMBEDDING_MODEL to a HuggingFace model ID (e.g., BAAI/bge-small-en-v1.5). The model is downloaded on first run and cached locally.",
+          "Set the data directory: ALETHEIADB_DATA_DIR defaults to ./data. All database files (.redb) and the vector index (.hnsw) are stored here.",
+          "Bind address: ALETHEIADB_HOST (default 0.0.0.0) and ALETHEIADB_PORT (default 3000).",
+          "Enable GPU: Set ALETHEIADB_DEVICE=cuda if you have an NVIDIA GPU with CUDA installed."
         ],
         stats: [
           { label: "Binary Size", value: "~45 MB", description: "Statically linked. No runtime dependencies.", tone: "primary" },
@@ -1844,7 +1844,7 @@ reset first: true`
       {
         heading: "Enterprise BYOC",
         paragraphs: [
-          "For organizations requiring dedicated infrastructure with full data sovereignty, we offer a Bring Your Own Cloud (BYOC) program. You provide the cloud account (AWS, GCP, or Azure); we provide Terraform modules that provision the Aletheia Core instance in your VPC. The management plane only receives health metrics — your data never leaves your infrastructure.",
+          "For organizations requiring dedicated infrastructure with full data sovereignty, we offer a Bring Your Own Cloud (BYOC) program. You provide the cloud account (AWS, GCP, or Azure); we provide Terraform modules that provision the AletheiaDB Core instance in your VPC. The management plane only receives health metrics — your data never leaves your infrastructure.",
           "BYOC includes: dedicated single-tenant instance, customer-managed encryption keys (CMEK), custom networking (VPC, PrivateLink), 99.95% uptime SLA, and priority support.",
           "Contact enterprise@aletheiadb.com for a BYOC assessment and pricing."
         ],

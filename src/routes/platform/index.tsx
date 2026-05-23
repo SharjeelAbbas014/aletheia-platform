@@ -462,11 +462,11 @@ export default component$(() => {
                   <h3 class="text-lg font-bold">Local Sidecar</h3>
                   <span class="rounded bg-primary/10 px-2 py-1 font-mono text-[10px] text-primary font-bold">Python SDK</span>
                 </div>
-                <p class="text-xs text-tertiary mb-4 leading-relaxed">Connect your local agent to the Aletheia engine using your provisioned key.</p>
+                <p class="text-xs text-tertiary mb-4 leading-relaxed">Connect your local agent to the AletheiaDB engine using your provisioned key.</p>
                 <pre class="overflow-x-auto rounded-xl bg-black/40 p-6 font-mono text-[10px] leading-relaxed text-primary/80 border border-primary/10">
-                  <code>{`from aletheia import AletheiaClient
+                  <code>{`from aletheia import AletheiaDBClient
 
-client = AletheiaClient(
+client = AletheiaDBClient(
   api_key="${activeKey}",
   base_url="${proxyBaseUrl}"
 )
@@ -498,7 +498,7 @@ client.ingest(
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Console | ALETHEIA",
+  title: "Console | ALETHEIADB",
   description: "Mission Control for your agentic memory engine.",
   pathname: "/platform",
   noindex: true

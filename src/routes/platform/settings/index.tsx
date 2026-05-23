@@ -79,7 +79,7 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Settings | ALETHEIA",
+  title: "Settings | ALETHEIADB",
   description: "Manage your account settings.",
   pathname: "/platform/settings",
   noindex: true

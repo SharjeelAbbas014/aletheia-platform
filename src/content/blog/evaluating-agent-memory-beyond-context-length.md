@@ -4,7 +4,7 @@ description: Why serious memory evaluation should focus on recall quality, tempo
 excerpt: A long context window does not prove an agent remembers well. Memory quality is about retrieving the right evidence at the right time.
 publishedAt: 2026-03-25T00:00:00.000Z
 updatedAt: 2026-03-25T00:00:00.000Z
-author: Aletheia Team
+author: AletheiaDB Team
 tags:
   - Evaluation
   - Long Context
@@ -67,9 +67,9 @@ A practical benchmark suite should include:
 
 Those are the situations where naive memory systems start to break.
 
-## How this connects to the Aletheia approach
+## How this connects to the AletheiaDB approach
 
-Aletheia is built around the evaluation properties described above. The engine's [hybrid retrieval](/blog/hybrid-retrieval-for-exact-and-semantic-recall) fuses semantic and lexical scores, [temporal ranking](/docs/time-ranking) ensures freshness signals survive the retrieval pipeline, and [fact supersession](/blog/fact-supersession-for-agent-memory) prevents stale evidence from competing with current truth.
+AletheiaDB is built around the evaluation properties described above. The engine's [hybrid retrieval](/blog/hybrid-retrieval-for-exact-and-semantic-recall) fuses semantic and lexical scores, [temporal ranking](/docs/time-ranking) ensures freshness signals survive the retrieval pipeline, and [fact supersession](/blog/fact-supersession-for-agent-memory) prevents stale evidence from competing with current truth.
 
 For a deeper look at our scoring methodology, see the [benchmarking documentation](/docs/benchmarking) and our public [LongMemEval results](/platform/benchmarks).
 

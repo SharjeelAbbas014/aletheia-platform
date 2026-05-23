@@ -110,8 +110,8 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Deploy Cluster | ALETHEIA",
-  description: "Deploy a new Aletheia cluster.",
+  title: "Deploy Cluster | ALETHEIADB",
+  description: "Deploy a new AletheiaDB cluster.",
   pathname: "/platform/clusters/new",
   noindex: true
 });

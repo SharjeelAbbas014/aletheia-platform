@@ -4,7 +4,7 @@ description: "What changes when agent memory moves from a single-user demo to a 
 excerpt: "A working memory prototype is achievable in an afternoon. A production memory system that stays correct at scale requires a fundamentally different architecture."
 publishedAt: 2026-04-10T00:00:00.000Z
 updatedAt: 2026-04-10T00:00:00.000Z
-author: "Aletheia Team"
+author: "AletheiaDB Team"
 tags:
   - Production Memory
   - Scaling
@@ -36,13 +36,13 @@ Scale removes those guardrails. What worked for a demo starts producing contradi
 
 As the memory corpus grows, naive vector search slows down. HNSW indexes help, but only if they are configured correctly for the expected cardinality. Without an index strategy, retrieval latency creeps up until it bottlenecks the agent's response time.
 
-Aletheia addresses this with tiered indexes: HNSW for semantic recall, BM25 for exact-term retrieval, and a graph layer for relationship traversal. Each index is optimized for a different access pattern. The [architecture documentation](/docs/architecture) explains how these indexes share the same storage engine.
+AletheiaDB addresses this with tiered indexes: HNSW for semantic recall, BM25 for exact-term retrieval, and a graph layer for relationship traversal. Each index is optimized for a different access pattern. The [architecture documentation](/docs/architecture) explains how these indexes share the same storage engine.
 
 ### 2. Cross-tenant isolation must be enforced at the engine level
 
 In production, memories from different users share the same physical infrastructure. If isolation depends on application-level filtering rather than engine-level enforcement, a query bug or misconfiguration can leak data between tenants.
 
-Aletheia enforces tenant scope at the query layer. Every ingest and retrieval operation is scoped to an `entity_id` that the engine validates before accessing any index. The [security model](/docs/security) describes the isolation boundaries in detail.
+AletheiaDB enforces tenant scope at the query layer. Every ingest and retrieval operation is scoped to an `entity_id` that the engine validates before accessing any index. The [security model](/docs/security) describes the isolation boundaries in detail.
 
 ### 3. Contradiction management becomes mandatory
 
@@ -52,7 +52,7 @@ With a single user over a short time span, contradictory facts rarely accumulate
 
 Standard APM tools measure request latency and error rates. They do not measure retrieval quality, stale-fact prevalence, or temporal ranking correctness. Production memory systems need dedicated observability that tracks these dimensions.
 
-The Aletheia [observability documentation](/docs/observability) covers tracing, recall quality monitoring, and metrics that reflect actual memory health rather than just infrastructure health.
+The AletheiaDB [observability documentation](/docs/observability) covers tracing, recall quality monitoring, and metrics that reflect actual memory health rather than just infrastructure health.
 
 ## The infrastructure shape that scales
 
@@ -64,7 +64,7 @@ Production memory stacks tend to converge on a similar shape:
 - fact supersession and decay policies that prevent stale data accumulation
 - dedicated observability for retrieval quality metrics
 
-Aletheia is built to match that shape. The [quickstart](/docs/quickstart) shows the local development path, and the [deployment guide](/docs/deployment) covers production configuration for multi-tenant workloads.
+AletheiaDB is built to match that shape. The [quickstart](/docs/quickstart) shows the local development path, and the [deployment guide](/docs/deployment) covers production configuration for multi-tenant workloads.
 
 ## A practical test for your memory layer
 

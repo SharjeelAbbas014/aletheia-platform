@@ -1,10 +1,10 @@
 ---
 title: "OpenAI-Compatible Memory Proxy: Drop-In Persistent Memory for Existing Agents"
-description: "How Aletheia's OpenAI-compatible proxy adds persistent, time-aware memory to any existing OpenAI agent without changing a single line of application code."
-excerpt: "Adding memory to an existing OpenAI agent usually means rewriting the retrieval layer. Aletheia's proxy adds persistent memory by intercepting the API call—no code changes required."
+description: "How AletheiaDB's OpenAI-compatible proxy adds persistent, time-aware memory to any existing OpenAI agent without changing a single line of application code."
+excerpt: "Adding memory to an existing OpenAI agent usually means rewriting the retrieval layer. AletheiaDB's proxy adds persistent memory by intercepting the API call—no code changes required."
 publishedAt: 2026-04-14T00:00:00.000Z
 updatedAt: 2026-04-14T00:00:00.000Z
-author: "Aletheia Team"
+author: "AletheiaDB Team"
 tags:
   - OpenAI Proxy
   - Integration
@@ -19,14 +19,14 @@ The most common question we hear from teams building AI agents is: "How do I add
 
 Most memory solutions require deep integration: new SDKs, custom retrieval logic, and significant changes to the application's data flow. That works for greenfield projects, but it is a barrier for teams with existing agents in production.
 
-Aletheia's OpenAI-compatible proxy solves this differently. It adds persistent, time-aware memory by sitting between the application and the OpenAI API—no application code changes required.
+AletheiaDB's OpenAI-compatible proxy solves this differently. It adds persistent, time-aware memory by sitting between the application and the OpenAI API—no application code changes required.
 
 ## How the proxy works
 
 The proxy exposes the standard OpenAI chat completions endpoint. Applications point their existing OpenAI client at the proxy URL instead of the OpenAI API. The proxy:
 
 1. Receives the chat request exactly as it would go to OpenAI
-2. Queries Aletheia's memory engine for relevant context about the user
+2. Queries AletheiaDB's memory engine for relevant context about the user
 3. Injects the retrieved memories into the system prompt
 4. Forwards the augmented request to OpenAI
 5. Returns the response to the application
@@ -42,7 +42,7 @@ Without memory, each conversation starts from scratch. The agent does not know t
 
 ### Temporal awareness
 
-The proxy uses Aletheia's [temporal ranking](/docs/time-ranking) to prefer fresh facts over stale ones. If a user's preference changed between sessions, the proxy surfaces the current preference rather than both.
+The proxy uses AletheiaDB's [temporal ranking](/docs/time-ranking) to prefer fresh facts over stale ones. If a user's preference changed between sessions, the proxy surfaces the current preference rather than both.
 
 ### Fact supersession
 
@@ -80,7 +80,7 @@ client = OpenAI(
     api_key="sk-...",
     base_url="https://memory.aletheiadb.com/v1",
     default_headers={
-        "X-Aletheia-Entity-Id": "user-abc-123",
+        "X-AletheiaDB-Entity-Id": "user-abc-123",
     }
 )
 ```
@@ -89,7 +89,7 @@ This scopes memory retrieval to a specific user, preventing cross-user contamina
 
 ### MCP integration
 
-For agents running in MCP-compatible environments (Claude Code, Cursor, and other agentic IDEs), Aletheia also provides a [Model Context Protocol](/docs) server that exposes memory operations as standard MCP tools. This enables the same persistent memory in local development environments.
+For agents running in MCP-compatible environments (Claude Code, Cursor, and other agentic IDEs), AletheiaDB also provides a [Model Context Protocol](/docs) server that exposes memory operations as standard MCP tools. This enables the same persistent memory in local development environments.
 
 ## When to use the proxy versus the SDK
 
@@ -102,7 +102,7 @@ The proxy is the right choice when:
 The [direct SDK integration](/docs/quickstart) is the right choice when:
 
 - you need fine-grained control over retrieval parameters
-- you want to combine memory with other Aletheia features like the knowledge graph or analytics
+- you want to combine memory with other AletheiaDB features like the knowledge graph or analytics
 - you are building a new agent and want memory as a first-class architectural component
 
 Both paths use the same underlying engine. The proxy trades flexibility for zero-friction setup.

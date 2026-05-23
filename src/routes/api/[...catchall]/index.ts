@@ -2,7 +2,7 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { checkRateLimit, PLAN_RATE_LIMITS } from "~/lib/rate-limiter";
 import { recordUsage } from "~/lib/usage";
-// ALETHEIA_URL and admin key are dynamically resolved per-request to support serverless/edge environments
+// ALETHEIADB_URL and admin key are dynamically resolved per-request to support serverless/edge environments
 
 export const onRequest: RequestHandler = async (event) => {
   const { request, env, url, params } = event;
@@ -84,8 +84,8 @@ export const onRequest: RequestHandler = async (event) => {
   }
 
   // 5. Proxy the request to the Rust engine
-  const aletheiaUrl = (env.get("ALETHEIA_URL") || process.env.ALETHEIA_URL || "http://localhost:3000").replace(/\/+$/, "");
-  const aletheiaAdminKey = env.get("ALETHEIA_ADMIN_KEY") || env.get("ALETHEIA_API_KEY") || process.env.ALETHEIA_ADMIN_KEY || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
+  const aletheiaUrl = (env.get("ALETHEIADB_URL") || process.env.ALETHEIADB_URL || "http://localhost:3000").replace(/\/+$/, "");
+  const aletheiaAdminKey = env.get("ALETHEIADB_ADMIN_KEY") || env.get("ALETHEIADB_API_KEY") || process.env.ALETHEIADB_ADMIN_KEY || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
 
   const proxyUrl = `${aletheiaUrl}/${params.catchall}${url.search}`;
   const headers = new Headers();

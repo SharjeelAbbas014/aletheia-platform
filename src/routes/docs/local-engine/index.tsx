@@ -8,12 +8,12 @@ export default component$(() => {
       <div class="eyebrow">Local Engine</div>
       <h1>The Local-First Memory Engine</h1>
       <p class="doc-lead">
-        Development shouldn't stop when the internet does. Aletheia's local engine allows you to build, test, and refine your AI agent's memory right on your laptop.
+        Development shouldn't stop when the internet does. AletheiaDB's local engine allows you to build, test, and refine your AI agent's memory right on your laptop.
       </p>
 
       <h2>Why we built a local sidecar</h2>
       <p>
-        Most AI memory solutions force you to send every test query to a distant cloud server. This is slow, expensive, and makes integration testing a nightmare. We built the Aletheia engine in Rust so it can run as a lightweight sidecar directly in your development environment.
+        Most AI memory solutions force you to send every test query to a distant cloud server. This is slow, expensive, and makes integration testing a nightmare. We built the AletheiaDB engine in Rust so it can run as a lightweight sidecar directly in your development environment.
       </p>
       
       <h3>What this means for your workflow:</h3>
@@ -35,11 +35,11 @@ export default component$(() => {
 
       <h2>How the SDK finds the engine</h2>
       <p>
-        The Aletheia SDK is smart about finding your local binary. It follows a clear resolution path:
+        The AletheiaDB SDK is smart about finding your local binary. It follows a clear resolution path:
       </p>
       <ol>
         <li><strong>Explicit Path:</strong> You can tell the SDK exactly where your binary lives.</li>
-        <li><strong>Environment Variables:</strong> Set <code>ALETHEIA_BINARY_PATH</code> to override defaults.</li>
+        <li><strong>Environment Variables:</strong> Set <code>ALETHEIADB_BINARY_PATH</code> to override defaults.</li>
         <li><strong>Repo-Local:</strong> It looks in <code>target/release/aletheia</code> if you've just finished a fresh build.</li>
         <li><strong>SDK Cache:</strong> If no binary is found, the SDK can automatically download and cache the latest signed release for your architecture.</li>
       </ol>
@@ -52,8 +52,8 @@ export default component$(() => {
 });
 
 export const head = createHead(
-  "Local-First AI Memory Engine | Aletheia",
-  "Run the Aletheia Rust engine locally as a sidecar for faster AI agent development and testing without cloud dependencies.",
+  "Local-First AI Memory Engine | AletheiaDB",
+  "Run the AletheiaDB Rust engine locally as a sidecar for faster AI agent development and testing without cloud dependencies.",
   "/docs/local-engine",
   [
     "local AI memory engine",

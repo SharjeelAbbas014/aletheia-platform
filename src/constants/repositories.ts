@@ -5,15 +5,15 @@ export interface PublicRepository {
 
 export const publicRepositoryLinks: PublicRepository[] = [
   {
-    label: "Aletheia Platform",
+    label: "AletheiaDB Platform",
     href: "https://github.com/SharjeelAbbas014/aletheia-platform",
   },
   {
-    label: "Aletheia JS Client",
+    label: "AletheiaDB JS Client",
     href: "https://github.com/SharjeelAbbas014/aletheia-js-client",
   },
   {
-    label: "Aletheia Python Client",
+    label: "AletheiaDB Python Client",
     href: "https://github.com/SharjeelAbbas014/aletheia-python-client",
   },
   {
@@ -35,4 +35,4 @@ export const publicRepositoryLinks: PublicRepository[] = [
 ];
 
 export const privateRepositoryNote =
-  "Core engine repository is private: Aletheia";
+  "Core engine repository is private: AletheiaDB";

@@ -149,8 +149,8 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Cluster Detail | ALETHEIA",
-  description: "Manage your Aletheia cluster.",
+  title: "Cluster Detail | ALETHEIADB",
+  description: "Manage your AletheiaDB cluster.",
   pathname: "/platform/clusters/[id]",
   noindex: true
 });

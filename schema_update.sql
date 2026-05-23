@@ -1,4 +1,4 @@
--- Aletheia Platform: Auth, Teams, Billing, Usage (run in Supabase SQL Editor)
+-- AletheiaDB Platform: Auth, Teams, Billing, Usage (run in Supabase SQL Editor)
 
 -- 1. Teams
 create table if not exists public.teams (

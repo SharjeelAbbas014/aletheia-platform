@@ -4,7 +4,7 @@ description: How fact supersession prevents stale claims from competing with new
 excerpt: If your memory layer stores every fact forever at the same priority, your agent will eventually argue with itself. Supersession is how you stop that.
 publishedAt: 2026-03-30T00:00:00.000Z
 updatedAt: 2026-03-30T00:00:00.000Z
-author: Aletheia Team
+author: AletheiaDB Team
 tags:
   - Fact Supersession
   - Agent Memory

@@ -86,7 +86,7 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Team | ALETHEIA",
+  title: "Team | ALETHEIADB",
   description: "Manage your team members.",
   pathname: "/platform/settings/team",
   noindex: true

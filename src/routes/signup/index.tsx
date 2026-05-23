@@ -156,8 +156,8 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Sign Up | ALETHEIA",
-  description: "Create your Aletheia account.",
+  title: "Sign Up | ALETHEIADB",
+  description: "Create your AletheiaDB account.",
   pathname: "/signup",
   noindex: true
 });

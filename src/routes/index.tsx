@@ -428,7 +428,7 @@ const memoryGapCards = [
     ],
   },
   {
-    title: "Aletheia Memory Engine",
+    title: "AletheiaDB Memory Engine",
     icon: "psychology",
     iconWrapClass: "bg-primary/20",
     iconClass: "text-primary",
@@ -436,7 +436,7 @@ const memoryGapCards = [
     items: [
       {
         title: "Fact Supersession (Temporal Truth)",
-        body: "When life changes (e.g. moving from NYC to SF), Aletheia marks the old fact as stale, ensuring the LLM always gets the latest truth.",
+        body: "When life changes (e.g. moving from NYC to SF), AletheiaDB marks the old fact as stale, ensuring the LLM always gets the latest truth.",
         icon: "check_circle",
         iconClass: "text-primary",
       },
@@ -460,7 +460,7 @@ const distillationDetails = [
   {
     icon: "schedule",
     title: "Time-Awareness",
-    body: "I used to love coffee, but now I only drink tea. Aletheia does not hallucinate your old preferences. It updates your profile in real time.",
+    body: "I used to love coffee, but now I only drink tea. AletheiaDB does not hallucinate your old preferences. It updates your profile in real time.",
   },
   {
     icon: "filter_center_focus",
@@ -481,7 +481,7 @@ const userFlowCards = [
     delay: "",
   },
   {
-    date: "Aletheia Ingests",
+    date: "AletheiaDB Ingests",
     quote: "Fact Integration",
     summary: "",
     icon: "psychology",
@@ -507,13 +507,13 @@ const uniqueEdges = [
   {
     icon: "all_inclusive",
     title: "Multi-Model Continuity",
-    body: "Memory that follows the user, not the model. Switch from GPT-4 to Claude to Llama and Aletheia keeps the brain intact across every integration.",
+    body: "Memory that follows the user, not the model. Switch from GPT-4 to Claude to Llama and AletheiaDB keeps the brain intact across every integration.",
     delay: "",
   },
   {
     icon: "published_with_changes",
     title: "Fact Supersession",
-    body: "When life changes, Aletheia knows. If a user moves from NYC to LA, the old fact is marked as superseded so stale context stops leaking into answers.",
+    body: "When life changes, AletheiaDB knows. If a user moves from NYC to LA, the old fact is marked as superseded so stale context stops leaking into answers.",
     delay: "150ms",
   },
   {
@@ -609,7 +609,7 @@ const deliveryTrack = [
   },
 ];
 
-const runtimeSnapshot = `engine: Aletheia
+const runtimeSnapshot = `engine: AletheiaDB
 routes: /ingest /query/semantic /query/temporal /memory
 indexes: hnsw + bm25 + graph lineage
 policy: ttl + decay + supersession
@@ -643,14 +643,14 @@ const ecosystemItems = [
     link: "/docs/memory-proxy",
   },
   {
-    title: "Aletheia CLI",
+    title: "AletheiaDB CLI",
     body: "Unified command-line tool to manage your engine, run local benchmarks, and monitor memory logs in real-time.",
     icon: "terminal",
     link: "/docs/local-engine",
   },
   {
     title: "MCP Server",
-    body: "Built-in support for the Model Context Protocol. Connect Aletheia directly to Claude Code, Cursor, and agentic IDEs.",
+    body: "Built-in support for the Model Context Protocol. Connect AletheiaDB directly to Claude Code, Cursor, and agentic IDEs.",
     icon: "hub",
     link: "/docs",
   },
@@ -1082,12 +1082,12 @@ export default component$(() => {
                       </span>
                     </div>
                     <span class="text-[10px] uppercase font-bold tracking-widest text-primary">
-                      Aletheia (Target)
+                      AletheiaDB (Target)
                     </span>
                   </div>
                 </div>
                 <p class="mt-8 text-xs leading-relaxed text-tertiary">
-                  Aletheia is architected to resolve the fundamental recall
+                  AletheiaDB is architected to resolve the fundamental recall
                   failures of standard vector databases. Preliminary benchmarks
                   on LongMemEval-S indicate significant improvements in handling
                   numeric and temporal aggregation tasks.
@@ -1149,7 +1149,7 @@ export default component$(() => {
                   </div>
                 </div>
                 <p class="mt-8 text-xs leading-relaxed text-tertiary">
-                  Aletheia tracks the evolution of truth. When new facts arrive,
+                  AletheiaDB tracks the evolution of truth. When new facts arrive,
                   old ones are superseded, preventing stale data from leaking
                   into your agent's current worldview.
                 </p>
@@ -1171,7 +1171,7 @@ export default component$(() => {
                   We extract <span class="italic text-primary">truth.</span>
                 </h3>
                 <p class="mb-8 text-lg text-tertiary">
-                  Raw chat logs are noise. Aletheia acts as a cognitive filter,
+                  Raw chat logs are noise. AletheiaDB acts as a cognitive filter,
                   distilling human rambling into a clean, queryable lattice of
                   facts.
                 </p>
@@ -1287,7 +1287,7 @@ export default component$(() => {
                   </div>
 
                   <div
-                    class={`mb-3 font-mono text-xs uppercase tracking-wider ${card.date === "Aletheia Ingests"
+                    class={`mb-3 font-mono text-xs uppercase tracking-wider ${card.date === "AletheiaDB Ingests"
                         ? "text-primary"
                         : "text-tertiary"
                       }`}
@@ -1397,7 +1397,7 @@ export default component$(() => {
                 <span class="italic text-primary">Pipeline.</span>
               </h3>
               <p class="mt-6 mx-auto max-w-2xl text-tertiary">
-                Aletheia is not just storage; it is a multi-stage cognitive
+                AletheiaDB is not just storage; it is a multi-stage cognitive
                 processor that transforms raw noise into reliable agentic state.
               </p>
             </div>
@@ -1546,7 +1546,7 @@ export default component$(() => {
                 <span class="italic text-primary">Memory Lattice.</span>
               </h3>
               <p class="mt-6 max-w-2xl text-tertiary">
-                Experience how Aletheia organizes memories. Drag nodes to
+                Experience how AletheiaDB organizes memories. Drag nodes to
                 interact with the underlying graph logic where new facts
                 supersede the old.
               </p>
@@ -1618,7 +1618,7 @@ export default component$(() => {
                   <img
                     class="h-full w-full rounded-2xl object-cover opacity-60 grayscale transition-all duration-1000 group-hover:grayscale-0"
                     src="/next-decade-ai.webp"
-                    alt="Aletheia Rust-powered memory engine for AI agents — sub-100ms recall latency architecture diagram"
+                    alt="AletheiaDB Rust-powered memory engine for AI agents — sub-100ms recall latency architecture diagram"
                     loading="lazy"
                     decoding="async"
                   />
@@ -1704,7 +1704,7 @@ export default component$(() => {
                   Current Build Profile
                 </h4>
                 <p class="mt-3 text-sm leading-relaxed text-tertiary">
-                  Aletheia is shipping as an integrated memory platform, not
+                  AletheiaDB is shipping as an integrated memory platform, not
                   isolated feature demos.
                 </p>
                 <pre class="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-surface p-4 font-mono text-xs leading-6 text-secondary">
@@ -1825,7 +1825,7 @@ export default component$(() => {
                 Live Memory <span class="italic text-primary">Simulation.</span>
               </h3>
               <p class="mt-6 mx-auto max-w-2xl text-tertiary">
-                Experience Aletheia's real-time ingestion and recall loop. Store
+                Experience AletheiaDB's real-time ingestion and recall loop. Store
                 a fact, then retrieve it across model contexts.
               </p>
             </div>
@@ -2009,7 +2009,7 @@ export default component$(() => {
               </p>
               <h3 class="mt-4 text-4xl font-black tracking-tight md:text-5xl">
                 Schedule a 30-minute
-                <span class="italic text-primary"> Aletheia walkthrough.</span>
+                <span class="italic text-primary"> AletheiaDB walkthrough.</span>
               </h3>
               <p class="mt-4 max-w-2xl text-tertiary">
                 Discuss architecture, integration strategy, and production
@@ -2079,7 +2079,7 @@ export default component$(() => {
                 <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                   <CpuIcon class="text-xl text-primary" />
                 </div>
-                <h4 class="mb-2 text-2xl font-bold text-on-surface"><span class="text-primary">Aletheia</span> Core</h4>
+                <h4 class="mb-2 text-2xl font-bold text-on-surface"><span class="text-primary">AletheiaDB</span> Core</h4>
                 <p class="mb-1 text-xs font-bold uppercase tracking-widest text-tertiary">Open Source Engine</p>
                 <p class="mb-6 text-sm leading-relaxed text-tertiary">
                   The Rust-powered temporal memory engine that runs anywhere. Hybrid
@@ -2121,7 +2121,7 @@ export default component$(() => {
                   <GlobeIcon class="text-xl text-primary" />
                 </div>
                 <h4 class="mb-2 text-2xl font-bold">
-                  <span class="text-primary">Aletheia</span> Platform
+                  <span class="text-primary">AletheiaDB</span> Platform
                 </h4>
                 <p class="mb-1 text-xs font-bold uppercase tracking-widest text-tertiary">Managed Cloud Service</p>
                 <p class="mb-6 text-sm leading-relaxed text-tertiary">
@@ -2168,7 +2168,7 @@ export default component$(() => {
           <div class="container mx-auto">
             <div class="scroll-reveal mb-20 text-center">
               <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
-                The Aletheia Ecosystem
+                The AletheiaDB Ecosystem
               </h2>
               <h3 class="text-4xl font-black tracking-tight md:text-5xl">
                 Integrate Memory{" "}
@@ -2213,7 +2213,7 @@ export default component$(() => {
         <div class="container mx-auto grid grid-cols-1 gap-12 md:grid-cols-5">
           <div class="col-span-1 md:col-span-2">
             <span class="mb-6 block text-2xl font-black uppercase tracking-tighter text-on-surface">
-              ALETHEIA
+              ALETHEIADB
             </span>
             <p class="mb-8 max-w-sm text-sm leading-relaxed text-tertiary">
               The persistent memory layer for advanced AI agents. Built for
@@ -2311,7 +2311,7 @@ export default component$(() => {
         </div>
 
         <div class="container mx-auto mt-20 border-t border-outline-variant/5 pt-8 text-center font-mono text-[10px] uppercase tracking-widest text-tertiary/50">
-          © 2026 Aletheia Systems. All human memories preserved. Truth
+          © 2026 AletheiaDB Systems. All human memories preserved. Truth
           disclosed.
         </div>
       </footer>
@@ -2325,7 +2325,7 @@ const structuredData = {
     {
       "@type": "Organization",
       "@id": "https://aletheiadb.com/#organization",
-      name: "Aletheia",
+      name: "AletheiaDB",
       url: "https://aletheiadb.com",
       logo: "https://aletheiadb.com/icon-192.png",
       description:
@@ -2339,13 +2339,13 @@ const structuredData = {
       "@type": "WebSite",
       "@id": "https://aletheiadb.com/#website",
       url: "https://aletheiadb.com",
-      name: "Aletheia",
+      name: "AletheiaDB",
       publisher: { "@id": "https://aletheiadb.com/#organization" },
     },
     {
       "@type": "SoftwareApplication",
       "@id": "https://aletheiadb.com/#software",
-      name: "Aletheia Memory Engine",
+      name: "AletheiaDB Memory Engine",
       applicationCategory: "DeveloperApplication",
       operatingSystem: "Linux, macOS, Windows",
       description:
@@ -2360,9 +2360,9 @@ const structuredData = {
 };
 
 export const head: DocumentHead = buildSeoHead({
-  title: "ALETHEIA | Agents That Remember",
+  title: "ALETHEIADB | Agents That Remember",
   description:
-    "Aletheia is the persistent memory layer for AI agents that need temporal awareness, truth extraction, and continuity across models.",
+    "AletheiaDB is the persistent memory layer for AI agents that need temporal awareness, truth extraction, and continuity across models.",
   pathname: "/",
   keywords: [
     "agent memory",

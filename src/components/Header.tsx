@@ -2,7 +2,6 @@ import { component$, useSignal } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
 import type { AuthUser } from "~/lib/auth";
 import { 
-  LayersIcon, 
   LayoutDashboardIcon, 
   LogOutIcon,
   MenuIcon,
@@ -26,7 +25,7 @@ export const Header = component$((props: HeaderProps) => {
       {/* Development Banner */}
       <div class="bg-primary/10 border-b border-primary/20 py-2 px-4 text-center">
         <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-primary">
-          Aletheia is currently under development. For early access, 
+          AletheiaDBDB is currently under development. For early access, 
           <a href="mailto:sharjeel@aletheiadb.com" class="ml-1 underline hover:text-white transition-colors">contact us</a>.
         </p>
       </div>
@@ -39,10 +38,18 @@ export const Header = component$((props: HeaderProps) => {
               mobileOpen.value = false;
             }}
           >
-            <div class="flex h-8 w-8 items-center justify-center rounded bg-primary shadow-lg shadow-primary/20">
-               <LayersIcon class="w-5 h-5 text-on-primary" />
+            <div class="flex h-8 w-8 items-center justify-center rounded bg-primary shadow-lg shadow-primary/20 overflow-hidden">
+               <img
+                 src="/icon-64.png"
+                 alt="AletheiaDBDB"
+                 width={20}
+                 height={20}
+                 loading="eager"
+                 decoding="async"
+                 class="object-contain"
+               />
             </div>
-            <span>Aletheia</span>
+            <span>AletheiaDBDB</span>
           </Link>
           <nav class="hidden items-center gap-6 md:flex">
             <Link

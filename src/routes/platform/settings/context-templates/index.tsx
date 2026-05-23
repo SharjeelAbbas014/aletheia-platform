@@ -134,4 +134,4 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = buildSeoHead({ title: "Context Templates | ALETHEIA", pathname: "/platform/settings/context-templates", noindex: true });
+export const head: DocumentHead = buildSeoHead({ title: "Context Templates | ALETHEIADB", pathname: "/platform/settings/context-templates", noindex: true });

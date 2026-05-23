@@ -4,7 +4,7 @@ description: "Why a knowledge graph layer transforms agent memory from a flat te
 excerpt: "A vector index can retrieve similar passages. A knowledge graph can answer who the user knows, what they prefer, and how their world is connected."
 publishedAt: 2026-04-12T00:00:00.000Z
 updatedAt: 2026-04-12T00:00:00.000Z
-author: "Aletheia Team"
+author: "AletheiaDB Team"
 tags:
   - Knowledge Graph
   - Agent Memory
@@ -50,9 +50,9 @@ This is fundamentally different from vector search. Vector search finds passages
 
 "What tools does this user prefer?" is a question about preference-type relationships. A graph model can collect all outgoing `has_preference` edges from the user node and rank them by recency. A vector index has to retrieve text passages and hope the model extracts the preferences correctly.
 
-## How Aletheia implements knowledge graph memory
+## How AletheiaDB implements knowledge graph memory
 
-Aletheia's knowledge graph is built during ingestion through the [neural-symbolic extraction](/blog/beyond-vector-similarity-neural-symbolic-extraction) pipeline:
+AletheiaDB's knowledge graph is built during ingestion through the [neural-symbolic extraction](/blog/beyond-vector-similarity-neural-symbolic-extraction) pipeline:
 
 1. Entity extraction identifies people, organizations, and locations using a local BERT-NER model
 2. Relationship heuristics create edges between entities that co-occur in the same memory
@@ -107,6 +107,6 @@ The graph returns both, but the ranking layer demotes the superseded edge for pr
 
 Vector retrieval finds similar text. Graph retrieval finds structured relationships. Production agent memory needs both.
 
-The Aletheia knowledge graph is designed as a complement to the [hybrid retrieval](/blog/hybrid-retrieval-for-exact-and-semantic-recall) kernel, not a replacement. Together they cover the range of queries that long-lived agents actually encounter.
+The AletheiaDB knowledge graph is designed as a complement to the [hybrid retrieval](/blog/hybrid-retrieval-for-exact-and-semantic-recall) kernel, not a replacement. Together they cover the range of queries that long-lived agents actually encounter.
 
 Explore the [architecture documentation](/docs/architecture) for implementation details, or try the [interactive memory graph](/#lattice) on the landing page.

@@ -110,7 +110,7 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Analytics | ALETHEIA",
+  title: "Analytics | ALETHEIADB",
   description: "View usage analytics for your cluster.",
   pathname: "/platform/clusters/[id]/analytics",
   noindex: true

@@ -32,7 +32,7 @@ export default component$(() => {
             <div class="blog-brand-icon">
               <img
                 src="/icon-64.png"
-                alt="Aletheia blog"
+                alt="AletheiaDB blog"
                 width={32}
                 height={32}
                 loading="eager"
@@ -41,7 +41,7 @@ export default component$(() => {
             </div>
             <div>
               <p class="blog-brand-title">Blog</p>
-              <p class="blog-brand-subtitle">Aletheia Journal</p>
+              <p class="blog-brand-subtitle">AletheiaDB Journal</p>
             </div>
           </div>
 
@@ -127,7 +127,7 @@ export default component$(() => {
           <div class="blog-side-card">
             <p class="blog-side-card-title">Why this section exists</p>
             <p class="blog-side-card-copy">
-              Aletheia&apos;s blog targets high-intent searches around agent memory,
+              AletheiaDB&apos;s blog targets high-intent searches around agent memory,
               temporal retrieval, and production recall quality.
             </p>
           </div>

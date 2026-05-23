@@ -4,7 +4,7 @@ description: Why teams building memory-heavy AI systems move faster when the sam
 excerpt: Memory systems are hard to debug when every experiment depends on a hosted environment. Local-first development shortens that loop dramatically.
 publishedAt: 2026-03-26T00:00:00.000Z
 updatedAt: 2026-03-26T00:00:00.000Z
-author: Aletheia Team
+author: AletheiaDB Team
 tags:
   - Local Development
   - Agent Infrastructure
@@ -57,9 +57,9 @@ That consistency prevents a common trap where local prototypes work, but product
 
 Teams that can debug memory behavior on a laptop tend to spend more time improving retrieval quality and less time chasing infrastructure friction.
 
-## Local development with Aletheia
+## Local development with AletheiaDB
 
-Aletheia's Rust engine runs as a single binary with no runtime dependencies, making it a natural fit for local-first workflows. The [local engine guide](/docs/local-engine) walks through installation and the [quickstart](/docs/quickstart) gets a memory instance running in under a minute.
+AletheiaDB's Rust engine runs as a single binary with no runtime dependencies, making it a natural fit for local-first workflows. The [local engine guide](/docs/local-engine) walks through installation and the [quickstart](/docs/quickstart) gets a memory instance running in under a minute.
 
 For teams that want to evaluate retrieval quality before deploying, the [benchmarking documentation](/docs/benchmarking) explains how to reproduce LongMemEval results on a laptop. The same API surface powers the [hosted platform](/platform), so nothing needs to be rewritten for production.
 

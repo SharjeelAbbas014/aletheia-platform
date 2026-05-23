@@ -21,7 +21,7 @@ export const docsNavigation: DocsCategory[] = [
       {
         href: "/docs",
         title: "Overview",
-        description: "What Aletheia is for and why the engine behaves differently.",
+        description: "What AletheiaDB is for and why the engine behaves differently.",
         icon: "rocket_launch"
       },
       {

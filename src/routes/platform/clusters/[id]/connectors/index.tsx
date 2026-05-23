@@ -107,8 +107,8 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Connectors | ALETHEIA",
-  description: "Connect Slack, GitHub, Notion, Gmail, and Google Drive to auto-ingest data into your Aletheia cluster.",
+  title: "Connectors | ALETHEIADB",
+  description: "Connect Slack, GitHub, Notion, Gmail, and Google Drive to auto-ingest data into your AletheiaDB cluster.",
   pathname: "/platform/clusters/[id]/connectors",
   noindex: true
 });

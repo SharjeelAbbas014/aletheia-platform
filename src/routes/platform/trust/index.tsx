@@ -35,7 +35,7 @@ const sections = [
     title: "Data Privacy",
     icon: EyeIcon,
     items: [
-      "Your data never leaves your Aletheia instance. For the self-hosted core engine, no telemetry is sent anywhere.",
+      "Your data never leaves your AletheiaDB instance. For the self-hosted core engine, no telemetry is sent anywhere.",
       "For Platform users: data is stored in your dedicated cluster with namespace isolation. No cross-tenant access.",
       "We never use customer data for training, benchmarking, or product improvement without explicit opt-in.",
       "GDPR compliant: data export and deletion available via API. Contact for Data Processing Agreement (DPA).",
@@ -74,7 +74,7 @@ export default component$(() => {
           </div>
           <h1 class="font-headline text-5xl font-extrabold tracking-tighter">Trust Center</h1>
           <p class="text-tertiary mt-4 max-w-2xl mx-auto">
-            Security, privacy, and compliance information for the Aletheia platform.
+            Security, privacy, and compliance information for the AletheiaDB platform.
             For detailed questions, contact <a href="mailto:trust@aletheiadb.com" class="text-primary hover:underline">trust@aletheiadb.com</a>.
           </p>
         </header>
@@ -111,8 +111,8 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Trust Center | ALETHEIA",
-  description: "Security, privacy, and compliance information for Aletheia. SOC 2, GDPR, HIPAA, encryption details.",
+  title: "Trust Center | ALETHEIADB",
+  description: "Security, privacy, and compliance information for AletheiaDB. SOC 2, GDPR, HIPAA, encryption details.",
   pathname: "/trust",
   keywords: [
     "AI memory security",

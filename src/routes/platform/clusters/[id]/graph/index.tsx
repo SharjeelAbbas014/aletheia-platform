@@ -50,7 +50,7 @@ export default component$(() => {
         error.value = result.error;
       }
     } catch {
-      error.value = "Could not reach the graph. Ensure the Aletheia engine is running.";
+      error.value = "Could not reach the graph. Ensure the AletheiaDB engine is running.";
     }
     loading.value = false;
   };
@@ -129,7 +129,7 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = buildSeoHead({
-  title: "Graph Explorer | ALETHEIA",
+  title: "Graph Explorer | ALETHEIADB",
   description: "Explore the knowledge graph of your cluster.",
   pathname: "/platform/clusters/[id]/graph",
   noindex: true

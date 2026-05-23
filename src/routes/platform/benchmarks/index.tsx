@@ -9,7 +9,7 @@ export const onRequest: RequestHandler = (event) => { setPublicEdgeCache(event);
 
 const labels = ["Overall", "Single Session", "Temporal", "Preferences", "Knowledge Updates", "Multi-Session"];
 const datasets = [
-  { name: "Aletheia", color: "bg-primary", values: [90.5, 98.0, 88.3, 95.2, 96.1, 74.8] },
+  { name: "AletheiaDB", color: "bg-primary", values: [90.5, 98.0, 88.3, 95.2, 96.1, 74.8] },
   { name: "HydraDB", color: "bg-orange-500", values: [90.8, 100, 91.0, 96.7, 97.4, 76.7] },
   { name: "Zep", color: "bg-blue-500", values: [71.2, 92.9, 62.4, 56.7, 83.3, 57.9] },
   { name: "Mem0", color: "bg-purple-500", values: [29.1, 38.7, 25.6, 40.0, 52.6, 20.3] },
@@ -25,7 +25,7 @@ export default component$(() => {
             <span class="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-amber-400">LongMemEval-S Benchmark</span>
           </div>
           <h1 class="font-headline text-5xl font-extrabold tracking-tighter">Public Benchmarks</h1>
-          <p class="text-tertiary mt-4 max-w-2xl mx-auto">Transparent, reproducible evaluation of Aletheia against industry leaders on standard agent memory benchmarks.</p>
+          <p class="text-tertiary mt-4 max-w-2xl mx-auto">Transparent, reproducible evaluation of AletheiaDB against industry leaders on standard agent memory benchmarks.</p>
         </header>
 
         <div class="grid lg:grid-cols-4 gap-4 mb-12">
@@ -63,10 +63,10 @@ export default component$(() => {
             <tbody>
               {datasets.map((ds) => (
                 <tr key={ds.name} class="border-b border-outline-variant/5 hover:bg-surface-container-highest/50">
-                  <td class="py-3 font-bold">{ds.name === "Aletheia" ? <span class="text-primary">{ds.name}</span> : ds.name}</td>
+                  <td class="py-3 font-bold">{ds.name === "AletheiaDB" ? <span class="text-primary">{ds.name}</span> : ds.name}</td>
                   {ds.values.map((v, i) => (
                     <td key={i} class="py-3 px-3 text-right font-mono">
-                      <span class={ds.name === "Aletheia" ? "text-primary font-bold" : "text-tertiary"}>{v.toFixed(1)}%</span>
+                      <span class={ds.name === "AletheiaDB" ? "text-primary font-bold" : "text-tertiary"}>{v.toFixed(1)}%</span>
                     </td>
                   ))}
                 </tr>
@@ -107,4 +107,4 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = buildSeoHead({ title: "Benchmarks | ALETHEIA", description: "Aletheia benchmark results against Mem0, Zep, and HydraDB on LongMemEval-S. See how our memory engine performs on temporal reasoning and retrieval.", pathname: "/platform/benchmarks", keywords: [ "AI memory benchmarks", "memory engine comparison", "LongMemEval results", "temporal memory evaluation", "agent memory performance", "Mem0 alternative", "Zep alternative" ] });
+export const head: DocumentHead = buildSeoHead({ title: "Benchmarks | ALETHEIADB", description: "AletheiaDB benchmark results against Mem0, Zep, and HydraDB on LongMemEval-S. See how our memory engine performs on temporal reasoning and retrieval.", pathname: "/platform/benchmarks", keywords: [ "AI memory benchmarks", "memory engine comparison", "LongMemEval results", "temporal memory evaluation", "agent memory performance", "Mem0 alternative", "Zep alternative" ] });

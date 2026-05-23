@@ -1,5 +1,5 @@
 {
-  "name": "Aletheia Memory Engine",
+  "name": "AletheiaDB Memory Engine",
   "description": "Persistent temporal multi-model memory for AI agents. Hybrid vector + BM25 search, knowledge graphs, deterministic analytics, and fact supersession — in a single binary.",
   "endpoint": "https://api.aletheiadb.com/mcp",
   "tools": [

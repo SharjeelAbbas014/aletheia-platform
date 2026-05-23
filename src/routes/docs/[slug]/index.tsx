@@ -196,7 +196,7 @@ export const head = ({ resolveValue }: DocumentHeadProps) => {
   };
 
   return buildSeoHead({
-    title: `${page.title} | Aletheia`,
+    title: `${page.title} | AletheiaDB`,
     description: page.description,
     pathname: `/docs/${page.slug}`,
     keywords: docKeywords[page.slug] ?? ["memory engine documentation", "AI agent memory guide"]

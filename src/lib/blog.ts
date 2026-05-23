@@ -141,7 +141,7 @@ function parsePost(filePath: string, rawSource: string): BlogPost {
     excerpt: createExcerpt(content, frontmatter.excerpt),
     publishedAt,
     updatedAt,
-    author: normalizeFrontmatterString(frontmatter.author) || "Aletheia Team",
+    author: normalizeFrontmatterString(frontmatter.author) || "AletheiaDB Team",
     tags,
     image: normalizeFrontmatterString(frontmatter.image) || "/screen.png",
     featured: frontmatter.featured !== false,
