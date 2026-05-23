@@ -1,7 +1,6 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { getAllBlogPosts } from "~/lib/blog";
-
-const SITE = "https://aletheiadb.com";
+import { absoluteUrl } from "~/lib/site";
 
 const staticPages = [
   { loc: "/", priority: 1.0 },
@@ -32,7 +31,7 @@ export const onGet: RequestHandler = (event) => {
   ${urls
     .map(
       (u) => `<url>
-    <loc>${SITE}${u.loc}</loc>
+    <loc>${absoluteUrl(u.loc)}</loc>
     <priority>${u.priority}</priority>
   </url>`
     )

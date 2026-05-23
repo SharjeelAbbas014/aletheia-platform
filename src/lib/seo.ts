@@ -14,7 +14,7 @@ type StructuredData =
 
 interface SeoOptions {
   title: string;
-  description: string;
+  description?: string;
   pathname: string;
   type?: "website" | "article";
   image?: string;
@@ -33,7 +33,7 @@ interface SeoOptions {
 
 export function buildSeoHead({
   title,
-  description,
+  description = "AletheiaDB is the persistent memory layer for AI agents that need temporal awareness, truth extraction, and continuity across models.",
   pathname,
   type = "website",
   image = DEFAULT_SOCIAL_IMAGE,

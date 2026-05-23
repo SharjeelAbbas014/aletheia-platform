@@ -1,5 +1,6 @@
 import { component$ } from "@builder.io/qwik";
 import { useDocumentHead, useLocation } from "@builder.io/qwik-city";
+import { absoluteUrl } from "~/lib/site";
 
 export const RouterHead = component$(() => {
   const head = useDocumentHead();
@@ -8,7 +9,7 @@ export const RouterHead = component$(() => {
   return (
     <>
       <title>{head.title}</title>
-      <link rel="canonical" href={location.url.href} />
+      <link rel="canonical" href={absoluteUrl(location.url.pathname)} />
       {head.meta.map((meta) => (
         <meta key={meta.key || `${meta.name || meta.property || "meta"}-${meta.content}`} {...meta} />
       ))}

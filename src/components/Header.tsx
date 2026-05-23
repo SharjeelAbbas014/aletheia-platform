@@ -25,7 +25,7 @@ export const Header = component$((props: HeaderProps) => {
       {/* Development Banner */}
       <div class="bg-primary/10 border-b border-primary/20 py-2 px-4 text-center">
         <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-primary">
-          AletheiaDBDB is currently under development. For early access, 
+          AletheiaDB is currently under development. For early access, 
           <a href="mailto:sharjeel@aletheiadb.com" class="ml-1 underline hover:text-white transition-colors">contact us</a>.
         </p>
       </div>
@@ -41,7 +41,7 @@ export const Header = component$((props: HeaderProps) => {
             <div class="flex h-8 w-8 items-center justify-center rounded bg-primary shadow-lg shadow-primary/20 overflow-hidden">
                <img
                  src="/icon-64.png"
-                 alt="AletheiaDBDB"
+                 alt="AletheiaDB"
                  width={20}
                  height={20}
                  loading="eager"
@@ -49,7 +49,7 @@ export const Header = component$((props: HeaderProps) => {
                  class="object-contain"
                />
             </div>
-            <span>AletheiaDBDB</span>
+            <span>AletheiaDB</span>
           </Link>
           <nav class="hidden items-center gap-6 md:flex">
             <Link
