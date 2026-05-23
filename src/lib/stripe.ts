@@ -8,7 +8,7 @@ function getStripeKey(env: RequestEventCommon["env"]) {
 }
 
 export function getStripeClient(env: RequestEventCommon["env"]) {
-  return new Stripe(getStripeKey(env), { apiVersion: "2024-12-18.acacia" });
+  return new Stripe(getStripeKey(env), { apiVersion: "2024-06-20" });
 }
 
 export async function createStripeCustomer(env: RequestEventCommon["env"], email: string, metadata: Record<string, string> = {}) {

@@ -8,6 +8,7 @@ export const onPost: RequestHandler = async (event) => {
   if (!user) throw event.error(401, "Unauthorized");
 
   const supabase = getAdminSupabaseClient(event.env);
+  if (!supabase) throw event.error(500, "Database connection offline");
   const { data: sub } = await supabase
     .from("subscriptions")
     .select("stripe_customer_id")

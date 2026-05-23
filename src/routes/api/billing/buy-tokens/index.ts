@@ -63,6 +63,29 @@ export const onPost: RequestHandler = async (event) => {
     }
   }
 
+  // Check if Stripe is in mock mode for local testing
+  const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
+  const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
+  if (isMockStripe) {
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("token_balance")
+      .eq("user_id", user.user_id)
+      .maybeSingle();
+
+    const currentBalance = sub?.token_balance ?? 10000;
+    await supabase.from("subscriptions").upsert({
+      user_id: user.user_id,
+      token_balance: currentBalance + pack.tokens,
+      stripe_customer_id: "cus_mock_123",
+      tier: "fractional",
+      status: "active",
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+
+    throw event.redirect(302, `/platform/billing?success=true&tokens=${pack.tokens}&mock=true`);
+  }
+
   // 2. Create Stripe Checkout Session in payment mode
   const stripe = getStripeClient(event.env);
   const origin = event.url.origin;

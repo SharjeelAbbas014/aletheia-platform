@@ -69,6 +69,30 @@ export const onPost: RequestHandler = async (event) => {
     vm_monthly_price: vmConfig ? vmConfig.priceCents / 100 : undefined,
   }, { onConflict: "user_id" });
 
+  // Check if Stripe is in mock mode for local testing
+  const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
+  const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
+  if (isMockStripe) {
+    if (vmConfig) {
+      await supabase.from("clusters").update({
+        tier,
+        region: "eastus2",
+        status: "active", // Provision immediately in mock mode
+      }).eq("id", cluster.id);
+    }
+
+    await supabase.from("subscriptions").upsert({
+      user_id: user.user_id,
+      stripe_customer_id: "cus_mock_123",
+      tier,
+      status: "active",
+      vm_size: vmConfig?.size || undefined,
+      vm_monthly_price: vmConfig ? vmConfig.priceCents / 100 : undefined,
+    }, { onConflict: "user_id" });
+
+    throw event.redirect(302, `/platform/billing?success=true&mock=true`);
+  }
+
   const stripe = getStripeClient(event.env);
   const origin = event.url.origin;
 
