@@ -91,7 +91,7 @@ export const useDeleteCluster = routeAction$(async (data, event) => {
   // 3. Soft delete the cluster
   const { error } = await supabase
     .from("clusters")
-    .update({ status: "deleted", updated_at: new Date().toISOString() })
+    .update({ status: "deleted" })
     .eq("id", clusterId);
 
   if (error) {

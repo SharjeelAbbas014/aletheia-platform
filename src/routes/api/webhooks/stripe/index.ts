@@ -71,7 +71,7 @@ export const onPost: RequestHandler = async (event) => {
           if (clusterId) {
             await supabase
               .from("clusters")
-              .update({ status: "active", tier, updated_at: new Date().toISOString() })
+              .update({ status: "active", tier })
               .eq("id", clusterId);
           }
         } catch {

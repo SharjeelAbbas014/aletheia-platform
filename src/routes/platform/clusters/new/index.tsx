@@ -56,16 +56,16 @@ export default component$(() => {
                 {
                   id: "fractional",
                   name: "Fractional",
-                  subName: "Shared Serverless",
-                  badge: "Free Tier",
+                  subName: "Shared Engine",
+                  badge: "Shared Cloud",
                   badgeClass: "bg-primary/10 text-primary",
                   features: [
+                    "Hosted on engine.aletheiadb.com",
+                    "Shared database substrate",
                     "Free 10K truths/month",
-                    "Pay-per-token refills",
-                    "Shared CPU substrate",
-                    "Zero cold starts"
+                    "Access via global API"
                   ],
-                  priceText: "Free + Prepaid Credit"
+                  priceText: "Free + Prepaid Refills"
                 },
                 {
                   id: "azure_micro",

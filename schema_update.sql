@@ -1,5 +1,8 @@
 -- AletheiaDB Platform: Auth, Teams, Billing, Usage (run in Supabase SQL Editor)
 
+-- Ensure clusters.tier supports custom VM tier strings (convert enum to text)
+alter table if exists public.clusters alter column tier type text;
+
 -- 1. Teams
 create table if not exists public.teams (
   id uuid default gen_random_uuid() primary key,
