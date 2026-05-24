@@ -133,7 +133,7 @@ export const onPost: RequestHandler = async (event) => {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${event.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""}`,
+                    apikey: event.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
                   },
                   body: JSON.stringify({ clusterId, tier, region: clusterRegion, vmSize, storageGb }),
                 });

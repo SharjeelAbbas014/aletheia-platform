@@ -1,2 +1,3 @@
 [functions.provision-vm]
 enabled = true
+verify_jwt = false
