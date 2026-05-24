@@ -234,81 +234,94 @@ export default component$(() => {
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
       {/* Side Navigation */}
-      <aside class="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-outline-variant/15 bg-surface-container-lowest font-body text-sm font-medium md:flex pt-[104px]">
-        <div class="p-6">
-
-
-          <nav class="space-y-1">
-            <button
-              type="button"
-              class={`flex w-full items-center gap-3 rounded-md px-4 py-2 text-left transition-all ${
-                activeMissionTab.value === "overview" || activeMissionTab.value === "api"
-                  ? "bg-primary/10 text-primary font-bold"
-                  : "text-tertiary hover:bg-surface-container-low hover:text-on-surface"
-              }`}
-              onClick$={() => { activeMissionTab.value = "overview"; }}
-            >
-              <LayoutDashboardIcon class="w-4 h-4" />
-              Mission Control
-            </button>
-            <button
-              type="button"
-              class={`flex w-full items-center gap-3 rounded-md px-4 py-2 text-left transition-all ${
-                activeMissionTab.value === "billing"
-                  ? "bg-primary/10 text-primary font-bold"
-                  : "text-tertiary hover:bg-surface-container-low hover:text-on-surface"
-              }`}
-              onClick$={() => { activeMissionTab.value = "billing"; }}
-            >
-              <CreditCardIcon class="w-4 h-4" />
-              Billing
-            </button>
-            <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="/platform/settings">
-              <SettingsIcon class="w-4 h-4" />
-              Settings
-            </a>
-          </nav>
-        </div>
-
-        <div class="mt-auto p-6 border-t border-outline-variant/10 mb-[104px]">
-          <div class="flex items-center gap-3">
-            <div class="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-on-secondary uppercase">
-              {platformData.value.user.username.slice(0, 2)}
-            </div>
-            <div class="flex-1 overflow-hidden">
-              <p class="truncate text-xs font-bold">{platformData.value.user.username}</p>
-              <p class="text-[10px] text-tertiary">Free Tier</p>
-            </div>
-            <form action="/logout" method="post">
-              <button type="submit" class="text-tertiary hover:text-on-surface mt-1">
-                <LogOutIcon class="w-4 h-4" />
+      <aside class="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-outline-variant/15 bg-surface-container-lowest font-body md:flex pt-[104px]">
+        <div class="flex flex-col h-full px-4 py-6">
+          {/* Primary Nav Section */}
+          <div class="mb-6">
+            <p class="px-3 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-tertiary/60">Main</p>
+            <nav class="space-y-1">
+              <button
+                type="button"
+                class={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
+                  activeMissionTab.value === "overview" || activeMissionTab.value === "api"
+                    ? "bg-primary/10 text-primary shadow-sm"
+                    : "text-tertiary hover:bg-surface-container hover:text-on-surface"
+                }`}
+                onClick$={() => { activeMissionTab.value = "overview"; }}
+              >
+                <LayoutDashboardIcon class={`w-4 h-4 ${activeMissionTab.value === "overview" || activeMissionTab.value === "api" ? "text-primary" : "text-tertiary"}`} />
+                <span>Mission Control</span>
               </button>
-            </form>
+              <button
+                type="button"
+                class={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
+                  activeMissionTab.value === "billing"
+                    ? "bg-primary/10 text-primary shadow-sm"
+                    : "text-tertiary hover:bg-surface-container hover:text-on-surface"
+                }`}
+                onClick$={() => { activeMissionTab.value = "billing"; }}
+              >
+                <CreditCardIcon class={`w-4 h-4 ${activeMissionTab.value === "billing" ? "text-primary" : "text-tertiary"}`} />
+                <span>Billing</span>
+              </button>
+            </nav>
+          </div>
+
+          {/* Management Nav Section */}
+          <div>
+            <p class="px-3 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-tertiary/60">Management</p>
+            <nav class="space-y-1">
+              <a class="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-tertiary transition-all hover:bg-surface-container hover:text-on-surface" href="/platform/settings">
+                <SettingsIcon class="w-4 h-4 text-tertiary" />
+                <span>Settings</span>
+              </a>
+            </nav>
+          </div>
+
+          {/* User Section */}
+          <div class="mt-auto pt-6 border-t border-outline-variant/10">
+            <div class="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-surface-container/50">
+              <div class="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-[11px] font-bold text-on-primary uppercase shrink-0 shadow-sm">
+                {platformData.value.user.username.slice(0, 2)}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="truncate text-sm font-semibold text-on-surface leading-tight">{platformData.value.user.username}</p>
+                <p class="text-[11px] font-medium text-tertiary/70">Free Tier</p>
+              </div>
+              <form action="/logout" method="post">
+                <button type="submit" class="flex items-center justify-center h-8 w-8 rounded-lg text-tertiary hover:text-on-surface hover:bg-surface-container-high transition-all" title="Sign out">
+                  <LogOutIcon class="w-4 h-4" />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main class="ml-0 flex-1 overflow-y-auto p-8 md:ml-64 lg:p-12">
-        <header class="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+      <main class="ml-0 flex-1 overflow-y-auto p-6 md:ml-64 lg:p-8">
+        <header class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           {activeMissionTab.value === "billing" ? (
             <div>
-              <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface">Billing & Prepaid Usage</h1>
-              <p class="mt-2 text-tertiary">Manage your cognitive memory credits and hosting plans.</p>
+              <h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Billing &amp; Prepaid Usage</h1>
+              <p class="mt-1.5 text-sm text-tertiary">Manage your cognitive memory credits and hosting plans.</p>
             </div>
           ) : (
             <div>
-              <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface">Mission Control</h1>
-              <p class="mt-2 text-tertiary">Real-time oversight of your agent's cognitive substrate.</p>
+              <h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Mission Control</h1>
+              <p class="mt-1.5 text-sm text-tertiary">Real-time oversight of your agent's cognitive substrate.</p>
             </div>
           )}
           {activeMissionTab.value !== "billing" && (
-            <div class="flex items-center gap-4 rounded-xl bg-surface-container-low p-2">
-              <div class="px-4 py-2 text-center">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-primary">Engine Status</p>
-                <div class="flex items-center gap-2 mt-1 justify-center">
-                  <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <p class="font-mono text-xs text-on-surface">NOMINAL</p>
+            <div class="flex items-center gap-2.5 shrink-0 rounded-xl border border-outline-variant/10 bg-surface-container-low px-4 py-2.5">
+              <div class="flex items-center gap-2">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span class="absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75 animate-ping"></span>
+                  <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                </span>
+                <div class="text-left">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Engine</p>
+                  <p class="font-mono text-[11px] font-semibold text-on-surface -mt-0.5">NOMINAL</p>
                 </div>
               </div>
             </div>
@@ -316,124 +329,143 @@ export default component$(() => {
         </header>
 
         {activeMissionTab.value !== "billing" && (
-          <div class="mb-10 inline-flex rounded-2xl border border-outline-variant/15 bg-surface-container-low p-1">
-          <button
-            type="button"
-            class={`flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold uppercase tracking-[0.24em] transition-colors ${
-              activeMissionTab.value === "overview"
-                ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
-                : "text-tertiary hover:text-on-surface"
-            }`}
-            onClick$={() => {
-              activeMissionTab.value = "overview";
-            }}
-          >
-            <LayoutDashboardIcon class="h-4 w-4" />
-            Overview
-          </button>
-          <button
-            type="button"
-            class={`flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold uppercase tracking-[0.24em] transition-colors ${
-              activeMissionTab.value === "api"
-                ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
-                : "text-tertiary hover:text-on-surface"
-            }`}
-            onClick$={() => {
-              activeMissionTab.value = "api";
-            }}
-          >
-            <KeyIcon class="h-4 w-4" />
-            API Access
-          </button>
-        </div>
+          <div class="mb-8 inline-flex rounded-xl border border-outline-variant/10 bg-surface-container-low p-1">
+            <button
+              type="button"
+              class={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] transition-all ${
+                activeMissionTab.value === "overview"
+                  ? "bg-primary text-on-primary shadow-sm"
+                  : "text-tertiary hover:text-on-surface"
+              }`}
+              onClick$={() => {
+                activeMissionTab.value = "overview";
+              }}
+            >
+              <LayoutDashboardIcon class={`w-3.5 h-3.5 ${activeMissionTab.value === "overview" ? "text-on-primary" : "text-tertiary"}`} />
+              Overview
+            </button>
+            <button
+              type="button"
+              class={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] transition-all ${
+                activeMissionTab.value === "api"
+                  ? "bg-primary text-on-primary shadow-sm"
+                  : "text-tertiary hover:text-on-surface"
+              }`}
+              onClick$={() => {
+                activeMissionTab.value = "api";
+              }}
+            >
+              <KeyIcon class={`w-3.5 h-3.5 ${activeMissionTab.value === "api" ? "text-on-primary" : "text-tertiary"}`} />
+              API Access
+            </button>
+          </div>
         )}
 
         {activeMissionTab.value === "overview" && (
           <>
-            <section class="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Total Requests</p>
-                <p class="mt-2 text-3xl font-black text-on-surface">{usage?.request_count || 0}</p>
+            <section class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div class="group relative overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-low p-5 transition-all hover:border-primary/20 hover:shadow-sm">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full -mr-6 -mt-6 transition-all group-hover:bg-primary/10" />
+                <div class="relative">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Total Requests</p>
+                  <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{usage?.request_count || 0}</p>
+                </div>
               </div>
 
-              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Memories Ingested</p>
-                <p class="mt-2 text-3xl font-black text-on-surface">{usage?.ingest_count || 0}</p>
+              <div class="group relative overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-low p-5 transition-all hover:border-primary/20 hover:shadow-sm">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-secondary/5 rounded-bl-full -mr-6 -mt-6 transition-all group-hover:bg-secondary/10" />
+                <div class="relative">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Memories Ingested</p>
+                  <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{usage?.ingest_count || 0}</p>
+                </div>
               </div>
 
-              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Semantic Queries</p>
-                <p class="mt-2 text-3xl font-black text-on-surface">{usage?.query_count || 0}</p>
+              <div class="group relative overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-low p-5 transition-all hover:border-primary/20 hover:shadow-sm">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-tertiary/5 rounded-bl-full -mr-6 -mt-6 transition-all group-hover:bg-tertiary/10" />
+                <div class="relative">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Semantic Queries</p>
+                  <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{usage?.query_count || 0}</p>
+                </div>
               </div>
 
-              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Last Activity</p>
-                <p class="mt-2 text-lg font-bold text-on-surface">
-                  <LocalDateTime value={usage?.last_request_ms ?? null} />
-                </p>
+              <div class="group relative overflow-hidden rounded-xl border border-outline-variant/10 bg-surface-container-low p-5 transition-all hover:border-primary/20 hover:shadow-sm">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full -mr-6 -mt-6 transition-all group-hover:bg-primary/10" />
+                <div class="relative">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Last Activity</p>
+                  <p class="mt-1.5 text-base font-bold text-on-surface">
+                    <LocalDateTime value={usage?.last_request_ms ?? null} />
+                  </p>
+                </div>
               </div>
             </section>
 
-            <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-              <div class="lg:col-span-2 space-y-8">
-                <section class="mb-12">
-                  <div class="mb-6 flex items-center justify-between">
-                    <h3 class="text-xl font-bold tracking-tight">Your Clusters</h3>
-                    <Link href="/platform/clusters/new" class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20">
-                      <PlusIcon class="w-4 h-4" />
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div class="lg:col-span-2 space-y-6">
+                <section>
+                  <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-base font-bold tracking-tight text-on-surface">Your Clusters</h3>
+                    <Link href="/platform/clusters/new" class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] shadow-sm">
+                      <PlusIcon class="w-3.5 h-3.5" />
                       Deploy Cluster
                     </Link>
                   </div>
 
-                  <div class="space-y-4">
+                  <div class="space-y-3">
                     {clusters.length === 0 && (
-                      <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
-                        <ServerIcon class="w-10 h-10 text-outline-variant mb-4" />
-                        <p class="text-tertiary mb-4">No clusters yet. Deploy one to start connecting your agents.</p>
-                        <Link href="/platform/clusters/new" class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]">
+                      <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant/15 py-12 px-6 text-center">
+                        <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-surface-container-high text-tertiary mb-4">
+                          <ServerIcon class="w-6 h-6" />
+                        </div>
+                        <p class="text-sm font-medium text-tertiary mb-4">No clusters yet. Deploy one to start connecting your agents.</p>
+                        <Link href="/platform/clusters/new" class="rounded-lg bg-primary px-5 py-2 text-xs font-bold text-on-primary transition-all hover:opacity-90 shadow-sm">
                           Deploy First Cluster
                         </Link>
                       </div>
                     )}
                     {clusters.map((cluster: Cluster) => (
-                      <div key={cluster.id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
-                        <div class="flex items-center gap-4">
-                          <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
-                            <ServerIcon class="w-6 h-6" />
+                      <div key={cluster.id} class="group flex flex-col justify-between gap-4 rounded-xl border border-outline-variant/10 bg-surface-container-low p-4 transition-all hover:border-primary/20 hover:shadow-sm lg:flex-row lg:items-center">
+                        <div class="flex items-start gap-3.5">
+                          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                            <ServerIcon class="w-5 h-5" />
                           </div>
                           <div>
-                            <div class="flex items-center gap-3">
-                              <h4 class="font-bold text-on-surface text-lg">{cluster.name}</h4>
-                              <span class={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest ${cluster.status === "active" ? "bg-green-500/10 text-green-400" :
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                              <h4 class="text-sm font-bold text-on-surface">{cluster.name}</h4>
+                              <span class={`inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.1em] ${
+                                cluster.status === "active" ? "bg-green-500/10 text-green-400" :
                                 cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
                                 cluster.status === "failed" ? "bg-red-500/10 text-red-400" :
                                   "bg-outline-variant/10 text-tertiary"
                                 }`}>{cluster.status}</span>
-                              <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">{cluster.tier}</span>
+                              <span class="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-[0.1em]">{cluster.tier}</span>
                             </div>
                             <p class="mt-1 font-mono text-xs text-tertiary">{cluster.endpoint_url}</p>
                           </div>
                         </div>
-                        <div class="flex items-center gap-4">
-                          <Link href={`/platform/clusters/${cluster.id}`} class="rounded-lg border border-outline-variant/20 px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high hover:border-primary/50">
-                            Manage
-                          </Link>
-                        </div>
+                        <Link href={`/platform/clusters/${cluster.id}`} class="inline-flex items-center justify-center rounded-lg border border-outline-variant/15 px-4 py-2 text-xs font-bold text-on-surface transition-all hover:bg-surface-container hover:border-primary/30">
+                          Manage
+                        </Link>
                       </div>
                     ))}
                   </div>
                 </section>
               </div>
 
-              <aside class="space-y-8">
-                <div class="rounded-2xl bg-surface-container-high p-8 border border-primary/20">
-                  <h3 class="font-black text-xl mb-2 text-primary">Need Scale?</h3>
-                  <p class="text-sm text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region synchronization for massive agent deployments.</p>
+              <aside class="space-y-6">
+                <div class="rounded-xl bg-gradient-to-br from-primary/[0.07] to-primary/[0.02] border border-primary/15 p-5">
+                  <div class="flex items-center gap-2.5 mb-3">
+                    <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
+                      <BarChart3Icon class="w-4 h-4" />
+                    </div>
+                    <h3 class="text-sm font-bold text-primary">Need Scale?</h3>
+                  </div>
+                  <p class="text-xs text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region synchronization for massive agent deployments.</p>
                   <a
                     href={CONTACT_MAILTO}
-                    class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-primary py-3 text-sm font-bold text-on-primary shadow-xl transition-all hover:scale-[1.02] active:scale-[0.95]"
+                    class="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] shadow-sm"
                   >
                     Contact Engineering
+                    <ExternalLinkIcon class="w-3 h-3" />
                   </a>
                 </div>
               </aside>
@@ -442,20 +474,20 @@ export default component$(() => {
         )}
 
         {activeMissionTab.value === "api" && (
-          <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div class="lg:col-span-2 space-y-8">
+          <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="lg:col-span-2 space-y-6">
               <section>
-                <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h3 class="text-xl font-bold tracking-tight">API Key Management</h3>
-                    <p class="mt-2 text-sm text-tertiary">Generate, rotate, and segment access keys for every environment connected to your memory engine.</p>
+                    <h3 class="text-base font-bold tracking-tight text-on-surface">API Key Management</h3>
+                    <p class="mt-1 text-sm text-tertiary">Generate, rotate, and segment access keys for every environment.</p>
                   </div>
-                  <div class="inline-flex rounded-xl border border-outline-variant/15 bg-surface-container-low p-1">
+                  <div class="inline-flex rounded-lg border border-outline-variant/10 bg-surface-container-low p-0.5">
                     <button
                       type="button"
-                      class={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                      class={`rounded-md px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] transition-all ${
                         activeApiTab.value === "keys"
-                          ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                          ? "bg-primary text-on-primary shadow-sm"
                           : "text-tertiary hover:text-on-surface"
                       }`}
                       onClick$={() => {
@@ -466,9 +498,9 @@ export default component$(() => {
                     </button>
                     <button
                       type="button"
-                      class={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                      class={`rounded-md px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] transition-all ${
                         activeApiTab.value === "create"
-                          ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                          ? "bg-primary text-on-primary shadow-sm"
                           : "text-tertiary hover:text-on-surface"
                       }`}
                       onClick$={() => {
@@ -481,33 +513,37 @@ export default component$(() => {
                 </div>
 
                 {createKeyAction.value?.success && createKeyAction.value.key?.token && (
-                  <div class="mb-8 rounded-2xl bg-primary/10 border border-primary/30 p-6 shadow-[0_0_30px_rgba(99,102,241,0.1)]">
-                    <div class="flex items-center gap-3 mb-4 text-primary">
-                      <CheckCircle2Icon class="w-5 h-5" />
-                      <p class="font-bold">New Key Generated Successfully</p>
+                  <div class="mb-6 rounded-xl bg-primary/[0.06] border border-primary/25 p-5">
+                    <div class="flex items-center gap-2.5 mb-3">
+                      <div class="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10">
+                        <CheckCircle2Icon class="w-3.5 h-3.5 text-primary" />
+                      </div>
+                      <p class="text-xs font-bold text-primary">New Key Generated Successfully</p>
                     </div>
-                    <p class="text-sm text-tertiary mb-4">Make sure to copy your API key now. You won't be able to see it again.</p>
-                    <div class="flex items-center gap-2 rounded-lg bg-black/40 p-4 font-mono text-sm text-primary border border-primary/20">
+                    <p class="text-xs text-tertiary mb-3">Make sure to copy your API key now. You won't be able to see it again.</p>
+                    <div class="flex items-center gap-2 rounded-lg bg-black/40 p-3 font-mono text-xs text-primary border border-primary/15">
                       <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
                       <button
-                        class="p-2 hover:bg-primary/20 rounded transition-colors"
+                        class="p-1.5 hover:bg-primary/20 rounded transition-colors shrink-0"
                         onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
                       >
-                        <CopyIcon class="w-4 h-4" />
+                        <CopyIcon class="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
                 )}
 
                 {activeApiTab.value === "keys" ? (
-                  <div class="space-y-4">
+                  <div class="space-y-3">
                     {keys.length === 0 && !createKeyAction.value?.success && (
-                      <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant/20 p-12 text-center">
-                        <KeyIcon class="w-10 h-10 text-outline-variant mb-4" />
-                        <p class="text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
+                      <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant/15 py-12 px-6 text-center">
+                        <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-surface-container-high text-tertiary mb-4">
+                          <KeyIcon class="w-6 h-6" />
+                        </div>
+                        <p class="text-sm font-medium text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
                         <button
                           type="button"
-                          class="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-on-primary transition-all hover:scale-[1.02]"
+                          class="rounded-lg bg-primary px-5 py-2 text-xs font-bold text-on-primary transition-all hover:opacity-90 shadow-sm"
                           onClick$={() => {
                             activeApiTab.value = "create";
                           }}
@@ -518,27 +554,27 @@ export default component$(() => {
                     )}
 
                     {keys.map((key) => (
-                      <div key={key.key_id} class="group flex flex-col justify-between gap-6 rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all hover:border-primary/20 lg:flex-row lg:items-center">
-                        <div class="flex items-center gap-4">
-                          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-highest text-primary">
-                            <KeyIcon class="w-5 h-5" />
+                      <div key={key.key_id} class="group flex flex-col justify-between gap-4 rounded-xl border border-outline-variant/10 bg-surface-container-low p-4 transition-all hover:border-primary/20 hover:shadow-sm lg:flex-row lg:items-center">
+                        <div class="flex items-center gap-3.5">
+                          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                            <KeyIcon class="w-4 h-4" />
                           </div>
                           <div>
-                            <h4 class="font-bold text-on-surface">{key.name}</h4>
-                            <p class="mt-1 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
+                            <h4 class="text-sm font-bold text-on-surface">{key.name}</h4>
+                            <p class="mt-0.5 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
                           </div>
                         </div>
-                        <div class="flex items-center gap-8">
+                        <div class="flex items-center gap-5">
                           <div class="text-right">
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Created</p>
-                            <p class="font-mono text-[10px] text-on-surface">
+                            <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary">Created</p>
+                            <p class="font-mono text-xs text-on-surface">
                               <LocalDateTime value={key.created_at_ms} />
                             </p>
                           </div>
                           <Form action={revokeKeyAction}>
                             <input type="hidden" name="id" value={key.key_id} />
-                            <button type="submit" class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white">
-                              <Trash2Icon class="w-4 h-4" />
+                            <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white" title="Revoke key">
+                              <Trash2Icon class="w-3.5 h-3.5" />
                             </button>
                           </Form>
                         </div>
@@ -547,28 +583,28 @@ export default component$(() => {
                   </div>
                 ) : (
                   <section>
-                    <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-8">
-                      <h3 class="text-lg font-bold mb-4">Provision Access</h3>
-                      <p class="text-sm text-tertiary mb-6">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
-                      <Form action={createKeyAction} class="flex flex-col gap-4 sm:flex-row">
+                    <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                      <h3 class="text-sm font-bold text-on-surface mb-1">Provision Access</h3>
+                      <p class="text-xs text-tertiary mb-4">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
+                      <Form action={createKeyAction} class="flex flex-col gap-3 sm:flex-row">
                         <input
                           name="name"
                           value={newApiKeyName.value}
                           onInput$={(_, el) => {
                             newApiKeyName.value = el.value;
                           }}
-                          class="flex-1 rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors"
-                          placeholder="Key identifier (e.g. Production Cluster 01)"
+                          class="flex-1 rounded-lg border border-outline-variant/15 bg-surface-container-highest px-3.5 py-2.5 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors placeholder:text-tertiary/50"
+                          placeholder="Key identifier (e.g. Production)"
                           required
                         />
                         <button
                           type="submit"
                           disabled={createKeyAction.isRunning}
-                          class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-bold text-sm text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
+                          class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 shrink-0 shadow-sm"
                         >
                           {createKeyAction.isRunning ? (
                             <>
-                              <Loader2Icon class="w-4 h-4 animate-spin" />
+                              <Loader2Icon class="w-3.5 h-3.5 animate-spin" />
                               Generating...
                             </>
                           ) : (
@@ -582,14 +618,14 @@ export default component$(() => {
               </section>
             </div>
 
-            <aside class="space-y-8">
-              <div class="rounded-2xl border border-outline-variant/20 bg-surface-container-low p-8">
-                <div class="mb-4 flex items-center justify-between">
-                  <h3 class="text-lg font-bold">Local Sidecar</h3>
-                  <span class="rounded bg-primary/10 px-2 py-1 font-mono text-[10px] text-primary font-bold">Python SDK</span>
+            <aside class="space-y-6">
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-bold text-on-surface">Local Sidecar</h3>
+                  <span class="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold">Python SDK</span>
                 </div>
-                <p class="text-xs text-tertiary mb-4 leading-relaxed">Connect your local agent to the AletheiaDB engine using your provisioned key.</p>
-                <pre class="overflow-x-auto rounded-xl bg-black/40 p-6 font-mono text-[10px] leading-relaxed text-primary/80 border border-primary/10">
+                <p class="text-xs text-tertiary mb-3 leading-relaxed">Connect your local agent to the engine using your provisioned key.</p>
+                <pre class="overflow-x-auto rounded-lg bg-black/30 p-4 font-mono text-[10px] leading-relaxed text-primary/70 border border-primary/5">
                   <code>{`from aletheia import AletheiaDBClient
 
 client = AletheiaDBClient(
@@ -597,7 +633,6 @@ client = AletheiaDBClient(
   base_url="${proxyBaseUrl}"
 )
 
-# Ingest episodic memory
 client.ingest(
   entity_id="u_99",
   text="I prefer jasmine tea."
@@ -605,14 +640,20 @@ client.ingest(
                 </pre>
               </div>
 
-              <div class="rounded-2xl bg-surface-container-high p-8 border border-primary/20">
-                <h3 class="font-black text-xl mb-2 text-primary">Need Scale?</h3>
-                <p class="text-sm text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region synchronization for massive agent deployments.</p>
+              <div class="rounded-xl bg-gradient-to-br from-primary/[0.07] to-primary/[0.02] border border-primary/15 p-5">
+                <div class="flex items-center gap-2.5 mb-3">
+                  <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
+                    <BarChart3Icon class="w-4 h-4" />
+                  </div>
+                  <h3 class="text-sm font-bold text-primary">Need Scale?</h3>
+                </div>
+                <p class="text-xs text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region sync for massive deployments.</p>
                 <a
                   href={CONTACT_MAILTO}
-                  class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-primary py-3 text-sm font-bold text-on-primary shadow-xl transition-all hover:scale-[1.02] active:scale-[0.95]"
+                  class="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] shadow-sm"
                 >
                   Contact Engineering
+                  <ExternalLinkIcon class="w-3 h-3" />
                 </a>
               </div>
             </aside>
@@ -620,13 +661,15 @@ client.ingest(
         )}
 
         {activeMissionTab.value === "billing" && (
-          <div class="space-y-12">
+          <div class="space-y-8 max-w-5xl">
             {loc.url.searchParams.get("success") === "true" && (
-              <div class="rounded-2xl bg-green-500/10 border border-green-500/30 p-6 mb-6 text-green-400 flex items-center gap-3 animate-fade-in">
-                <CheckCircle2Icon class="w-6 h-6 shrink-0 text-green-400" />
+              <div class="rounded-xl bg-green-500/[0.07] border border-green-500/25 p-4 text-green-400 flex items-start gap-3">
+                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-green-500/10 shrink-0">
+                  <CheckCircle2Icon class="w-4 h-4" />
+                </div>
                 <div>
-                  <p class="font-bold">Payment Successful!</p>
-                  <p class="text-xs text-tertiary mt-1">
+                  <p class="text-sm font-bold">Payment Successful!</p>
+                  <p class="text-xs text-tertiary mt-0.5">
                     {loc.url.searchParams.get("tokens") 
                       ? `${Number(loc.url.searchParams.get("tokens")).toLocaleString()} prepaid truths have been added to your account.`
                       : "Your subscription has been updated and your hosting plan is active."}
@@ -636,67 +679,65 @@ client.ingest(
             )}
 
             {loc.url.searchParams.get("canceled") === "true" && (
-              <div class="rounded-2xl bg-red-500/10 border border-red-500/30 p-6 mb-6 text-red-400 flex items-center gap-3 animate-fade-in">
-                <div class="h-6 w-6 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 font-bold shrink-0">!</div>
+              <div class="rounded-xl bg-red-500/[0.07] border border-red-500/25 p-4 text-red-400 flex items-start gap-3">
+                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-red-500/10 shrink-0 font-bold text-sm">!</div>
                 <div>
-                  <p class="font-bold">Payment Canceled</p>
-                  <p class="text-xs text-tertiary mt-1">The checkout session was canceled. No charges were made.</p>
+                  <p class="text-sm font-bold">Payment Canceled</p>
+                  <p class="text-xs text-tertiary mt-0.5">The checkout session was canceled. No charges were made.</p>
                 </div>
               </div>
             )}
 
             {/* Prepaid Token Balance & Monthly Free Allocation */}
-            <section class="grid gap-6 md:grid-cols-2 animate-fade-in">
+            <section class="grid gap-5 md:grid-cols-2">
               {/* Token Credits Status */}
-              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 flex flex-col justify-between">
-                <div>
-                  <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2 flex items-center gap-1">
-                    <CheckIcon class="w-4 h-4 text-primary" /> Active Credits
-                  </p>
-                  <h2 class="text-3xl font-extrabold text-on-surface">
-                    {platformData.value.sub?.token_balance !== undefined ? platformData.value.sub.token_balance.toLocaleString() : "10,000"}
-                    <span class="text-sm font-medium text-tertiary ml-2">truths remaining</span>
-                  </h2>
-                  
-                  {/* Monthly Free Tier Progress */}
-                  {platformData.value.sub?.token_balance !== undefined && platformData.value.sub.token_balance <= 10000 ? (
-                    <div class="mt-6">
-                      <div class="flex justify-between text-xs font-bold text-tertiary mb-1">
-                        <span>Monthly Free Allocation</span>
-                        <span>{platformData.value.sub.token_balance.toLocaleString()} / 10,000 left</span>
-                      </div>
-                      <div class="w-full bg-outline-variant/20 rounded-full h-2 overflow-hidden">
-                        <div 
-                          class="bg-primary h-full transition-all duration-500" 
-                          style={{ width: `${(platformData.value.sub.token_balance / 10000) * 100}%` }}
-                        ></div>
-                      </div>
-                      <p class="text-[10px] text-tertiary mt-2">Resets automatically every 30 days. Ingestions and queries deduct 1 credit each.</p>
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-primary mb-3 flex items-center gap-1.5">
+                  <CheckIcon class="w-3.5 h-3.5" /> Active Credits
+                </p>
+                <h2 class="text-3xl font-extrabold text-on-surface tracking-tight">
+                  {platformData.value.sub?.token_balance !== undefined ? platformData.value.sub.token_balance.toLocaleString() : "10,000"}
+                  <span class="text-sm font-medium text-tertiary ml-2">truths remaining</span>
+                </h2>
+                
+                {/* Monthly Free Tier Progress */}
+                {platformData.value.sub?.token_balance !== undefined && platformData.value.sub.token_balance <= 10000 ? (
+                  <div class="mt-5">
+                    <div class="flex justify-between text-xs font-semibold text-tertiary mb-1.5">
+                      <span>Monthly Free Allocation</span>
+                      <span>{platformData.value.sub.token_balance.toLocaleString()} / 10,000 left</span>
                     </div>
-                  ) : (
-                    <p class="text-xs text-green-400 font-medium mt-4">
-                      Free tier fully utilized. Active prepaid growth credits: {(((platformData.value.sub?.token_balance || 10000) - 10000)).toLocaleString()} truths.
-                    </p>
-                  )}
-                </div>
+                    <div class="w-full bg-outline-variant/20 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        class="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500" 
+                        style={{ width: `${(platformData.value.sub.token_balance / 10000) * 100}%` }}
+                      ></div>
+                    </div>
+                    <p class="text-[10px] text-tertiary/70 mt-2">Resets every 30 days. 1 credit per ingest or query.</p>
+                  </div>
+                ) : (
+                  <p class="text-xs text-green-400/80 font-medium mt-4">
+                    Free tier fully utilized. Active prepaid credits: {(((platformData.value.sub?.token_balance || 10000) - 10000)).toLocaleString()} truths.
+                  </p>
+                )}
               </div>
 
               {/* Refill Tokens Selector */}
-              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6">
-                <p class="text-xs font-bold uppercase tracking-widest text-tertiary mb-4">Refill Prepaid Tokens</p>
-                <div class="space-y-3">
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary mb-3">Refill Prepaid Tokens</p>
+                <div class="space-y-2.5">
                   {[
                     { id: "starter", name: "Starter Refill ($5.00)", desc: "3.1M truths (~$1.60/M)", tokens: 3125000 },
                     { id: "growth", name: "Growth Refill ($10.00)", desc: "6.6M truths (~$1.50/M)", tokens: 6666666 },
                     { id: "scale", name: "Scale Refill ($20.00)", desc: "15.0M truths (~$1.33/M)", tokens: 15000000 },
                   ].map((pack) => (
-                    <form key={pack.id} method="post" action="/api/billing/buy-tokens" class="flex items-center justify-between p-3 rounded-xl border border-outline-variant/5 bg-black/20 hover:border-primary/30 transition-all">
+                    <form key={pack.id} method="post" action="/api/billing/buy-tokens" class="flex items-center justify-between gap-3 p-3 rounded-lg border border-outline-variant/5 bg-black/20 hover:border-primary/20 transition-all">
                       <input type="hidden" name="package_id" value={pack.id} />
-                      <div>
-                        <p class="text-sm font-bold">{pack.name}</p>
+                      <div class="min-w-0">
+                        <p class="text-sm font-bold text-on-surface">{pack.name}</p>
                         <p class="text-[10px] text-tertiary">{pack.desc}</p>
                       </div>
-                      <button type="submit" class="rounded-lg bg-primary px-4 py-2 font-bold text-xs text-on-primary hover:opacity-90 transition-opacity">
+                      <button type="submit" class="shrink-0 rounded-lg bg-primary px-3.5 py-1.5 font-bold text-[11px] text-on-primary hover:opacity-90 transition-opacity shadow-sm">
                         Buy
                       </button>
                     </form>
@@ -707,22 +748,22 @@ client.ingest(
 
             {/* Current Plan Info */}
             {platformData.value.sub && (
-              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6">
-                <div class="flex items-center justify-between">
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p class="text-sm font-bold uppercase tracking-widest text-tertiary mb-1">Current Plan</p>
-                    <p class="text-2xl font-bold capitalize">{platformData.value.sub.tier?.replace("_", " ") || "Fractional"}</p>
-                    <p class="text-sm text-tertiary mt-1">
-                      Status: <span class="capitalize text-green-400 font-medium">{platformData.value.sub.status}</span>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary mb-1">Current Plan</p>
+                    <p class="text-xl font-bold text-on-surface capitalize">{platformData.value.sub.tier?.replace("_", " ") || "Fractional"}</p>
+                    <p class="text-xs text-tertiary mt-0.5">
+                      Status: <span class="capitalize text-green-400/80 font-semibold">{platformData.value.sub.status}</span>
                     </p>
                   </div>
                   {platformData.value.sub.stripe_customer_id && (
                     <form method="post" action="/api/billing/portal">
                       <button
                         type="submit"
-                        class="flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/20 px-6 py-3 font-bold text-sm text-primary transition-all hover:bg-primary hover:text-white"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 border border-primary/20 px-4 py-2.5 font-bold text-xs text-primary transition-all hover:bg-primary hover:text-white"
                       >
-                        <CreditCardIcon class="w-4 h-4" />
+                        <CreditCardIcon class="w-3.5 h-3.5" />
                         Manage in Stripe
                         <ExternalLinkIcon class="w-3 h-3" />
                       </button>
@@ -730,7 +771,7 @@ client.ingest(
                   )}
                 </div>
                 {platformData.value.sub.current_period_end && (
-                  <p class="text-xs text-tertiary mt-3">
+                  <p class="text-xs text-tertiary/60 mt-3">
                     Current period ends: {new Date(platformData.value.sub.current_period_end).toLocaleDateString()}
                   </p>
                 )}
@@ -739,43 +780,45 @@ client.ingest(
 
             {/* Plan Cards */}
             <div>
-              <h2 class="text-xl font-bold text-on-surface mb-6">Hosting Plans</h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <h2 class="text-lg font-bold text-on-surface mb-4">Hosting Plans</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {plans.map((plan) => {
                   const isCurrent = platformData.value.sub?.tier === plan.id;
                   return (
                     <div
                       key={plan.id}
-                      class={`rounded-2xl border p-6 flex flex-col ${
-                        plan.highlighted ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20" : "border-outline-variant/10 bg-surface-container-low"
+                      class={`rounded-xl border p-5 flex flex-col ${
+                        plan.highlighted 
+                          ? "border-primary/30 bg-gradient-to-b from-primary/[0.04] to-transparent ring-1 ring-primary/20" 
+                          : "border-outline-variant/10 bg-surface-container-low"
                       } ${isCurrent ? "ring-2 ring-primary" : ""}`}
                     >
                       {plan.highlighted && !isCurrent && (
-                        <span class="text-xs font-bold uppercase tracking-widest text-primary mb-2">Popular</span>
+                        <span class="text-[10px] font-bold uppercase tracking-[0.15em] text-primary mb-2">Popular</span>
                       )}
-                      <h3 class="text-xl font-bold">{plan.name}</h3>
-                      <p class="text-3xl font-extrabold mt-2">
-                        {plan.price}<span class="text-sm font-normal text-tertiary">{plan.unit}</span>
+                      <h3 class="text-base font-bold text-on-surface">{plan.name}</h3>
+                      <p class="text-2xl font-extrabold text-on-surface mt-1.5">
+                        {plan.price}<span class="text-xs font-medium text-tertiary">{plan.unit}</span>
                       </p>
-                      <p class="text-sm text-tertiary mt-2 mb-4">{plan.description}</p>
-                      <ul class="space-y-2 flex-1 mb-6">
+                      <p class="text-xs text-tertiary mt-1.5 mb-3 leading-relaxed">{plan.description}</p>
+                      <ul class="space-y-1.5 flex-1 mb-4">
                         {plan.features.map((f) => (
-                          <li key={f} class="flex items-start gap-2 text-sm">
-                            <CheckIcon class="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                          <li key={f} class="flex items-start gap-1.5 text-xs text-tertiary">
+                            <CheckIcon class="w-3 h-3 text-green-400/80 mt-0.5 shrink-0" />
                             {f}
                           </li>
                         ))}
                       </ul>
                       {isCurrent ? (
-                        <button disabled class="w-full py-3 px-4 rounded-xl border border-outline-variant/20 text-sm font-bold text-tertiary cursor-default">
+                        <button disabled class="w-full py-2.5 px-3 rounded-lg border border-outline-variant/15 text-xs font-bold text-tertiary/60 cursor-default">
                           Current Plan
                         </button>
                       ) : plan.contact ? (
-                        <a href="mailto:sales@aletheiadb.com" class="block w-full text-center py-3 px-4 rounded-xl border border-outline-variant/20 text-sm font-bold hover:bg-surface-container-high transition-colors">
+                        <a href="mailto:sales@aletheiadb.com" class="block w-full text-center py-2.5 px-3 rounded-lg border border-outline-variant/15 text-xs font-bold text-on-surface hover:bg-surface-container transition-colors">
                           Contact Sales
                         </a>
                       ) : (
-                        <Link href={`/platform/clusters/new?tier=${plan.id}`} class="block w-full text-center py-3 px-4 rounded-xl bg-primary text-on-primary text-sm font-bold hover:opacity-90 transition-opacity">
+                        <Link href={`/platform/clusters/new?tier=${plan.id}`} class="block w-full text-center py-2.5 px-3 rounded-lg bg-primary text-on-primary text-xs font-bold hover:opacity-90 transition-opacity shadow-sm">
                           {plan.cta}
                         </Link>
                       )}
@@ -786,31 +829,31 @@ client.ingest(
             </div>
 
             {/* Purchase History */}
-            <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 shadow-lg">
-              <h2 class="text-xl font-bold text-on-surface mb-2">Purchase History</h2>
-              <p class="text-xs text-tertiary mb-6">A record of your past prepaid credit refills, dedicated VMs, and hosting plan upgrades.</p>
+            <section class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+              <h2 class="text-base font-bold text-on-surface mb-0.5">Purchase History</h2>
+              <p class="text-xs text-tertiary mb-4">A record of your past prepaid credit refills, dedicated VMs, and hosting plan upgrades.</p>
               
-              <div class="overflow-x-auto">
+              <div class="overflow-x-auto -mx-5">
                 <table class="w-full border-collapse text-left text-sm text-on-surface">
                   <thead>
-                    <tr class="border-b border-outline-variant/10 text-xs font-bold uppercase tracking-widest text-tertiary">
-                      <th class="py-3 px-4">Date</th>
-                      <th class="py-3 px-4">Description</th>
-                      <th class="py-3 px-4 text-right">Amount</th>
-                      <th class="py-3 px-4 text-center">Status</th>
+                    <tr class="border-b border-outline-variant/10 text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary">
+                      <th class="py-3 px-5">Date</th>
+                      <th class="py-3 px-5">Description</th>
+                      <th class="py-3 px-5 text-right">Amount</th>
+                      <th class="py-3 px-5 text-center">Status</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-outline-variant/5">
                     {platformData.value.purchases?.length === 0 ? (
                       <tr>
-                        <td colSpan={4} class="py-8 text-center text-tertiary">
+                        <td colSpan={4} class="py-8 text-center text-tertiary text-xs">
                           No purchases found. Use a credit refill package or deploy a dedicated VM.
                         </td>
                       </tr>
                     ) : (
                       platformData.value.purchases?.map((p: any) => (
-                        <tr key={p.id} class="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                          <td class="py-4 px-4 font-mono text-xs text-tertiary">
+                        <tr key={p.id} class="hover:bg-white/[0.02] transition-colors">
+                          <td class="py-3.5 px-5 font-mono text-xs text-tertiary whitespace-nowrap">
                             {new Date(p.created_at).toLocaleDateString(undefined, {
                               year: 'numeric',
                               month: 'short',
@@ -819,14 +862,12 @@ client.ingest(
                               minute: '2-digit'
                             })}
                           </td>
-                          <td class="py-4 px-4 font-semibold text-on-surface">
-                            {p.description}
-                          </td>
-                          <td class="py-4 px-4 text-right font-mono font-bold text-on-surface">
+                          <td class="py-3.5 px-5 font-semibold text-on-surface text-xs">{p.description}</td>
+                          <td class="py-3.5 px-5 text-right font-mono font-bold text-on-surface text-xs">
                             ${Number(p.amount).toFixed(2)}
                           </td>
-                          <td class="py-4 px-4 text-center">
-                            <span class="inline-flex rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-bold text-green-400">
+                          <td class="py-3.5 px-5 text-center">
+                            <span class="inline-flex rounded-full bg-green-500/10 px-2.5 py-0.5 text-[10px] font-bold text-green-400">
                               Paid
                             </span>
                           </td>

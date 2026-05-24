@@ -4,6 +4,7 @@ import {
   RouterOutlet
 } from "@builder.io/qwik-city";
 import { inject } from "@vercel/analytics";
+import { FlowbiteProvider, FlowbiteProviderHeader } from "flowbite-qwik";
 
 import { RouterHead } from "./components/router-head/router-head";
 import { commonHeadLinks, commonHeadScripts } from "./constants/theme";
@@ -43,9 +44,12 @@ export default component$(() => {
           );
         })}
         <RouterHead />
+        <FlowbiteProviderHeader />
       </head>
       <body lang="en">
-        <RouterOutlet />
+        <FlowbiteProvider toastPosition="top-right" theme="purple">
+          <RouterOutlet />
+        </FlowbiteProvider>
       </body>
     </QwikCityProvider>
   );
