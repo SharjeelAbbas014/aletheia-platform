@@ -14,12 +14,15 @@ serve(async (req) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  const steps: string[] = [];
+
   try {
     const body: ProvisionRequest = await req.json();
     const { clusterId, tier, region, vmSize, storageGb } = body;
+    steps.push(`parsed body: clusterId=${clusterId}, tier=${tier}, region=${region}, vmSize=${vmSize}, storageGb=${storageGb}`);
 
     if (!clusterId || !tier || !region || !vmSize) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+      return new Response(JSON.stringify({ error: "Missing required fields", steps }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -35,17 +38,18 @@ serve(async (req) => {
     const subscriptionId = Deno.env.get("AZURE_SUBSCRIPTION_ID") || "";
     const adminKey = Deno.env.get("ALETHEIADB_ADMIN_KEY") || "";
 
+    steps.push(`env: clientId=${clientId ? "set" : "MISSING"}, clientSecret=${clientSecret ? "set" : "MISSING"}, tenantId=${tenantId ? "set" : "MISSING"}, subscriptionId=${subscriptionId ? "set" : "MISSING"}`);
+
     if (!clientId || !clientSecret || !tenantId || !subscriptionId) {
-      await supabase.from("clusters").update({
-        status: "failed",
-      }).eq("id", clusterId);
-      return new Response(JSON.stringify({ error: "Azure credentials not configured" }), {
+      await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
+      return new Response(JSON.stringify({ error: "Azure credentials not configured", steps }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
 
     // 1. Authenticate with Azure AD
+    steps.push("authenticating with Azure AD...");
     const authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
     const authRes = await fetch(authUrl, {
       method: "POST",
@@ -60,13 +64,21 @@ serve(async (req) => {
 
     if (!authRes.ok) {
       const text = await authRes.text();
-      throw new Error(`Azure OAuth failed: ${text}`);
+      steps.push(`auth failed: ${authRes.status}`);
+      await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
+      return new Response(JSON.stringify({ error: `Azure OAuth failed (${authRes.status}): ${text}`, steps }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    const { access_token: token } = await authRes.json();
+    const authData = await authRes.json();
+    const token = authData.access_token;
+    steps.push(`auth succeeded, token length=${token?.length || 0}`);
 
     // 2. Ensure resource group
     const rgName = `aletheia-rg-${region}`;
+    steps.push(`creating resource group: ${rgName}...`);
     const rgUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}?api-version=2021-04-01`;
     const rgRes = await fetch(rgUrl, {
       method: "PUT",
@@ -78,8 +90,15 @@ serve(async (req) => {
     });
 
     if (!rgRes.ok) {
-      throw new Error(`Resource group creation failed: ${await rgRes.text()}`);
+      const rgText = await rgRes.text();
+      steps.push(`resource group failed: ${rgRes.status}`);
+      await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
+      return new Response(JSON.stringify({ error: `Resource group creation failed (${rgRes.status}): ${rgText}`, steps }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
+    steps.push(`resource group ready: ${rgName}`);
 
     // 3. Build and submit ARM template
     const vmName = `aletheia-vm-${clusterId.slice(0, 8)}`;
@@ -88,6 +107,7 @@ serve(async (req) => {
     const deploymentName = `aletheia-vm-deploy-${clusterId}`;
     const deployUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}/providers/Microsoft.Resources/deployments/${deploymentName}?api-version=2021-04-01`;
 
+    steps.push(`submitting ARM deployment: ${deploymentName} to ${rgName}...`);
     const deployRes = await fetch(deployUrl, {
       method: "PUT",
       headers: {
@@ -99,34 +119,35 @@ serve(async (req) => {
       }),
     });
 
+    const deployStatus = deployRes.status;
+    const deployText = await deployRes.text();
+    steps.push(`ARM response: status=${deployStatus}, ok=${deployRes.ok}, bodyLength=${deployText.length}`);
+
     if (!deployRes.ok) {
-      const text = await deployRes.text();
-      const isSkuError = text.includes("SkuNotAvailable");
+      const isSkuError = deployText.includes("SkuNotAvailable");
       const errorMsg = isSkuError
         ? `VM size ${vmSize} is not available in ${region}. Try a different region.`
-        : `ARM deployment failed: ${text}`;
+        : `ARM deployment failed (${deployStatus}): ${deployText.slice(0, 500)}`;
 
-      await supabase.from("clusters").update({
-        status: "failed",
-      }).eq("id", clusterId);
-
-      return new Response(JSON.stringify({ error: errorMsg }), {
+      await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
+      return new Response(JSON.stringify({ error: errorMsg, steps }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Deployment accepted — update cluster with region
-    await supabase.from("clusters").update({
-      region,
-    }).eq("id", clusterId);
+    steps.push("deployment accepted by Azure");
 
-    return new Response(JSON.stringify({ submitted: true, region }), {
+    // Update cluster with region
+    await supabase.from("clusters").update({ region }).eq("id", clusterId);
+
+    return new Response(JSON.stringify({ submitted: true, region, deploymentName, steps }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    steps.push(`exception: ${err.message}`);
+    return new Response(JSON.stringify({ error: err.message, steps }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

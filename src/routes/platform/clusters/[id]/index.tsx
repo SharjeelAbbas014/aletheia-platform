@@ -162,14 +162,14 @@ export const useRetryProvision = routeAction$(async (data, event) => {
     const fnResult = await fnRes.json();
     if (fnResult.submitted) {
       await supabase.from("clusters").update({ region }).eq("id", clusterId);
-      return { success: true, region };
+      return { success: true, region, steps: fnResult.steps || [] };
     } else {
       await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
-      return { success: false, error: fnResult.error || "Provisioning failed" };
+      return { success: false, error: fnResult.error || "Provisioning failed", steps: fnResult.steps || [] };
     }
   } catch (fnErr: any) {
     await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
-    return { success: false, error: fnErr.message || "Edge function call failed" };
+    return { success: false, error: fnErr.message || "Edge function call failed", steps: [] };
   }
 });
 
@@ -285,6 +285,24 @@ export default component$(() => {
                     </button>
                   </div>
                 </Form>
+                {retryAction.value?.steps && (retryAction.value.steps as string[]).length > 0 && (
+                  <div class="mt-4 rounded-lg bg-black/40 p-3 border border-outline-variant/20">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-2">Diagnostic Log</p>
+                    <ul class="text-[11px] font-mono text-tertiary space-y-1">
+                      {(retryAction.value.steps as string[]).map((step: string, i: number) => (
+                        <li key={i} class="flex items-start gap-2">
+                          <span class="text-primary shrink-0">{i + 1}.</span>
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {retryAction.value.error && (
+                      <p class="text-[11px] font-mono text-red-400 mt-2 border-t border-outline-variant/10 pt-2">
+                        Error: {retryAction.value.error as string}
+                      </p>
+                    )}
+                  </div>
+                )}
               </section>
             )}
 
@@ -348,6 +366,24 @@ export default component$(() => {
                   Retry Provisioning
                 </button>
               </Form>
+              {retryAction.value?.steps && (retryAction.value.steps as string[]).length > 0 && (
+                <div class="mt-4 rounded-lg bg-black/40 p-3 border border-outline-variant/20">
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-2">Diagnostic Log</p>
+                  <ul class="text-[11px] font-mono text-tertiary space-y-1">
+                    {(retryAction.value.steps as string[]).map((step: string, i: number) => (
+                      <li key={i} class="flex items-start gap-2">
+                        <span class="text-primary shrink-0">{i + 1}.</span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {retryAction.value.error && (
+                    <p class="text-[11px] font-mono text-red-400 mt-2 border-t border-outline-variant/10 pt-2">
+                      Error: {retryAction.value.error as string}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
             <div class="flex items-center justify-center gap-4 flex-wrap">
               <Link href="/platform" class="rounded-lg border border-outline-variant/20 px-6 py-3 font-bold text-sm text-on-surface transition-all hover:bg-surface-container-high">

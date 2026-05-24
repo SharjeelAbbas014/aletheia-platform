@@ -171,7 +171,7 @@ export const SentientCheckbox = component$(({ delay }: { delay: string }) => {
 
 const landingStyles = `
 .landing-v2 {
-  background: #0a0a0b;
+  background: #08080a;
   --mouse-x: 52%;
   --mouse-y: 42%;
   --scroll-progress: 0;
@@ -186,31 +186,31 @@ const landingStyles = `
   width: 100%;
   height: 2px;
   pointer-events: none;
-  background: rgba(148, 163, 184, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .landing-v2 .progress-rail::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #6366f1 0%, #67e8f9 65%, #d946ef 100%);
+  background: linear-gradient(90deg, #6366f1 0%, #5de6ff 65%, #d946ef 100%);
   transform-origin: left center;
   transform: scaleX(var(--scroll-progress));
-  transition: transform 120ms linear;
-  box-shadow: 0 0 18px rgba(99, 102, 241, 0.55);
+  transition: transform 100ms linear;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
 }
 
 .landing-v2 .interactive-aurora {
   position: absolute;
-  inset: -16%;
+  inset: -10%;
   pointer-events: none;
   z-index: 0;
-  filter: blur(26px) saturate(130%);
+  filter: blur(80px) saturate(140%);
   background:
-    radial-gradient(320px circle at var(--mouse-x) var(--mouse-y), rgba(99, 102, 241, 0.34), transparent 64%),
-    radial-gradient(440px circle at calc(100% - var(--mouse-x)) calc(110% - var(--mouse-y)), rgba(103, 232, 249, 0.24), transparent 66%);
-  opacity: calc(0.45 + (var(--hero-progress) * 0.4));
-  transition: opacity 260ms ease;
+    radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(99, 102, 241, 0.18), transparent 60%),
+    radial-gradient(500px circle at calc(100% - var(--mouse-x)) calc(110% - var(--mouse-y)), rgba(93, 230, 255, 0.12), transparent 60%);
+  opacity: calc(0.35 + (var(--hero-progress) * 0.45));
+  transition: opacity 300ms ease;
 }
 
 .landing-v2 .hero-orb-left {
@@ -226,8 +226,8 @@ const landingStyles = `
   transform-style: preserve-3d;
   will-change: transform;
   transition:
-    transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 280ms ease,
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 320ms ease,
     border-color 220ms ease;
 }
 
@@ -241,8 +241,8 @@ const landingStyles = `
   opacity: 0;
   background: radial-gradient(
     circle at var(--glare-x, 50%) var(--glare-y, 0%),
-    rgba(255, 255, 255, 0.24),
-    transparent 52%
+    rgba(255, 255, 255, 0.12),
+    transparent 50%
   );
   transition: opacity 180ms ease;
 }
@@ -252,43 +252,50 @@ const landingStyles = `
 }
 
 .landing-v2 .glass-panel {
-  background: rgba(20, 20, 23, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 13, 17, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.landing-v2 .glass-panel:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+  background: rgba(18, 18, 24, 0.75);
 }
 
 .landing-v2 .obsidian-gradient {
-  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
 }
 
 .landing-v2 .text-glow {
-  text-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  text-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
 }
 
 .landing-v2 .scroll-reveal {
   opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(20px);
+  filter: blur(3px);
+  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .landing-v2 .scroll-reveal.visible {
   opacity: 1;
   transform: translateY(0);
+  filter: blur(0);
 }
 
 .landing-v2 .distillation-path {
-  stroke-dasharray: 10;
+  stroke-dasharray: 8 4;
   animation: flow-line 2s linear infinite;
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.3; filter: blur(8px); }
-  50% { opacity: 0.6; filter: blur(12px); }
+  0%, 100% { opacity: 0.2; filter: blur(8px); }
+  50% { opacity: 0.45; filter: blur(12px); }
 }
 
 .landing-v2 .active-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  animation: pulse-glow 2.5s ease-in-out infinite;
 }
 
 @keyframes check-draw {
@@ -299,7 +306,7 @@ const landingStyles = `
 .landing-v2 .animate-check {
   stroke-dasharray: 30;
   stroke-dashoffset: 30;
-  animation: check-draw 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  animation: check-draw 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
 
 @keyframes feature-entrance {
@@ -312,8 +319,6 @@ const landingStyles = `
   animation: feature-entrance 0.5s ease-out forwards;
 }
 
-
-
 @keyframes bar-grow {
   from { transform: scaleY(0); }
   to { transform: scaleY(1); }
@@ -321,7 +326,7 @@ const landingStyles = `
 
 .landing-v2 .animate-bar {
   transform-origin: bottom;
-  animation: bar-grow 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
+  animation: bar-grow 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes line-draw {
@@ -335,8 +340,8 @@ const landingStyles = `
 }
 
 @keyframes fade-in-stale {
-  0% { opacity: 0; transform: scale(0.8); }
-  100% { opacity: 0.4; transform: scale(1); }
+  0% { opacity: 0; transform: scale(0.85); }
+  100% { opacity: 0.35; transform: scale(1); }
 }
 
 .landing-v2 .stale-node {
@@ -344,20 +349,43 @@ const landingStyles = `
 }
 
 .landing-v2 ::selection {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.25);
 }
 
-::-webkit-scrollbar {
-  width: 6px;
+.landing-v2 .terminal-header {
+  height: 38px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 6px;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
 }
 
-::-webkit-scrollbar-track {
-  background: #0a0a0b;
+.landing-v2 .terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  opacity: 0.6;
 }
+.landing-v2 .terminal-dot.red { background: #ef4444; }
+.landing-v2 .terminal-dot.yellow { background: #f59e0b; }
+.landing-v2 .terminal-dot.green { background: #10b981; }
 
-::-webkit-scrollbar-thumb {
-  background: #2d2d35;
-  border-radius: 10px;
+.landing-v2 .custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.landing-v2 .custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.landing-v2 .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+.landing-v2 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -365,6 +393,7 @@ const landingStyles = `
     opacity: 1;
     transform: none;
     transition: none;
+    filter: none;
   }
 
   .landing-v2 .interactive-aurora {
@@ -503,85 +532,42 @@ const userFlowCards = [
   },
 ];
 
-const uniqueEdges = [
+const coreCapabilities = [
   {
-    icon: "all_inclusive",
-    title: "Multi-Model Continuity",
-    body: "Memory that follows the user, not the model. Switch from GPT-4 to Claude to Llama and AletheiaDB keeps the brain intact across every integration.",
+    title: "Rust Performance Core",
+    body: "Engineered in Rust with sub-100ms p99 query latencies, zero GC pauses, and compiled as a single air-gapped binary.",
+    icon: "memory",
     delay: "",
   },
   {
-    icon: "published_with_changes",
     title: "Fact Supersession",
-    body: "When life changes, AletheiaDB knows. If a user moves from NYC to LA, the old fact is marked as superseded so stale context stops leaking into answers.",
-    delay: "150ms",
+    body: "Time-aware rankings and TTL decay policies automatically tag older context as stale when new conflicting facts arrive.",
+    icon: "published_with_changes",
+    delay: "100ms",
   },
   {
-    icon: "bolt",
-    title: "Zero-Config Performance",
-    body: "Built with Rust as a single compiled binary. Deployment is fast and recall latency stays in the sub-100ms range without orchestration drama.",
+    title: "Deterministic Analytics",
+    body: "Built-in arithmetic and count aggregation calculated directly on the database B-Tree indexes before LLM delivery.",
+    icon: "calculate",
+    delay: "200ms",
+  },
+  {
+    title: "Multi-Model Continuity",
+    body: "Switch cognitive backends (GPT-4, Claude 3.5, Llama 3) without losing memory state or query syntax history.",
+    icon: "all_inclusive",
     delay: "300ms",
   },
-];
-
-const engineSpecs = [
   {
-    icon: "memory",
-    title: "Coded in Rust",
-    body: "Ultimate memory safety and blazing-fast execution. No garbage collection pauses, just low-level performance where it matters.",
+    title: "OpenAI Proxy Path",
+    body: "Drop-in proxy gateway that automatically injects relevant context into OpenAI-compatible system instructions.",
+    icon: "database",
+    delay: "400ms",
   },
   {
-    icon: "deployed_code",
-    title: "Single Binary Deployment",
-    body: "No complex Docker chains. One file, zero configuration, instant memory synchronization across your stack.",
-  },
-  {
-    icon: "speed",
-    title: "Sub-100ms Latency",
-    body: "Human-like recall speeds that keep up with your fastest LLM workflows without turning memory into the bottleneck.",
-  },
-];
-
-const shippedPillars = [
-  {
-    title: "Cognitive Extraction",
-    icon: "psychology",
-    body: "Transform raw text into structured knowledge using integrated Neural and Symbolic extractors.",
-    capabilities: [
-      "Neural Entity Extraction (BERT-NER)",
-      "Autonomous Relationship Discovery",
-      "Implicit Preference Detection",
-    ],
-  },
-  {
-    title: "Metric Vault",
-    icon: "calculate",
-    body: "Track and aggregate numeric truth (money, counts, distances) with absolute deterministic precision.",
-    capabilities: [
-      "Deterministic Regex Extraction",
-      "B-Tree range aggregation",
-      "Exact Sum/Count Query API",
-    ],
-  },
-  {
-    title: "Temporal Truth",
-    icon: "schedule",
-    body: "The engine models memory as something that changes over time, not a static bag of embeddings.",
-    capabilities: [
-      "Kind-aware TTL and decay",
-      "Fact supersession and invalidation",
-      "Graph-based version lineage",
-    ],
-  },
-  {
-    title: "Developer Surfaces",
-    icon: "terminal",
-    body: "SDK and HTTP entry points are designed to keep local-first workflows aligned with hosted deployments.",
-    capabilities: [
-      "Graph Walking & Analytics APIs",
-      "Auth + key lifecycle support",
-      "OpenAI-Compatible Proxy Path",
-    ],
+    title: "Graph Knowledge Base",
+    body: "Self-organizing RDF typed graph representations mapping relationships between user sessions and profile history.",
+    icon: "hub",
+    delay: "500ms",
   },
 ];
 
@@ -920,19 +906,25 @@ export default component$(() => {
     <div ref={pageRef} class="landing-v2 bg-surface text-on-surface font-body">
       <div aria-hidden="true" class="progress-rail" />
       <main class="pt-4">
-        <section class="relative min-h-[85vh] flex items-center px-6 border-b border-border/10">
-          <div class="container mx-auto grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+        <section class="relative min-h-[90vh] flex items-center px-6 border-b border-white/5 overflow-hidden">
+          {/* Background Aurora Effect */}
+          <div aria-hidden="true" class="interactive-aurora" />
+          
+          <div class="container mx-auto grid grid-cols-1 items-center gap-16 lg:grid-cols-2 relative z-10 py-16 md:py-24">
             <div>
-              <div class="mb-6 inline-flex items-center gap-2 border border-primary/30 bg-primary/5 px-4 py-1.5 rounded-lg">
-                <span class="w-2 h-2 bg-primary rounded-sm" />
-                <span class="font-mono text-xs font-bold uppercase tracking-widest text-primary">
+              <div class="mb-6 inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 rounded-full backdrop-blur-md">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                <span class="font-mono text-[10px] font-bold uppercase tracking-widest text-primary">
                   v2.0 — Now Open Source
                 </span>
               </div>
 
-              <h1 class="mb-6 text-5xl font-black tracking-tight md:text-7xl text-on-surface">
+              <h1 class="mb-6 text-5xl font-extrabold tracking-tight md:text-7xl text-on-surface font-headline leading-[1.05]">
                 Memory Engine<br />
-                <span class="text-primary">for AI Agents</span>
+                <span class="text-gradient-accent">for AI Agents</span>
               </h1>
 
               <p class="mb-8 max-w-xl text-lg leading-relaxed text-tertiary">
@@ -942,44 +934,75 @@ export default component$(() => {
               </p>
 
               <div class="flex flex-wrap gap-4">
-                <Link href="/signup" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
+                <Link href="/signup" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10">
                   Get Started Free
                   <ArrowRightIcon class="w-4 h-4" />
                 </Link>
-                <Link href="/login" class="inline-flex items-center gap-2 px-6 py-3 border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-container-higher transition-colors">
+                <Link href="/login" class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-on-surface font-bold rounded-xl hover:bg-white/5 transition-colors">
                   Sign In
                 </Link>
-                <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 px-6 py-3 border border-outline-variant text-tertiary font-bold rounded-lg hover:bg-surface-container-higher transition-colors text-sm">
+                <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-tertiary font-bold rounded-xl hover:bg-white/5 transition-colors text-sm">
                   Book a Demo
                   <ExternalLinkIcon class="w-3 h-3" />
                 </a>
               </div>
             </div>
 
-            <div class="border border-outline-variant rounded-xl bg-surface-container-lowest p-6 shadow-lg">
-              <div class="grid grid-cols-2 gap-4">
-                {[
-                  { icon: CpuIcon, label: "Rust Core", desc: "Single binary, zero deps" },
-                  { icon: DatabaseIcon, label: "5 Substrates", desc: "Vector, FTS, Graph, KV, Analytics" },
-                  { icon: ClockIcon, label: "Temporal", desc: "Timestamps, decay, supersession" },
-                  { icon: GitBranchIcon, label: "Knowledge Graph", desc: "Typed RDF with BFS traversal" },
-                  { icon: BarChart3Icon, label: "Analytics", desc: "Deterministic numeric queries" },
-                  { icon: ShieldCheckIcon, label: "Self-Hosted", desc: "Air-gapped, your infra" },
-                  { icon: GlobeIcon, label: "Managed Cloud", desc: "One-click deploy" },
-                  { icon: ZapIcon, label: "<100ms p99", desc: "Hybrid retrieval latency" },
-                ].map(({ icon: Icon, label, desc }) => (
-                  <div key={label} class="border border-outline-variant/20 rounded-lg p-4 hover:border-primary/40 transition-colors">
-                    <div class="flex items-center gap-2 mb-1">
-                      <Icon class="w-4 h-4 text-primary" />
-                      <span class="text-sm font-bold text-on-surface">{label}</span>
-                    </div>
-                    <p class="text-xs text-tertiary">{desc}</p>
+            {/* Simulated Rust Memory Engine Console */}
+            <div class="glass-panel rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
+              <div class="terminal-header">
+                <span class="terminal-dot red" />
+                <span class="terminal-dot yellow" />
+                <span class="terminal-dot green" />
+                <span class="text-[10px] font-mono text-tertiary ml-2">aletheia serve --port 5001</span>
+              </div>
+              <div class="p-6 font-mono text-xs space-y-4">
+                <div class="flex items-center justify-between text-green-400">
+                  <span>● ENGINE: aletheiadb_core v2.0.1 [Active]</span>
+                  <span class="animate-pulse">ONLINE</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 text-secondary">
+                  <div class="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider">Retrieval p99</span>
+                    <span class="text-lg font-bold text-white">4.2ms</span>
                   </div>
-                ))}
+                  <div class="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider">Memory Blocks</span>
+                    <span class="text-lg font-bold text-white">142,850</span>
+                  </div>
+                </div>
+                
+                <div class="border-t border-white/5 pt-4 space-y-2">
+                  <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider mb-2">Memory Substrates Loaded</span>
+                  <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
+                    {[
+                      { name: "HNSW Vector Index" },
+                      { name: "BM25F Full-Text Search" },
+                      { name: "Knowledge Graph Engine" },
+                      { name: "Temporal Truth Decay" },
+                      { name: "Metric Vault (Math)" },
+                      { name: "Air-Gapped Proxy Gateway" },
+                    ].map((sub) => (
+                      <div key={sub.name} class="flex items-center gap-2">
+                        <span class="text-green-400">✓</span>
+                        <span class="text-on-surface/90">{sub.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div class="border-t border-white/5 pt-4">
+                  <div class="bg-black/30 rounded-lg p-3 text-[10px] text-tertiary/90 leading-relaxed border border-white/5">
+                    <span class="text-primary">$</span> aletheia query "user preferences"<br />
+                    <span class="text-white">&gt; Ingesting fact... "prefer jasmine tea over coffee"</span><br />
+                    <span class="text-green-400">&gt; Fact supersession resolved. Invalidation complete.</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1 rounded-full border border-outline-variant/20 bg-surface-container-highest">
+          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1 rounded-full border border-white/5 bg-white/[0.02] backdrop-blur-md">
             <a href="/docs" class="text-xs font-mono text-tertiary hover:text-primary transition-colors">Learn how the engine works →</a>
           </div>
         </section>
@@ -1008,7 +1031,11 @@ export default component$(() => {
               {memoryGapCards.map((card, cardIndex) => (
                 <div
                   key={card.title}
-                  class={`glass-panel scroll-reveal tilt-panel rounded-3xl p-10 ${card.panelClass}`}
+                  class={`glass-panel scroll-reveal tilt-panel rounded-2xl p-8 md:p-10 ${
+                    cardIndex === 1
+                      ? "border-primary/20 bg-primary/[0.01] shadow-[0_0_40px_rgba(99,102,241,0.05)]"
+                      : "border-white/5 bg-white/[0.01]"
+                  }`}
                   data-tilt
                   style={{
                     transitionDelay: cardIndex === 1 ? "150ms" : undefined,
@@ -1016,14 +1043,14 @@ export default component$(() => {
                 >
                   <div class="mb-8 flex items-center gap-4">
                     <div
-                      class={`flex h-10 w-10 items-center justify-center rounded-full ${card.iconWrapClass}`}
+                      class={`flex h-10 w-10 items-center justify-center rounded-xl ${card.iconWrapClass}`}
                     >
                       <MaterialIcon
                         name={card.icon}
                         class={`${card.iconClass}`.trim()}
                       />
                     </div>
-                    <h4 class="text-xl font-bold">{card.title}</h4>
+                    <h4 class="text-xl font-bold font-headline">{card.title}</h4>
                   </div>
 
                   <ul class="space-y-6">
@@ -1031,11 +1058,11 @@ export default component$(() => {
                       <li key={item.title} class="flex gap-4">
                         <MaterialIcon
                           name={item.icon}
-                          class={`shrink-0 ${item.iconClass}`.trim()}
+                          class={`shrink-0 mt-0.5 ${item.iconClass}`.trim()}
                         />
                         <div>
-                          <span class="mb-1 block font-bold">{item.title}</span>
-                          <p class="text-sm text-tertiary">{item.body}</p>
+                          <span class="mb-1 block font-bold text-sm text-on-surface">{item.title}</span>
+                          <p class="text-xs md:text-sm text-tertiary leading-relaxed">{item.body}</p>
                         </div>
                       </li>
                     ))}
@@ -1044,97 +1071,117 @@ export default component$(() => {
               ))}
             </div>
 
-            <div class="mt-24 grid grid-cols-1 gap-12 lg:grid-cols-2">
-              <div class="glass-panel scroll-reveal rounded-3xl p-10 border-primary/20">
-                <h4 class="mb-8 text-xl font-black tracking-tight">
-                  Recall Precision Benchmarks
-                </h4>
-                <div class="flex items-end gap-10 h-64 border-b border-outline-variant/20 pb-2 px-4 relative">
-                  <div class="absolute left-0 top-0 h-full w-px bg-outline-variant/10 flex flex-col justify-between text-[10px] text-tertiary pr-2 -translate-x-full">
+            <div class="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2">
+              {/* Precision Benchmark Widget */}
+              <div class="glass-panel scroll-reveal rounded-2xl p-8 border border-white/5 bg-white/[0.01]">
+                <div class="flex items-center justify-between mb-8">
+                  <h4 class="text-lg font-bold font-headline">
+                    Recall Precision Benchmarks
+                  </h4>
+                  <span class="text-[10px] font-mono text-tertiary uppercase tracking-wider">
+                    LongMemEval-S Suite
+                  </span>
+                </div>
+                
+                <div class="flex items-end gap-8 h-48 border-b border-white/5 pb-2 px-4 relative">
+                  <div class="absolute left-0 top-0 h-full w-px bg-white/[0.02] flex flex-col justify-between text-[9px] text-tertiary font-mono -translate-x-full pr-3">
                     <span>100%</span>
                     <span>75%</span>
                     <span>50%</span>
                     <span>25%</span>
                     <span>0%</span>
                   </div>
-                  <div class="flex-1 h-full flex flex-col justify-end items-center gap-4">
+                  
+                  {/* Standard RAG Bar */}
+                  <div class="flex-1 h-full flex flex-col justify-end items-center gap-3">
                     <div
-                      class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden"
+                      class="w-full bg-white/[0.02] border border-white/5 rounded-t-xl relative overflow-hidden group transition-all"
                       style="height: 68%;"
                     >
-                      <div class="absolute inset-0 bg-red-500/30 rounded-t-lg transition-all animate-bar" />
-                      <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-red-400 z-10">
+                      <div class="absolute inset-0 bg-gradient-to-t from-red-950/45 to-red-500/25 rounded-t-xl transition-all animate-bar" />
+                      <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-mono font-bold text-red-300 z-10">
                         68%
                       </span>
                     </div>
-                    <span class="text-[10px] uppercase font-bold tracking-widest text-tertiary">
+                    <span class="text-[9px] font-mono uppercase font-bold tracking-widest text-tertiary">
                       Standard RAG
                     </span>
                   </div>
-                  <div class="flex-1 h-full flex flex-col justify-end items-center gap-4">
+                  
+                  {/* AletheiaDB Bar */}
+                  <div class="flex-1 h-full flex flex-col justify-end items-center gap-3">
                     <div
-                      class="w-full bg-surface-container-highest rounded-t-lg relative overflow-hidden"
+                      class="w-full bg-white/[0.02] border border-primary/10 rounded-t-xl relative overflow-hidden group transition-all"
                       style="height: 95.4%;"
                     >
-                      <div class="absolute inset-0 obsidian-gradient rounded-t-lg transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.5)]" />
-                      <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-primary z-10">
+                      <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/50 to-primary/40 rounded-t-xl transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.2)]" />
+                      <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-mono font-bold text-white z-10 text-glow">
                         95%+
                       </span>
                     </div>
-                    <span class="text-[10px] uppercase font-bold tracking-widest text-primary">
-                      AletheiaDB (Target)
+                    <span class="text-[9px] font-mono uppercase font-bold tracking-widest text-primary">
+                      AletheiaDB
                     </span>
                   </div>
                 </div>
-                <p class="mt-8 text-xs leading-relaxed text-tertiary">
-                  AletheiaDB is architected to resolve the fundamental recall
-                  failures of standard vector databases. Preliminary benchmarks
-                  on LongMemEval-S indicate significant improvements in handling
-                  numeric and temporal aggregation tasks.
+                
+                <p class="mt-6 text-xs leading-relaxed text-tertiary">
+                  AletheiaDB resolves standard vector search failures. In memory tasks with high fact-density, the local hybrid architecture ensures precise recall.
                 </p>
               </div>
 
-              <div class="glass-panel scroll-reveal rounded-3xl p-10 border-primary/20">
-                <h4 class="mb-8 text-xl font-black tracking-tight">
-                  Temporal Fact Evolution
-                </h4>
-                <div class="relative py-12 px-8">
-                  <div class="absolute left-0 top-1/2 h-0.5 w-full bg-outline-variant/20 -translate-y-1/2 z-0" />
-                  <div class="relative z-10 flex justify-between items-center h-24">
-                    <div class="flex flex-col items-center gap-3">
-                      <div class="h-10 w-10 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center stale-node">
+              {/* Temporal Fact Evolution Widget */}
+              <div class="glass-panel scroll-reveal rounded-2xl p-8 border border-white/5 bg-white/[0.01]">
+                <div class="flex items-center justify-between mb-8">
+                  <h4 class="text-lg font-bold font-headline">
+                    Temporal Fact Evolution
+                  </h4>
+                  <span class="text-[10px] font-mono text-tertiary uppercase tracking-wider">
+                    Supersession State
+                  </span>
+                </div>
+                
+                <div class="relative py-8 px-4">
+                  <div class="absolute left-0 top-[40%] h-[1px] w-full border-t border-dashed border-white/10 -translate-y-1/2 z-0" />
+                  <div class="relative z-10 flex justify-between items-center h-20">
+                    
+                    {/* State 2025 (Stale) */}
+                    <div class="flex flex-col items-center gap-2">
+                      <div class="h-8 w-8 rounded-full bg-red-950/20 border border-red-500/20 flex items-center justify-center stale-node">
                         <MaterialIcon
                           name="cancel"
-                          class=" text-sm text-red-400"
+                          class="text-xs text-red-400"
                         />
                       </div>
-                      <div class="text-center">
-                        <span class="block text-[10px] uppercase tracking-widest text-tertiary font-bold">
-                          2025
+                      <div class="text-center font-mono">
+                        <span class="block text-[9px] uppercase tracking-widest text-tertiary/60">
+                          2025 (STALE)
                         </span>
-                        <span class="block text-[10px] text-red-400/60 line-through">
+                        <span class="block text-[10px] text-red-400/50 line-through">
                           "Living in NYC"
                         </span>
                       </div>
                     </div>
 
-                    <div class="flex h-10 w-10 items-center justify-center">
+                    {/* Connection Arrow */}
+                    <div class="flex h-8 w-8 items-center justify-center">
                       <MaterialIcon
                         name="trending_flat"
-                        class=" text-primary animate-pulse"
+                        class="text-primary animate-pulse"
                       />
                     </div>
 
-                    <div class="flex flex-col items-center gap-3">
-                      <div class="h-10 w-10 rounded-full obsidian-gradient shadow-[0_0_15px_rgba(99,102,241,0.4)] flex items-center justify-center">
+                    {/* State Today (Active) */}
+                    <div class="flex flex-col items-center gap-2">
+                      <div class="h-8 w-8 rounded-full bg-indigo-950/30 border border-primary/20 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.2)]">
                         <MaterialIcon
                           name="verified"
-                          class=" text-sm text-white"
+                          class="text-xs text-primary"
                         />
                       </div>
-                      <div class="text-center">
-                        <span class="block text-[10px] uppercase tracking-widest text-primary font-bold">
-                          Today
+                      <div class="text-center font-mono">
+                        <span class="block text-[9px] uppercase tracking-widest text-primary font-bold">
+                          Today (ACTIVE)
                         </span>
                         <span class="block text-[10px] font-bold text-white">
                           "Moving to SF"
@@ -1142,105 +1189,112 @@ export default component$(() => {
                       </div>
                     </div>
                   </div>
-                  <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 text-center p-2 rounded-lg bg-primary/10 border border-primary/20">
-                    <span class="text-[9px] uppercase tracking-[0.2em] text-primary font-black">
-                      Fact Supersession Triggered
+                  
+                  <div class="absolute bottom-[-10px] left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25">
+                    <span class="text-[8px] font-mono uppercase tracking-[0.15em] text-primary font-bold">
+                      Fact Invalidation Complete
                     </span>
                   </div>
                 </div>
+                
                 <p class="mt-8 text-xs leading-relaxed text-tertiary">
-                  AletheiaDB tracks the evolution of truth. When new facts arrive,
-                  old ones are superseded, preventing stale data from leaking
-                  into your agent's current worldview.
+                  When newer truths supersede older context, the engine automatically tags prior states as stale, filtering them out from active agent context.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        <section class="overflow-hidden px-6 py-32">
+        <section class="overflow-hidden px-6 py-24 md:py-32 border-b border-white/5">
           <div class="container mx-auto">
-            <div class="grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
+            <div class="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
               <div class="scroll-reveal">
-                <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+                <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
                   The Distillation Loop
                 </h2>
-                <h3 class="mb-8 text-4xl font-black leading-tight md:text-5xl">
-                  We do not store text.
-                  <br />
-                  We extract <span class="italic text-primary">truth.</span>
+                <h3 class="mb-8 text-4xl font-extrabold leading-tight md:text-5xl font-headline">
+                  We do not store text.<br />
+                  We extract <span class="text-gradient-accent italic">truth.</span>
                 </h3>
-                <p class="mb-8 text-lg text-tertiary">
+                <p class="mb-8 text-base text-tertiary leading-relaxed">
                   Raw chat logs are noise. AletheiaDB acts as a cognitive filter,
                   distilling human rambling into a clean, queryable lattice of
                   facts.
                 </p>
 
-                <div class="space-y-8">
+                <div class="space-y-6">
                   {distillationDetails.map((item) => (
-                    <div key={item.title} class="flex items-start gap-6">
-                      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
-                        <MaterialIcon name={item.icon} class=" text-primary" />
+                    <div key={item.title} class="flex items-start gap-4">
+                      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5">
+                        <MaterialIcon name={item.icon} class="text-primary" />
                       </div>
                       <div>
-                        <h4 class="mb-2 font-bold">{item.title}</h4>
-                        <p class="text-sm text-tertiary">{item.body}</p>
+                        <h4 class="mb-1 font-bold text-sm text-on-surface font-headline">{item.title}</h4>
+                        <p class="text-xs md:text-sm text-tertiary leading-relaxed">{item.body}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
+              {/* Distillation Pipeline Visual */}
               <div
-                class="glass-panel scroll-reveal relative rounded-3xl border-primary/20 p-8 lg:p-12"
+                class="glass-panel scroll-reveal relative rounded-2xl border border-white/5 p-8 md:p-10 bg-white/[0.01]"
                 style={{ transitionDelay: "200ms" }}
               >
-                <div class="flex flex-col items-center gap-10">
-                  <div class="group flex w-full items-center justify-between">
-                    <div class="rounded-xl border border-white/10 bg-white/5 p-4 font-mono text-xs">
-                      "Hey! I just bought a white Mercedes!"
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.03),transparent_70%)]" />
+                
+                <div class="relative z-10 flex flex-col items-center gap-8">
+                  {/* Step 1: Input Raw Chat */}
+                  <div class="flex w-full items-center justify-between gap-4">
+                    <div class="flex-1 rounded-xl border border-white/5 bg-white/[0.02] p-4 font-mono text-[11px] text-tertiary">
+                      <span class="text-primary/60 mr-1">User:</span> "Hey! I just bought a white Mercedes!"
                     </div>
-                    <MaterialIcon
-                      name="arrow_forward"
-                      class=" animate-pulse text-primary"
-                    />
-                    <div class="rounded-full border border-primary/40 bg-primary/20 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
-                      Raw Chat
-                    </div>
-                  </div>
-
-                  <div class="flex w-full flex-col items-center border-y border-outline-variant/20 py-8">
-                    <div class="obsidian-gradient mb-4 flex h-20 w-20 items-center justify-center rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.5)]">
+                    <div class="shrink-0 flex items-center gap-2">
                       <MaterialIcon
-                        name="settings_input_component"
-                        class=" text-4xl text-white"
+                        name="arrow_forward"
+                        class="animate-pulse text-primary text-sm"
                       />
-                    </div>
-                    <div class="text-sm font-bold uppercase tracking-widest">
-                      Distillation Engine
-                    </div>
-                    <div class="mt-2 font-mono text-[10px] text-tertiary">
-                      Running: Rust Semantic Kernel v2
-                    </div>
-                  </div>
-
-                  <div class="w-full space-y-3">
-                    <div class="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 p-3">
-                      <MaterialIcon
-                        name="verified"
-                        class=" text-sm text-green-400"
-                      />
-                      <span class="font-mono text-xs">
-                        Semantic Fact: User owns White Mercedes
+                      <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-tertiary">
+                        Raw Chat
                       </span>
                     </div>
-                    <div class="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3 opacity-60">
+                  </div>
+
+                  {/* Step 2: Processing Core */}
+                  <div class="flex w-full flex-col items-center border-y border-white/5 py-6">
+                    <div class="obsidian-gradient mb-3 flex h-16 w-16 items-center justify-center rounded-2xl shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+                      <MaterialIcon
+                        name="settings_input_component"
+                        class="text-3xl text-white"
+                      />
+                    </div>
+                    <div class="text-xs font-bold uppercase tracking-widest font-headline">
+                      Distillation Kernel
+                    </div>
+                    <div class="mt-1 font-mono text-[9px] text-tertiary">
+                      Rust Semantic Filter v2.0
+                    </div>
+                  </div>
+
+                  {/* Step 3: Extracted Facts */}
+                  <div class="w-full space-y-3">
+                    <div class="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-950/10 p-3">
+                      <MaterialIcon
+                        name="verified"
+                        class="text-sm text-green-400"
+                      />
+                      <span class="font-mono text-xs text-on-surface">
+                        Fact: User owns Mercedes (White)
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 opacity-60">
                       <MaterialIcon
                         name="database"
-                        class=" text-sm text-primary"
+                        class="text-sm text-primary"
                       />
-                      <span class="font-mono text-xs">
-                        Committed to Long-Term Memory
+                      <span class="font-mono text-xs text-tertiary">
+                        Committed to memory lattice
                       </span>
                     </div>
                   </div>
@@ -1347,38 +1401,84 @@ export default component$(() => {
           </div>
         </section>
 
-        <section class="px-6 py-32">
+        <section id="capabilities" class="px-6 py-24 md:py-32 border-b border-white/5 bg-white/[0.01]">
           <div class="container mx-auto">
-            <div class="scroll-reveal mb-20 text-center">
-              <h2 class="mb-6 text-4xl font-black md:text-5xl">
-                Our Unique <span class="italic text-primary">Edge.</span>
+            <div class="scroll-reveal mb-16 text-center lg:text-left lg:max-w-2xl">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
+                Core Capabilities
               </h2>
-              <p class="mx-auto max-w-xl text-tertiary">
-                Engineered for builders who need more than just a place to dump
-                text files.
+              <h3 class="mb-6 text-4xl font-extrabold md:text-5xl font-headline leading-tight">
+                Engineered for <span class="text-gradient-accent italic">AI Scale.</span>
+              </h3>
+              <p class="text-base text-tertiary leading-relaxed">
+                AletheiaDB replaces complex, slow orchestration chains with a unified, high-performance cognitive database engine.
               </p>
             </div>
 
-            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-              {uniqueEdges.map((item) => (
-                <div
-                  key={item.title}
-                  class="glass-panel scroll-reveal tilt-panel rounded-3xl border-t-2 border-primary/20 p-10"
-                  data-tilt
-                  style={{
-                    transitionDelay: item.delay || undefined,
-                  }}
-                >
-                  <MaterialIcon
-                    name={item.icon}
-                    class=" mb-6 text-4xl text-primary"
-                  />
-                  <h4 class="mb-4 text-xl font-bold">{item.title}</h4>
-                  <p class="text-sm leading-relaxed text-tertiary">
-                    {item.body}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+              {/* Left & Middle: 6 Capabilities Grid */}
+              <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {coreCapabilities.map((item) => (
+                  <div
+                    key={item.title}
+                    class="glass-panel scroll-reveal p-6 rounded-2xl border border-white/5 hover:border-primary/20 transition-all duration-300"
+                    style={{
+                      transitionDelay: item.delay || undefined,
+                    }}
+                  >
+                    <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 border border-primary/20">
+                      <MaterialIcon
+                        name={item.icon}
+                        class="text-xl text-primary"
+                      />
+                    </div>
+                    <h4 class="mb-2 text-base font-bold font-headline text-on-surface">{item.title}</h4>
+                    <p class="text-xs md:text-sm text-tertiary leading-relaxed">
+                      {item.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Right: Technical Stats Card & Build Profile */}
+              <div class="space-y-6">
+                {/* Latency Visual Card */}
+                <div class="glass-panel rounded-2xl border border-white/5 p-6 relative overflow-hidden bg-gradient-to-br from-indigo-950/20 to-transparent">
+                  <div class="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                  <p class="font-mono text-[9px] uppercase tracking-wider text-primary mb-2">Recall Engine Latency</p>
+                  <div class="my-6 text-center">
+                    <div class="text-5xl font-extrabold tracking-tighter text-white font-headline text-glow">
+                      &lt;100ms
+                    </div>
+                    <div class="font-mono text-[10px] uppercase tracking-[0.2em] text-primary mt-1">
+                      Average p99 Recall
+                    </div>
+                  </div>
+                  <p class="text-xs text-tertiary leading-relaxed text-center">
+                    Built natively in Rust. Delivers sub-100ms queries under heavy semantic and full-text loads.
                   </p>
                 </div>
-              ))}
+
+                {/* Build Profile Card */}
+                <div class="glass-panel rounded-2xl border border-white/5 p-6">
+                  <p class="font-mono text-[9px] uppercase tracking-wider text-primary mb-4">Runtime Configuration</p>
+                  <pre class="overflow-x-auto rounded-xl border border-white/5 bg-black/45 p-4 font-mono text-[11px] leading-relaxed text-secondary custom-scrollbar">
+                    {runtimeSnapshot}
+                  </pre>
+                  
+                  <div class="mt-4 flex flex-wrap gap-1.5">
+                    <span class="rounded-full border border-primary/25 bg-primary/5 px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-primary">
+                      Production
+                    </span>
+                    <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-tertiary">
+                      Local-First
+                    </span>
+                    <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-tertiary">
+                      Model-Agnostic
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1575,197 +1675,18 @@ export default component$(() => {
             </div>
           </div>
         </section>
-
-        <section id="tech" class="bg-surface-container-high/40 px-6 py-32">
+        <section class="px-6 py-24 md:py-32 border-b border-white/5 bg-white/[0.01]">
           <div class="container mx-auto">
-            <div class="grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
-              <div class="scroll-reveal">
-                <h2 class="mb-8 text-4xl font-black leading-tight md:text-5xl">
-                  Built for the
-                  <br />
-                  <span class="italic text-primary">next decade</span> of AI.
-                </h2>
-                <p class="mb-12 text-lg text-tertiary">
-                  We did not just build a wrapper. We built a high-performance
-                  memory kernel from the ground up for safety and scale.
-                </p>
-
-                <div class="space-y-8">
-                  {engineSpecs.map((spec) => (
-                    <div key={spec.title} class="flex gap-6">
-                      <div class="glass-panel flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
-                        <MaterialIcon
-                          name={spec.icon}
-                          class=" text-3xl text-primary"
-                        />
-                      </div>
-                      <div>
-                        <h4 class="mb-1 text-xl font-bold">{spec.title}</h4>
-                        <p class="text-sm leading-relaxed text-tertiary">
-                          {spec.body}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div class="scroll-reveal relative">
-                <div
-                  class="glass-panel group tilt-panel relative aspect-square overflow-hidden rounded-3xl p-1"
-                  data-tilt
-                >
-                  <img
-                    class="h-full w-full rounded-2xl object-cover opacity-60 grayscale transition-all duration-1000 group-hover:grayscale-0"
-                    src="/next-decade-ai.webp"
-                    alt="AletheiaDB Rust-powered memory engine for AI agents — sub-100ms recall latency architecture diagram"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
-                  <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="text-center">
-                      <div class="mb-2 text-6xl font-black tracking-tighter text-white">
-                        &lt;100ms
-                      </div>
-                      <div class="font-mono text-sm uppercase tracking-[0.3em] text-primary">
-                        Average Recall
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="px-6 py-32">
-          <div class="container mx-auto">
-            <div class="mb-16 grid grid-cols-1 gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-              <div class="scroll-reveal">
-                <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
-                  Platform Surface
-                </h2>
-                <h3 class="text-4xl font-black leading-tight md:text-5xl">
-                  Built as a complete
-                  <br />
-                  <span class="italic text-primary">memory stack.</span>
-                </h3>
-                <p class="mt-6 max-w-2xl text-tertiary">
-                  Every layer from ingest semantics to production operations is
-                  implemented with one cohesive design system and runtime story.
-                </p>
-
-                <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-                  {shippedPillars.map((pillar, index) => (
-                    <article
-                      key={pillar.title}
-                      class="glass-panel scroll-reveal tilt-panel rounded-2xl border border-outline-variant/20 p-6"
-                      data-tilt
-                      style={{ transitionDelay: `${index * 100}ms` }}
-                    >
-                      <MaterialIcon
-                        name={pillar.icon}
-                        class=" mb-4 text-3xl text-primary"
-                      />
-                      <h4 class="mb-3 text-xl font-bold">{pillar.title}</h4>
-                      <p class="mb-5 text-sm leading-relaxed text-tertiary">
-                        {pillar.body}
-                      </p>
-                      <ul class="space-y-2">
-                        {pillar.capabilities.map((capability) => (
-                          <li
-                            key={capability}
-                            class="flex items-start gap-2 text-xs text-on-surface/90"
-                          >
-                            <MaterialIcon
-                              name="check_circle"
-                              class=" mt-[1px] text-sm text-primary"
-                            />
-                            <span>{capability}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </article>
-                  ))}
-                </div>
-              </div>
-
-              <aside
-                class="glass-panel scroll-reveal tilt-panel relative overflow-hidden rounded-3xl border border-primary/20 p-8"
-                data-tilt
-                style={{ transitionDelay: "180ms" }}
-              >
-                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-                <p class="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-                  Runtime Snapshot
-                </p>
-                <h4 class="mt-4 text-2xl font-black tracking-tight">
-                  Current Build Profile
-                </h4>
-                <p class="mt-3 text-sm leading-relaxed text-tertiary">
-                  AletheiaDB is shipping as an integrated memory platform, not
-                  isolated feature demos.
-                </p>
-                <pre class="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-surface p-4 font-mono text-xs leading-6 text-secondary">
-                  {runtimeSnapshot}
-                </pre>
-                <div class="mt-5 flex flex-wrap gap-2">
-                  <span class="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-primary">
-                    production-minded
-                  </span>
-                  <span class="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-tertiary">
-                    local-first
-                  </span>
-                  <span class="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-tertiary">
-                    model-agnostic
-                  </span>
-                </div>
-
-                <div class="mt-6 rounded-xl border border-outline-variant/20 bg-surface-container-high/40 p-4">
-                  <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-                    Public Repositories
-                  </p>
-                  <ul class="mt-3 space-y-2">
-                    {publicRepositoryLinks.map((repo) => (
-                      <li key={repo.href}>
-                        <a
-                          href={repo.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          class="flex items-center justify-between rounded-lg border border-white/10 bg-surface/80 px-3 py-2 text-xs text-on-surface transition-colors hover:border-primary/40 hover:bg-surface-container-high"
-                        >
-                          <span>{repo.label}</span>
-                          <MaterialIcon
-                            name="open_in_new"
-                            class=" text-sm text-primary"
-                          />
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                  <p class="mt-3 text-[11px] text-tertiary">
-                    {privateRepositoryNote}
-                  </p>
-                </div>
-              </aside>
-            </div>
-          </div>
-        </section>
-
-        <section class="bg-surface-container-high/35 px-6 py-32">
-          <div class="container mx-auto">
-            <div class="scroll-reveal mb-14 max-w-3xl">
-              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+            <div class="scroll-reveal mb-14 max-w-3xl text-center lg:text-left">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
                 Delivery Path
               </h2>
-              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
-                From prototype to
-                <span class="italic text-primary"> production memory.</span>
+              <h3 class="text-4xl font-extrabold tracking-tight md:text-5xl font-headline">
+                From prototype to<br />
+                <span class="text-gradient-accent italic">production memory.</span>
               </h3>
-              <p class="mt-6 text-tertiary">
-                The product has a clear progression: ingest fidelity, retrieval
-                intelligence, and operational reliability.
+              <p class="mt-6 text-base text-tertiary leading-relaxed">
+                The product has a clear progression: ingest fidelity, retrieval intelligence, and operational reliability.
               </p>
             </div>
 
@@ -1773,23 +1694,23 @@ export default component$(() => {
               {deliveryTrack.map((step, index) => (
                 <article
                   key={step.phase}
-                  class="glass-panel scroll-reveal tilt-panel rounded-3xl border border-outline-variant/20 p-8"
+                  class="glass-panel scroll-reveal tilt-panel rounded-2xl border border-white/5 p-8"
                   data-tilt
                   style={{ transitionDelay: `${index * 120}ms` }}
                 >
                   <div class="mb-5 flex items-center justify-between">
-                    <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
+                    <span class="font-mono text-[9px] uppercase tracking-widest text-primary font-bold">
                       {step.phase}
                     </span>
                     <MaterialIcon
                       name={step.icon}
-                      class=" text-2xl text-primary"
+                      class="text-2xl text-primary"
                     />
                   </div>
-                  <h4 class="mb-3 text-2xl font-black tracking-tight">
+                  <h4 class="mb-3 text-xl font-bold font-headline text-on-surface">
                     {step.title}
                   </h4>
-                  <p class="mb-5 text-sm leading-relaxed text-tertiary">
+                  <p class="mb-5 text-xs md:text-sm leading-relaxed text-tertiary">
                     {step.body}
                   </p>
                   <ul class="space-y-2">
@@ -1800,9 +1721,9 @@ export default component$(() => {
                       >
                         <MaterialIcon
                           name="arrow_right_alt"
-                          class=" text-sm text-primary"
+                          class="text-sm text-primary"
                         />
-                        <span>{checkpoint}</span>
+                        <span class="font-mono text-[11px]">{checkpoint}</span>
                       </li>
                     ))}
                   </ul>
@@ -1814,17 +1735,17 @@ export default component$(() => {
 
         <section
           id="interactive-tester"
-          class="px-6 py-32 bg-surface-container-low/5 border-t border-outline-variant/10"
+          class="px-6 py-24 md:py-32 border-b border-white/5 bg-white/[0.01]"
         >
           <div class="container mx-auto">
-            <div class="scroll-reveal mb-20 text-center">
-              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+            <div class="scroll-reveal mb-16 text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
                 Interactive Demo
               </h2>
-              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
-                Live Memory <span class="italic text-primary">Simulation.</span>
+              <h3 class="text-4xl font-extrabold tracking-tight md:text-5xl font-headline">
+                Live Memory <span class="text-gradient-accent italic">Simulation.</span>
               </h3>
-              <p class="mt-6 mx-auto max-w-2xl text-tertiary">
+              <p class="mt-6 mx-auto max-w-2xl text-base text-tertiary leading-relaxed">
                 Experience AletheiaDB's real-time ingestion and recall loop. Store
                 a fact, then retrieve it across model contexts.
               </p>
@@ -1832,48 +1753,45 @@ export default component$(() => {
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               {/* Left Side: Store/Warmup */}
-              <div class="glass-panel relative rounded-[2rem] border border-outline-variant/10 p-8 shadow-xl overflow-hidden">
-                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.05),transparent_50%)]" />
-                <div class="relative z-10 space-y-8">
-                  <div class="flex items-center gap-4 border-b border-outline-variant/10 pb-6">
-                    <div class="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                      <MaterialIcon name="input" class=" text-2xl" />
+              <div class="glass-panel relative rounded-2xl border border-white/5 p-6 md:p-8 shadow-xl overflow-hidden bg-white/[0.01]">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.03),transparent_50%)]" />
+                <div class="relative z-10 space-y-6">
+                  <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+                    <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                      <MaterialIcon name="input" class="text-xl" />
                     </div>
                     <div>
-                      <h4 class="text-xl font-bold">Input & Warm-up</h4>
-                      <p class="text-[10px] uppercase font-black tracking-widest text-tertiary">
-                        Ingestion Layer
+                      <h4 class="text-lg font-bold font-headline text-on-surface">Ingestion Layer</h4>
+                      <p class="text-[9px] font-mono uppercase tracking-widest text-tertiary font-bold">
+                        Write Pipeline
                       </p>
                     </div>
                   </div>
 
-                  <div class="rounded-[1.5rem] border border-white/5 bg-black/20 p-6">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-tertiary mb-4">
-                      Serverless Pulse
+                  <div class="rounded-xl border border-white/5 bg-black/25 p-5">
+                    <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-primary mb-2">
+                      Pulse Cold Start Warm-Up
                     </p>
-                    <p class="text-sm leading-relaxed text-on-surface mb-6">
-                      Ping the engine to reduce cold-start latency before
-                      testing the demo.
+                    <p class="text-xs leading-relaxed text-tertiary mb-4">
+                      Trigger a heartbeat ping to reduce runtime retrieval latency before simulating the engine.
                     </p>
                     <button
                       type="button"
-                      class="glass-panel inline-flex items-center gap-3 rounded-2xl px-6 py-3 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      class="glass-panel inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-on-surface hover:bg-white/5 active:scale-[0.98] transition-all disabled:opacity-50"
                       disabled={heroWarmupRunning.value}
                       onClick$={runHeroWarmup}
                     >
-                      {heroWarmupRunning.value
-                        ? "Warming..."
-                        : "Warm Up Engine"}
-                      <MaterialIcon name="bolt" class=" text-base" />
+                      {heroWarmupRunning.value ? "Warming Engine..." : "Warm Up Database"}
+                      <MaterialIcon name="bolt" class="text-xs text-primary" />
                     </button>
                   </div>
 
-                  <div class="space-y-4">
-                    <label class="block text-[11px] font-bold uppercase tracking-[0.22em] text-tertiary">
-                      Message to Persist
+                  <div class="space-y-3">
+                    <label class="block text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary">
+                      Raw Memory Input string
                     </label>
                     <textarea
-                      class="min-h-[140px] w-full rounded-[1.5rem] border border-white/10 bg-black/25 px-5 py-4 text-base text-on-surface outline-none transition-colors placeholder:text-tertiary/55 focus:border-primary/60 shadow-inner"
+                      class="min-h-[120px] w-full rounded-xl border border-white/5 bg-black/35 px-4 py-3 text-xs md:text-sm text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 shadow-inner"
                       placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
                       value={heroMessage.value}
                       onInput$={(_, currentTarget) => {
@@ -1883,16 +1801,16 @@ export default component$(() => {
                     />
                     <button
                       type="button"
-                      class="obsidian-gradient w-full inline-flex items-center justify-center gap-3 rounded-2xl py-4 text-sm font-bold text-white transition-all hover:shadow-[0_0_32px_rgba(99,102,241,0.35)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 shadow-xl"
+                      class="obsidian-gradient w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-xs md:text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(99,102,241,0.25)] active:scale-[0.98] disabled:opacity-50 shadow-lg"
                       disabled={heroDemoRunning.value}
                       onClick$={() => runHeroDemo("store")}
                     >
                       {heroDemoRunning.value && heroDemoMode.value === "store"
-                        ? "Processing..."
+                        ? "Writing to disk..."
                         : "Commit to Long-Term Memory"}
                       <MaterialIcon
                         name="published_with_changes"
-                        class=" text-lg"
+                        class="text-sm"
                       />
                     </button>
                   </div>
@@ -1900,38 +1818,36 @@ export default component$(() => {
               </div>
 
               {/* Right Side: Recall & Results */}
-              <div class="space-y-8">
-                <div class="glass-panel relative rounded-[2rem] border border-primary/20 p-8 shadow-xl overflow-hidden bg-primary/5">
-                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.1),transparent_50%)]" />
-                  <div class="relative z-10 space-y-6">
-                    <div class="flex items-center gap-4 border-b border-primary/10 pb-6">
-                      <div class="h-12 w-12 rounded-2xl obsidian-gradient flex items-center justify-center text-white shadow-xl">
-                        <MaterialIcon name="travel_explore" class=" text-2xl" />
+              <div class="space-y-6">
+                <div class="glass-panel relative rounded-2xl border border-white/5 p-6 md:p-8 shadow-xl overflow-hidden bg-white/[0.01]">
+                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.03),transparent_50%)]" />
+                  <div class="relative z-10 space-y-5">
+                    <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+                      <div class="h-10 w-10 rounded-xl obsidian-gradient flex items-center justify-center text-white shadow-lg">
+                        <MaterialIcon name="travel_explore" class="text-xl" />
                       </div>
                       <div>
-                        <h4 class="text-xl font-bold text-white">
-                          Truth Recall
-                        </h4>
-                        <p class="text-[10px] uppercase font-black tracking-widest text-primary">
-                          Retrieval Kernel
+                        <h4 class="text-lg font-bold font-headline text-white">Truth Retrieval</h4>
+                        <p class="text-[9px] font-mono uppercase tracking-widest text-primary font-bold">
+                          Read Substrate
                         </p>
                       </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                      <div class="rounded-2xl border border-white/5 bg-black/20 p-4">
-                        <p class="text-[9px] font-bold uppercase tracking-widest text-tertiary">
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-4">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
                           Ingest Latency
                         </p>
-                        <p class="mt-1 text-xl font-black text-on-surface">
+                        <p class="mt-1 text-base md:text-lg font-mono font-extrabold text-on-surface">
                           {heroDemoResult.value?.ingestLabel ?? "---"}
                         </p>
                       </div>
-                      <div class="rounded-2xl border border-white/5 bg-black/20 p-4 border-primary/20">
-                        <p class="text-[9px] font-bold uppercase tracking-widest text-primary">
+                      <div class="rounded-xl border border-primary/10 bg-black/25 p-4">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-primary">
                           Query Latency
                         </p>
-                        <p class="mt-1 text-xl font-black text-white">
+                        <p class="mt-1 text-base md:text-lg font-mono font-extrabold text-primary text-glow">
                           {heroDemoResult.value?.queryLabel ?? "---"}
                         </p>
                       </div>
@@ -1939,41 +1855,41 @@ export default component$(() => {
 
                     <button
                       type="button"
-                      class="glass-panel w-full inline-flex items-center justify-center gap-3 rounded-2xl py-4 text-sm font-bold text-on-surface transition-all hover:bg-surface-container-high active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 border border-white/10"
+                      class="glass-panel w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-xs md:text-sm font-bold text-on-surface transition-all hover:bg-white/5 active:scale-[0.98] disabled:opacity-50 border border-white/5"
                       disabled={heroDemoRunning.value}
                       onClick$={() => runHeroDemo("recall")}
                     >
                       {heroDemoRunning.value && heroDemoMode.value === "recall"
                         ? "Retrieving..."
                         : "Query Memory Surface"}
-                      <MaterialIcon name="speed" class=" text-lg" />
+                      <MaterialIcon name="speed" class="text-sm text-primary" />
                     </button>
 
-                    <div class="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-inner">
-                      <div class="flex items-center justify-between mb-4">
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">
+                    <div class="rounded-xl border border-white/5 bg-black/35 p-4 shadow-inner">
+                      <div class="flex items-center justify-between mb-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
                           Retrieved Memory Hits
                         </p>
                         {heroDemoResult.value?.memoryId && (
-                          <span class="px-2 py-1 rounded bg-primary/20 text-[9px] font-mono text-primary border border-primary/20">
+                          <span class="px-2 py-0.5 rounded bg-primary/10 text-[8px] font-mono text-primary border border-primary/20">
                             {heroDemoResult.value.entityId}
                           </span>
                         )}
                       </div>
-                      <div class="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                      <div class="space-y-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
                         {heroDemoResult.value?.ok &&
                           heroDemoResult.value.hits &&
                           heroDemoResult.value.hits.length > 0 ? (
                           heroDemoResult.value.hits.map((hit, idx) => (
                             <div
                               key={idx}
-                              class="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs text-tertiary leading-relaxed animate-fade-in"
+                              class="p-2.5 rounded-lg bg-white/[0.01] border border-white/5 text-xs text-tertiary leading-relaxed animate-fade-in font-mono"
                             >
                               {hit.textual_content}
                             </div>
                           ))
                         ) : (
-                          <p class="text-xs text-tertiary italic text-center py-8">
+                          <p class="text-xs text-tertiary italic text-center py-6">
                             No memories retrieved yet. Ingest a fact first.
                           </p>
                         )}
@@ -1983,15 +1899,12 @@ export default component$(() => {
                 </div>
 
                 {heroDemoResult.value?.queryUnderBlink && (
-                  <div class="feature-entrance rounded-[1.5rem] border border-cyan-300/25 bg-cyan-400/5 p-6 flex items-start gap-4 shadow-lg shadow-cyan-500/5">
-                    <MaterialIcon name="verified" class=" text-cyan-400 mt-1" />
+                  <div class="feature-entrance rounded-xl border border-cyan-500/25 bg-cyan-950/10 p-5 flex items-start gap-3 shadow-lg shadow-cyan-500/5">
+                    <MaterialIcon name="verified" class="text-cyan-400 mt-0.5 text-sm" />
                     <div>
-                      <h5 class="text-sm font-bold text-white">
-                        Sub-100ms Verified
-                      </h5>
-                      <p class="text-xs text-tertiary mt-1">
-                        This recall session operated faster than a human blink
-                        at the engine layer.
+                      <h5 class="text-xs font-bold text-white font-headline">Sub-100ms In-Memory Verified</h5>
+                      <p class="text-[11px] text-tertiary mt-0.5 leading-relaxed">
+                        This session query was resolved faster than a human blink at the database layer.
                       </p>
                     </div>
                   </div>
@@ -2001,33 +1914,31 @@ export default component$(() => {
           </div>
         </section>
 
-        <section id="calendly" class="px-6 py-24">
+        <section id="calendly" class="px-6 py-16 md:py-24">
           <div class="container mx-auto">
-            <div class="glass-panel scroll-reveal rounded-3xl border border-primary/20 p-8 md:p-12">
-              <p class="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+            <div class="glass-panel scroll-reveal rounded-2xl border border-white/5 p-8 md:p-12 bg-white/[0.01]">
+              <p class="font-mono text-[9px] uppercase tracking-widest text-primary font-bold">
                 Book A Session
               </p>
-              <h3 class="mt-4 text-4xl font-black tracking-tight md:text-5xl">
-                Schedule a 30-minute
-                <span class="italic text-primary"> AletheiaDB walkthrough.</span>
+              <h3 class="mt-4 text-3xl md:text-4xl font-extrabold tracking-tight font-headline">
+                Schedule a 30-minute <span class="text-gradient-accent italic">walkthrough.</span>
               </h3>
-              <p class="mt-4 max-w-2xl text-tertiary">
-                Discuss architecture, integration strategy, and production
-                rollout for your memory stack.
+              <p class="mt-3 max-w-2xl text-xs md:text-sm text-tertiary leading-relaxed">
+                Discuss database architecture, memory integration, and private deployment setups for your agentic applications.
               </p>
               <div class="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
                   href={CALENDLY_30_MIN_URL}
                   target="_blank"
                   rel="noreferrer"
-                  class="obsidian-gradient inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-xl shadow-primary/20 transition-transform hover:scale-[1.02]"
+                  class="obsidian-gradient inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-xs md:text-sm font-bold text-white shadow-lg shadow-primary/10 transition-all hover:shadow-[0_0_20px_rgba(99,102,241,0.2)] active:scale-[0.98]"
                 >
                   Open Calendly
-                  <MaterialIcon name="open_in_new" class=" text-base" />
+                  <MaterialIcon name="open_in_new" class="text-xs" />
                 </a>
                 <a
                   href={CONTACT_MAILTO}
-                  class="glass-panel inline-flex items-center justify-center rounded-xl px-8 py-4 text-sm font-bold uppercase tracking-[0.16em] text-on-surface transition-colors hover:bg-surface-container-high"
+                  class="glass-panel inline-flex items-center justify-center rounded-xl px-6 py-3 text-xs md:text-sm font-bold text-on-surface hover:bg-white/5 transition-all border border-white/5"
                 >
                   Email Instead
                 </a>
@@ -2036,122 +1947,116 @@ export default component$(() => {
           </div>
         </section>
 
-        <section class="px-6 py-32">
+        {/* Final CTA Banner */}
+        <section class="px-6 py-16 md:py-24">
           <div class="container mx-auto max-w-4xl">
-            <div class="rounded-xl border border-primary/20 bg-primary/5 p-12 text-center md:p-20 shadow-lg">
-              <h2 class="mb-6 text-4xl font-black tracking-tight md:text-5xl text-on-surface">
-                Build Agents That<br />
-                <span class="text-primary">Actually Remember.</span>
-              </h2>
-              <p class="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-tertiary">
-                One binary, five memory substrates, zero lock-in. Start building
-                persistent, self-improving agents today.
-              </p>
-              <div class="flex flex-col justify-center gap-4 sm:flex-row">
-                <Link
-                  href="/signup"
-                  class="px-8 py-4 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
-                >
-                  Get Started Free
-                </Link>
-                <a
-                  href={CALENDLY_30_MIN_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  class="px-8 py-4 border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-container-higher transition-colors"
-                >
-                  Book a Demo
-                </a>
+            <div class="rounded-2xl border border-primary/20 bg-gradient-to-br from-indigo-950/20 via-black to-indigo-950/10 p-10 text-center md:p-16 shadow-2xl relative overflow-hidden">
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05),transparent_70%)]" />
+              <div class="relative z-10">
+                <h2 class="mb-4 text-3xl font-extrabold tracking-tight md:text-5xl text-on-surface font-headline leading-tight">
+                  Build Agents That<br />
+                  <span class="text-gradient-accent">Actually Remember.</span>
+                </h2>
+                <p class="mx-auto mb-8 max-w-xl text-xs md:text-sm leading-relaxed text-tertiary">
+                  One binary, five memory substrates, zero lock-in. Start building persistent, self-improving agents today.
+                </p>
+                <div class="flex flex-col justify-center gap-4 sm:flex-row">
+                  <Link
+                    href="/signup"
+                    class="px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/15 text-sm"
+                  >
+                    Get Started Free
+                  </Link>
+                  <a
+                    href={CALENDLY_30_MIN_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="px-6 py-3 border border-white/10 text-on-surface font-bold rounded-xl hover:bg-white/5 transition-colors text-sm"
+                  >
+                    Book a Demo
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Core vs Platform */}
-        <section id="core-vs-platform" class="px-6 py-32 border-t border-outline-variant/10">
+        <section id="core-vs-platform" class="px-6 py-16 md:py-24 border-t border-white/5">
           <div class="container mx-auto max-w-5xl">
             <div class="text-center mb-16">
-              <h2 class="mb-3 text-xs font-bold uppercase tracking-widest text-primary">Two Ways to Remember</h2>
-              <h3 class="text-4xl font-black tracking-tight">Engine <span class="text-primary">and</span> Platform</h3>
+              <h2 class="mb-3 text-[9px] font-mono font-bold uppercase tracking-widest text-primary">Two Ways to Remember</h2>
+              <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight font-headline">Engine <span class="text-gradient-accent">and</span> Platform</h3>
             </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-8 transition-all hover:border-primary/30">
-                <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <CpuIcon class="text-xl text-primary" />
+              {/* Core (OSS) Card */}
+              <div class="rounded-2xl border border-white/5 bg-white/[0.01] p-8 transition-all duration-300 hover:border-white/10">
+                <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <CpuIcon class="text-lg text-tertiary" />
                 </div>
-                <h4 class="mb-2 text-2xl font-bold text-on-surface"><span class="text-primary">AletheiaDB</span> Core</h4>
-                <p class="mb-1 text-xs font-bold uppercase tracking-widest text-tertiary">Open Source Engine</p>
-                <p class="mb-6 text-sm leading-relaxed text-tertiary">
+                <h4 class="mb-2 text-2xl font-bold text-on-surface font-headline"><span class="text-primary">AletheiaDB</span> Core</h4>
+                <p class="mb-1 text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary/60">Open Source Engine</p>
+                <p class="mb-6 text-xs md:text-sm leading-relaxed text-tertiary">
                   The Rust-powered temporal memory engine that runs anywhere. Hybrid
                   vector + BM25 search, knowledge graph traversal, deterministic
-                  analytics, and fact supersession — all in a single binary. No
-                  cloud dependency. No vendor lock-in.
+                  analytics, and fact supersession — all in a single binary. No vendor lock-in.
                 </p>
-                <ul class="mb-8 space-y-2 text-sm text-tertiary">
-                  <li class="flex items-start gap-2">
-                    <span class="mt-0.5 text-xs text-primary">▸</span>
-                    Single binary — download and run
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-0.5 text-xs text-primary">▸</span>
-                    4 HNSW indexes + BM25F + redb KV + typed graph
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-0.5 text-xs text-primary">▸</span>
-                    Candle / ONNX embeddings, CPU or GPU
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-0.5 text-xs text-primary">▸</span>
-                    Embed in your stack, pitch to your customers
-                  </li>
+                <ul class="mb-8 space-y-2.5 text-xs text-tertiary">
+                  {[
+                    "Single binary — download and run locally",
+                    "4 HNSW indexes + BM25F + redb KV + typed graph",
+                    "Candle / ONNX embeddings, CPU or GPU targets",
+                    "Embed directly in your custom agent architecture",
+                  ].map((bullet) => (
+                    <li key={bullet} class="flex items-start gap-2">
+                      <span class="text-primary font-bold">▸</span>
+                      <span class="text-on-surface/90">{bullet}</span>
+                    </li>
+                  ))}
                 </ul>
                 <div class="flex gap-3">
-                  <Link href="/docs/core" class="rounded-lg bg-primary/10 px-5 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-primary/20">
+                  <Link href="/docs/core" class="rounded-xl bg-primary/10 px-5 py-2.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20">
                     Read the Docs
                   </Link>
-                  <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" class="glass-panel rounded-lg px-5 py-2.5 text-sm font-bold text-tertiary transition-colors hover:text-on-surface">
+                  <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" class="glass-panel border border-white/5 rounded-xl px-5 py-2.5 text-xs font-bold text-tertiary transition-colors hover:text-on-surface">
                     Contact Us
                   </a>
                 </div>
               </div>
 
-              {/* Platform */}
-              <div class="rounded-xl border border-primary/20 bg-primary/5 p-8 transition-all hover:border-primary/40">
-                <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
-                  <GlobeIcon class="text-xl text-primary" />
+              {/* Platform (SaaS) Card */}
+              <div class="rounded-2xl border border-primary/20 bg-primary/[0.01] p-8 transition-all duration-300 hover:border-primary/40 shadow-[0_0_40px_rgba(99,102,241,0.03)]">
+                <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+                  <GlobeIcon class="text-lg text-primary" />
                 </div>
-                <h4 class="mb-2 text-2xl font-bold">
+                <h4 class="mb-2 text-2xl font-bold text-white font-headline">
                   <span class="text-primary">AletheiaDB</span> Platform
                 </h4>
-                <p class="mb-1 text-xs font-bold uppercase tracking-widest text-tertiary">Managed Cloud Service</p>
-                <p class="mb-6 text-sm leading-relaxed text-tertiary">
+                <p class="mb-1 text-[9px] font-mono font-bold uppercase tracking-widest text-primary">Managed Cloud Service</p>
+                <p class="mb-6 text-xs md:text-sm leading-relaxed text-tertiary">
                   A full SaaS experience on top of the core engine. Deploy clusters
                   in one click, manage your team, track usage with analytics, explore
                   knowledge graphs visually, and never worry about infrastructure.
                 </p>
-                <ul class="mb-8 space-y-2 text-sm text-tertiary">
-                  <li class="flex items-start gap-2">
-                    <span class="mt-0.5 text-xs text-primary">▸</span>
-                    One-click cluster provisioning — no config files
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-0.5 text-xs text-primary">▸</span>
-                    Stripe billing — pay as you go or flat-rate
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-0.5 text-xs text-primary">▸</span>
-                    Team management with invites and roles
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <span class="mt-0.5 text-xs text-primary">▸</span>
-                    Graph explorer, analytics, API playground
-                  </li>
+                <ul class="mb-8 space-y-2.5 text-xs text-tertiary">
+                  {[
+                    "One-click cluster provisioning — no config files",
+                    "Stripe integration — pay-as-you-go or flat-rates",
+                    "Team management with invites and RBAC roles",
+                    "Graph explorer, telemetry, and visual playground",
+                  ].map((bullet) => (
+                    <li key={bullet} class="flex items-start gap-2">
+                      <span class="text-primary font-bold">▸</span>
+                      <span class="text-white">{bullet}</span>
+                    </li>
+                  ))}
                 </ul>
                 <div class="flex gap-3">
-                  <Link href="/signup" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90">
+                  <Link href="/signup" class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-background transition-colors hover:opacity-90 shadow-md">
                     Get Started Free
                   </Link>
-                  <Link href="/docs/platform" class="glass-panel rounded-lg px-5 py-2.5 text-sm font-bold text-tertiary transition-colors hover:text-on-surface">
+                  <Link href="/docs/platform" class="glass-panel border border-white/5 rounded-xl px-5 py-2.5 text-xs font-bold text-tertiary transition-colors hover:text-on-surface">
                     Learn More
                   </Link>
                 </div>
@@ -2163,21 +2068,18 @@ export default component$(() => {
         {/* Ecosystem */}
         <section
           id="ecosystem"
-          class="px-6 py-32 bg-surface-container-low/10 border-t border-outline-variant/10"
+          class="px-6 py-16 md:py-24 bg-white/[0.005] border-t border-white/5"
         >
           <div class="container mx-auto">
-            <div class="scroll-reveal mb-20 text-center">
-              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+            <div class="scroll-reveal mb-16 text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
                 The AletheiaDB Ecosystem
               </h2>
-              <h3 class="text-4xl font-black tracking-tight md:text-5xl">
-                Integrate Memory{" "}
-                <span class="italic text-primary">Anywhere.</span>
+              <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight md:text-5xl font-headline">
+                Integrate Memory <span class="text-gradient-accent italic">Anywhere.</span>
               </h3>
-              <p class="mt-6 mx-auto max-w-2xl text-tertiary">
-                We provide the tooling to make persistent memory a first-class
-                citizen in your development workflow, from local testing to
-                global scale.
+              <p class="mt-6 mx-auto max-w-2xl text-xs md:text-sm text-tertiary leading-relaxed">
+                We provide the tooling to make persistent memory a first-class citizen in your development workflow, from local testing to global scale.
               </p>
             </div>
 
@@ -2186,21 +2088,21 @@ export default component$(() => {
                 <Link
                   key={item.title}
                   href={item.link}
-                  class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-8 transition-all hover:border-primary/40"
+                  class="glass-panel rounded-2xl border border-white/5 p-8 transition-all hover:border-primary/25 bg-white/[0.01]"
                 >
-                  <div class="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-container-highest transition-transform group-hover:scale-110 shadow-lg">
+                  <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/20">
                     <MaterialIcon
                       name={item.icon}
-                      class=" text-2xl text-primary"
+                      class="text-xl text-primary"
                     />
                   </div>
-                  <h4 class="mb-4 text-xl font-bold">{item.title}</h4>
-                  <p class="mb-8 text-sm leading-relaxed text-tertiary">
+                  <h4 class="mb-3 text-lg font-bold font-headline text-on-surface">{item.title}</h4>
+                  <p class="mb-6 text-xs md:text-sm leading-relaxed text-tertiary">
                     {item.body}
                   </p>
-                  <div class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                  <div class="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-primary">
                     Explore Docs
-                    <MaterialIcon name="arrow_forward" class=" text-sm" />
+                    <MaterialIcon name="arrow_forward" class="text-xs" />
                   </div>
                 </Link>
               ))}
@@ -2209,43 +2111,42 @@ export default component$(() => {
         </section>
       </main>
 
-      <footer class="border-t border-outline-variant/10 bg-surface px-8 py-20">
+      <footer class="border-t border-white/5 bg-black px-8 py-16 md:py-24">
         <div class="container mx-auto grid grid-cols-1 gap-12 md:grid-cols-5">
           <div class="col-span-1 md:col-span-2">
-            <span class="mb-6 block text-2xl font-black uppercase tracking-tighter text-on-surface">
+            <span class="mb-4 block text-xl font-extrabold uppercase tracking-tighter text-on-surface font-headline">
               ALETHEIADB
             </span>
-            <p class="mb-8 max-w-sm text-sm leading-relaxed text-tertiary">
-              The persistent memory layer for advanced AI agents. Built for
-              humans, powered by Rust, dedicated to the truth.
+            <p class="mb-6 max-w-sm text-xs md:text-sm leading-relaxed text-tertiary">
+              The persistent memory layer for advanced AI agents. Built for humans, powered by Rust, dedicated to the truth.
             </p>
-            <p class="mb-6 text-sm text-tertiary">
+            <p class="mb-6 text-xs md:text-sm text-tertiary">
               Contact:{" "}
               <a href={CONTACT_MAILTO} class="text-primary hover:underline">
                 {CONTACT_EMAIL}
               </a>
             </p>
-            <div class="flex gap-4">
+            <div class="flex gap-3">
               <Link
                 href="/docs"
-                class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
+                class="glass-panel border border-white/5 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
               >
-                <MaterialIcon name="hub" class=" text-sm" />
+                <MaterialIcon name="hub" class="text-sm text-tertiary" />
               </Link>
               <Link
                 href="/blog"
-                class="glass-panel flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-primary"
+                class="glass-panel border border-white/5 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
               >
-                <MaterialIcon name="edit_square" class=" text-sm" />
+                <MaterialIcon name="edit_square" class="text-sm text-tertiary" />
               </Link>
             </div>
           </div>
 
           <div>
-            <h4 class="mb-6 text-sm font-bold uppercase tracking-widest text-primary">
+            <h4 class="mb-4 text-xs font-mono font-bold uppercase tracking-wider text-primary">
               Platform
             </h4>
-            <ul class="space-y-4 text-sm text-tertiary">
+            <ul class="space-y-3 text-xs md:text-sm text-tertiary">
               {platformLinks.map((item) => (
                 <li key={item.label}>
                   <Link
@@ -2260,10 +2161,10 @@ export default component$(() => {
           </div>
 
           <div>
-            <h4 class="mb-6 text-sm font-bold uppercase tracking-widest text-primary">
+            <h4 class="mb-4 text-xs font-mono font-bold uppercase tracking-wider text-primary">
               Company
             </h4>
-            <ul class="space-y-4 text-sm text-tertiary">
+            <ul class="space-y-3 text-xs md:text-sm text-tertiary">
               {companyLinks.map((item) => (
                 <li key={item.label}>
                   {item.href.startsWith("http") || item.href.startsWith("mailto:") ? (
@@ -2289,19 +2190,19 @@ export default component$(() => {
           </div>
 
           <div>
-            <h4 class="mb-6 text-sm font-bold uppercase tracking-widest text-primary">
+            <h4 class="mb-4 text-xs font-mono font-bold uppercase tracking-wider text-primary">
               Social
             </h4>
-            <ul class="space-y-4 text-sm text-tertiary">
+            <ul class="space-y-3 text-xs md:text-sm text-tertiary">
               <li>
                 <a
                   href={LINKEDIN_COMPANY_URL}
                   target="_blank"
                   rel="noreferrer"
-                  class="inline-flex items-center gap-3 transition-colors hover:text-on-surface"
+                  class="inline-flex items-center gap-2.5 transition-colors hover:text-on-surface"
                 >
-                  <span class="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant/15 bg-surface-container-low text-primary">
-                    <LinkedinIcon class="h-4 w-4" />
+                  <span class="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-white/[0.02] text-primary">
+                    <LinkedinIcon class="h-3.5 w-3.5" />
                   </span>
                   <span>LinkedIn</span>
                 </a>
@@ -2310,9 +2211,8 @@ export default component$(() => {
           </div>
         </div>
 
-        <div class="container mx-auto mt-20 border-t border-outline-variant/5 pt-8 text-center font-mono text-[10px] uppercase tracking-widest text-tertiary/50">
-          © 2026 AletheiaDB Systems. All human memories preserved. Truth
-          disclosed.
+        <div class="container mx-auto mt-16 border-t border-white/5 pt-8 text-center font-mono text-[9px] uppercase tracking-widest text-tertiary/45">
+          © 2026 AletheiaDB Systems. All human memories preserved. Truth disclosed.
         </div>
       </footer>
     </div>
