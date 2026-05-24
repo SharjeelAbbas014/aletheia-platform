@@ -19,16 +19,16 @@ export const onPost: RequestHandler = async (event) => {
   if (cluster.status === "active") throw event.error(400, "Cluster is already active");
 
   const vmSizeMap: Record<string, string> = {
-    azure_micro: "Standard_B1s",
-    azure_standard: "Standard_B2s",
-    azure_pro: "Standard_D2as_v5",
+    azure_micro: "Standard_D2s_v5",
+    azure_standard: "Standard_D2as_v5",
+    azure_pro: "Standard_D4s_v5",
     azure_scale: "Standard_D4as_v5",
     azure_gpu: "Standard_NC4as_T4",
-    dedicated_l4: "Standard_NV4as_v4",
+    dedicated_l4: "Standard_NV6as_v4",
   };
 
   const tier = cluster.tier || "azure_standard";
-  const vmSize = vmSizeMap[tier] || "Standard_B2s";
+  const vmSize = vmSizeMap[tier] || "Standard_D2s_v5";
   const storageGb = cluster.storage_gb || 50;
   const region = cluster.region === "shared" ? "westus2" : (cluster.region || "westus2");
 

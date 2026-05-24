@@ -300,17 +300,17 @@ function generatePassword(): string {
  */
 function getSizeFallbacks(requested: string): string[] {
   const fallbackMap: Record<string, string[]> = {
-    Standard_B1s: ["Standard_B1s", "Standard_D2s_v5", "Standard_D2as_v5"],
-    Standard_B2s: ["Standard_B2s", "Standard_D2as_v5", "Standard_D4as_v5"],
-    Standard_D2as_v5: ["Standard_D2as_v5", "Standard_D4as_v5"],
+    Standard_D2s_v5: ["Standard_D2s_v5", "Standard_D2as_v5"],
+    Standard_D2as_v5: ["Standard_D2as_v5", "Standard_D2s_v5"],
+    Standard_D4s_v5: ["Standard_D4s_v5", "Standard_D4as_v5"],
     Standard_D4as_v5: ["Standard_D4as_v5"],
-    Standard_NV4as_v4: ["Standard_NV4as_v4", "Standard_NC4as_T4"],
+    Standard_NV6as_v4: ["Standard_NV6as_v4"],
     Standard_NC4as_T4: ["Standard_NC4as_T4"],
   };
   return fallbackMap[requested] || [requested, "Standard_D2as_v5"];
 }
 
-const FALLBACK_REGIONS = ["eastus", "westeurope", "westus2"];
+const FALLBACK_REGIONS = ["westus2", "westeurope"];
 
 /**
  * Provisions a single dedicated Azure VM via ARM template for the exact

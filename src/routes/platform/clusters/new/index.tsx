@@ -213,11 +213,11 @@ export default component$(() => {
                   {
                     id: "azure_micro",
                     name: "Developer Micro",
-                    subName: "Azure Standard_B1s",
+                    subName: "Azure Standard_D2s_v5",
                     badge: "Dedicated VM",
                     badgeClass: "bg-green-500/10 text-green-400",
                     features: [
-                      "1 vCPU | 1 GiB RAM",
+                      "2 vCPUs | 8 GiB RAM",
                       "Dedicated instance",
                       "Aletheia cut included",
                       "Best for sandboxing & dev"
@@ -227,11 +227,11 @@ export default component$(() => {
                   {
                     id: "azure_standard",
                     name: "Agent Standard",
-                    subName: "Azure Standard_B2s",
+                    subName: "Azure Standard_D2as_v5",
                     badge: "Production VM",
                     badgeClass: "bg-blue-500/10 text-blue-400",
                     features: [
-                      "2 vCPUs | 4 GiB RAM",
+                      "2 vCPUs | 8 GiB RAM",
                       "Multi-agent core",
                       "Isolated SQLite index",
                       "Fast vector search"
@@ -241,11 +241,11 @@ export default component$(() => {
                   {
                     id: "azure_pro",
                     name: "Production Core",
-                    subName: "Azure Standard_D2as_v5",
+                    subName: "Azure Standard_D4s_v5",
                     badge: "High Performance",
                     badgeClass: "bg-orange-500/10 text-orange-400",
                     features: [
-                      "2 vCPUs | 8 GiB RAM",
+                      "4 vCPUs | 16 GiB RAM",
                       "Isolated storage allocation",
                       "Dedicated prod load",
                       "Zero noisy neighbors"
@@ -269,12 +269,12 @@ export default component$(() => {
                   {
                     id: "dedicated_l4",
                     name: "Dedicated Pro",
-                    subName: "Azure Standard_NV4as_v4",
+                    subName: "Azure Standard_NV6as_v4",
                     badge: "GPU VM",
                     badgeClass: "bg-red-500/10 text-red-400",
                     features: [
-                      "4 vCPUs | 14 GiB RAM",
-                      "1/8 AMD Radeon Pro V320 GPU",
+                      "6 vCPUs | 56 GiB RAM",
+                      "1 AMD Radeon Pro V620 GPU",
                       "Hardware accelerated hosting",
                       "Dedicated memory engine"
                     ],

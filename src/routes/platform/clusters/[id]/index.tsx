@@ -129,16 +129,16 @@ export const useRetryProvision = routeAction$(async (data, event) => {
   }
 
   const vmSizeMap: Record<string, string> = {
-    azure_micro: "Standard_B1s",
-    azure_standard: "Standard_B2s",
-    azure_pro: "Standard_D2as_v5",
+    azure_micro: "Standard_D2s_v5",
+    azure_standard: "Standard_D2as_v5",
+    azure_pro: "Standard_D4s_v5",
     azure_scale: "Standard_D4as_v5",
     azure_gpu: "Standard_NC4as_T4",
-    dedicated_l4: "Standard_NV4as_v4",
+    dedicated_l4: "Standard_NV6as_v4",
   };
 
   const tier = cluster.tier || "azure_standard";
-  const vmSize = vmSizeMap[tier] || "Standard_B2s";
+  const vmSize = vmSizeMap[tier] || "Standard_D2s_v5";
   const storageGb = parseInt(String(data.storage_gb || "50"), 10);
 
   await supabase.from("clusters").update({
@@ -182,13 +182,13 @@ export default component$(() => {
   const retrying = useSignal(false);
 
   const vmSize = {
-    azure_micro: "Standard_B1s",
-    azure_standard: "Standard_B2s",
-    azure_pro: "Standard_D2as_v5",
+    azure_micro: "Standard_D2s_v5",
+    azure_standard: "Standard_D2as_v5",
+    azure_pro: "Standard_D4s_v5",
     azure_scale: "Standard_D4as_v5",
     azure_gpu: "Standard_NC4as_T4",
-    dedicated_l4: "Standard_NV4as_v4",
-  }[cluster.tier as string] || "Standard_B1s";
+    dedicated_l4: "Standard_NV6as_v4",
+  }[cluster.tier as string] || "Standard_D2s_v5";
 
   const loc = useLocation();
   const nav = useNavigate();
