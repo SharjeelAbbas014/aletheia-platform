@@ -295,6 +295,22 @@ function generatePassword(): string {
 }
 
 /**
+ * Returns an ordered list of VM sizes to try for a given requested size.
+ * Falls back to larger sizes in the same family, then to general-purpose D-series.
+ */
+function getSizeFallbacks(requested: string): string[] {
+  const fallbackMap: Record<string, string[]> = {
+    Standard_B1s: ["Standard_B1s", "Standard_B2s", "Standard_DS1_v2", "Standard_D2as_v5"],
+    Standard_B2s: ["Standard_B2s", "Standard_D2as_v5", "Standard_D4as_v5"],
+    Standard_D2as_v5: ["Standard_D2as_v5", "Standard_D4as_v5"],
+    Standard_D4as_v5: ["Standard_D4as_v5"],
+    Standard_NV4as_v4: ["Standard_NV4as_v4", "Standard_NC4as_T4"],
+    Standard_NC4as_T4: ["Standard_NC4as_T4", "Standard_NC6s_v3"],
+  };
+  return fallbackMap[requested] || [requested, "Standard_D2as_v5"];
+}
+
+/**
  * Real Azure REST API provisioning client.
  * Deploys a dedicated Azure VM via ARM template and installs the AletheiaDB engine.
  */
@@ -328,30 +344,51 @@ export async function triggerAzureVMProvisioning(
     const deploymentName = `aletheia-vm-deploy-${clusterId}`;
     const deploymentUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}/providers/Microsoft.Resources/deployments/${deploymentName}?api-version=2021-04-01`;
 
-    const armTemplate = buildARMTemplate(clusterId, size, storageGb, region, adminKey);
+    // Try requested size, then fallback sizes if SkuNotAvailable
+    const fallbackSizes = getSizeFallbacks(size);
+    let lastError: string = "";
+    let deployData: any = null;
 
-    console.log(`[Azure Provisioning] Submitting ARM deployment for VM size ${size}, ${storageGb} GB storage in ${region}...`);
+    for (const trySize of fallbackSizes) {
+      const armTemplate = buildARMTemplate(clusterId, trySize, storageGb, region, adminKey);
+      console.log(`[Azure Provisioning] Attempting ARM deployment with VM size ${trySize} in ${region}...`);
 
-    const deployRes = await fetch(deploymentUrl, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        properties: {
-          mode: "Incremental",
-          template: armTemplate,
+      const deployRes = await fetch(deploymentUrl, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          properties: {
+            mode: "Incremental",
+            template: armTemplate,
+          },
+        }),
+      });
 
-    if (!deployRes.ok) {
+      if (deployRes.ok) {
+        deployData = await deployRes.json();
+        console.log(`[Azure Provisioning] Deployment submitted successfully with size ${trySize}.`);
+        break;
+      }
+
       const text = await deployRes.text();
-      throw new Error(`ARM deployment failed (${deployRes.status}): ${text}`);
+      const isSkuError = text.includes("SkuNotAvailable");
+      lastError = text;
+
+      if (!isSkuError) {
+        // Non-sku error (auth, quota, etc.) — stop retrying
+        throw new Error(`ARM deployment failed (${deployRes.status}): ${text}`);
+      }
+
+      console.log(`[Azure Provisioning] Size ${trySize} not available in ${region}. Trying next fallback...`);
     }
 
-    const deployData = await deployRes.json();
+    if (!deployData) {
+      throw new Error(`All VM sizes unavailable in ${region}. Last error: ${lastError}`);
+    }
+
     const outputs = deployData.properties?.outputs || {};
     const endpointUrl = outputs.endpointURL?.value || `https://${clusterId}.vm.aletheiadb.com:8443`;
 

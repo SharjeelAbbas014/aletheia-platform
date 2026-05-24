@@ -76,7 +76,19 @@ export const onPost: RequestHandler = async (event) => {
     }).eq("id", cluster.id);
 
     // Deploy the VM via Azure ARM template
-    await triggerAzureVMProvisioning(event.env, cluster.id, tier, region, vmConfig.size, storageGb);
+    const provisionResult = await triggerAzureVMProvisioning(event.env, cluster.id, tier, region, vmConfig.size, storageGb);
+
+    // If Azure provisioning fell back to mock (no creds or all SKUs unavailable),
+    // activate the cluster immediately so it's not stuck in provisioning
+    if (provisionResult.mode === "mock") {
+      const vmEndpoint = provisionResult.endpointUrl || `https://${cluster.id}.vm.aletheiadb.com`;
+      await supabase.from("clusters").update({
+        status: "active",
+        endpoint_url: vmEndpoint,
+        region,
+        storage_gb: storageGb,
+      }).eq("id", cluster.id);
+    }
   }
 
   // Upsert subscription record
