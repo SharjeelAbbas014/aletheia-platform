@@ -620,6 +620,30 @@ client.ingest(
 
         {activeMissionTab.value === "billing" && (
           <div class="space-y-12">
+            {loc.url.searchParams.get("success") === "true" && (
+              <div class="rounded-2xl bg-green-500/10 border border-green-500/30 p-6 mb-6 text-green-400 flex items-center gap-3 animate-fade-in">
+                <CheckCircle2Icon class="w-6 h-6 shrink-0 text-green-400" />
+                <div>
+                  <p class="font-bold">Payment Successful!</p>
+                  <p class="text-xs text-tertiary mt-1">
+                    {loc.url.searchParams.get("tokens") 
+                      ? `${Number(loc.url.searchParams.get("tokens")).toLocaleString()} prepaid truths have been added to your account.`
+                      : "Your subscription has been updated and your hosting plan is active."}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {loc.url.searchParams.get("canceled") === "true" && (
+              <div class="rounded-2xl bg-red-500/10 border border-red-500/30 p-6 mb-6 text-red-400 flex items-center gap-3 animate-fade-in">
+                <div class="h-6 w-6 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 font-bold shrink-0">!</div>
+                <div>
+                  <p class="font-bold">Payment Canceled</p>
+                  <p class="text-xs text-tertiary mt-1">The checkout session was canceled. No charges were made.</p>
+                </div>
+              </div>
+            )}
+
             {/* Prepaid Token Balance & Monthly Free Allocation */}
             <section class="grid gap-6 md:grid-cols-2 animate-fade-in">
               {/* Token Credits Status */}

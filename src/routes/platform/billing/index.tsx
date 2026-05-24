@@ -8,7 +8,8 @@ import { getSubscription } from "~/lib/subscriptions";
 import { requireAuth } from "~/lib/auth";
 
 export const onRequest: RequestHandler = (event) => {
-  throw event.redirect(302, "/platform?tab=billing");
+  const search = event.url.search;
+  throw event.redirect(302, `/platform?tab=billing${search}`);
 };
 
 export const useBillingData = routeLoader$(async (event) => {
