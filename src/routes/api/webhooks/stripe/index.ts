@@ -113,7 +113,7 @@ export const onPost: RequestHandler = async (event) => {
 
             // Only provision if the cluster hasn't been activated already
             if (existingCluster && existingCluster.status !== "active") {
-              const clusterRegion = existingCluster?.region || "eastus";
+              const clusterRegion = existingCluster?.region || "westus2";
               const vmSize = {
                 azure_micro: "Standard_B1s",
                 azure_standard: "Standard_B2s",

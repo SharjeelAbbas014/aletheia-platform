@@ -186,8 +186,8 @@ export default component$(() => {
                 class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-low px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors max-w-md cursor-pointer"
                 required
               >
-                <option value="eastus" selected>East US (Virginia)</option>
-                <option value="westus2">West US 2 (Washington)</option>
+                <option value="westus2" selected>West US 2 (Washington)</option>
+                <option value="eastus">East US (Virginia)</option>
                 <option value="northeurope">North Europe (Ireland)</option>
                 <option value="westeurope">West Europe (Netherlands)</option>
                 <option value="southeastasia">Southeast Asia (Singapore)</option>

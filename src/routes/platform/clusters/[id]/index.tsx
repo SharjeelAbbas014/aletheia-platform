@@ -1,4 +1,4 @@
-import { component$, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useVisibleTask$, useSignal } from "@builder.io/qwik";
 import { routeLoader$, routeAction$, Form, Link, type DocumentHead, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { buildSeoHead } from "~/lib/seo";
 import { setPrivateNoStore } from "~/lib/cache";
@@ -16,6 +16,7 @@ import {
   UsersIcon,
   FileTextIcon,
   ServerIcon,
+  RefreshCwIcon,
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
@@ -106,11 +107,79 @@ export const useDeleteCluster = routeAction$(async (data, event) => {
   throw event.redirect(302, "/platform");
 });
 
+export const useRetryProvision = routeAction$(async (data, event) => {
+  const user = requireAuth(event);
+  const clusterId = String(data.cluster_id || "");
+  const region = String(data.region || "westus2");
+  const supabase = getAdminSupabaseClient(event.env);
+  if (!supabase) throw event.error(500, "Database connection offline");
+
+  const { data: cluster } = await supabase
+    .from("clusters")
+    .select("id, user_id, tier, status")
+    .eq("id", clusterId)
+    .maybeSingle();
+
+  if (!cluster || cluster.user_id !== user.user_id) {
+    throw event.error(404, "Cluster not found");
+  }
+
+  if (cluster.status === "active") {
+    throw event.error(400, "Cluster is already active");
+  }
+
+  const vmSizeMap: Record<string, string> = {
+    azure_micro: "Standard_B1s",
+    azure_standard: "Standard_B2s",
+    azure_pro: "Standard_D2as_v5",
+    azure_scale: "Standard_D4as_v5",
+    azure_gpu: "Standard_NC4as_T4",
+    dedicated_l4: "Standard_NV4as_v4",
+  };
+
+  const tier = cluster.tier || "azure_standard";
+  const vmSize = vmSizeMap[tier] || "Standard_B2s";
+  const storageGb = parseInt(String(data.storage_gb || "50"), 10);
+
+  await supabase.from("clusters").update({
+    status: "provisioning",
+    region,
+  }).eq("id", clusterId);
+
+  const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
+  const functionUrl = `${supabaseUrl}/functions/v1/provision-vm`;
+
+  try {
+    const fnRes = await fetch(functionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: event.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+      },
+      body: JSON.stringify({ clusterId, tier, region, vmSize, storageGb }),
+    });
+
+    const fnResult = await fnRes.json();
+    if (fnResult.submitted) {
+      await supabase.from("clusters").update({ region }).eq("id", clusterId);
+      return { success: true, region };
+    } else {
+      await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
+      return { success: false, error: fnResult.error || "Provisioning failed" };
+    }
+  } catch (fnErr: any) {
+    await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
+    return { success: false, error: fnErr.message || "Edge function call failed" };
+  }
+});
+
 export default component$(() => {
   const data = useClusterDetail();
   const deleteAction = useDeleteCluster();
+  const retryAction = useRetryProvision();
   const cluster = data.value.cluster as any;
   const stats = data.value.coreStats as any;
+  const retrying = useSignal(false);
 
   const vmSize = {
     azure_micro: "Standard_B1s",
@@ -143,6 +212,9 @@ export default component$(() => {
   };
 
   if (cluster.status === "provisioning") {
+    const createdMs = new Date(cluster.created_at).getTime();
+    const elapsedMin = Math.floor((Date.now() - createdMs) / 60000);
+    const stuck = elapsedMin > 3;
     const platformUrl = loc.url.origin;
     const activateCurl = `curl -X POST ${platformUrl}/api/clusters/${cluster.id}/activate \\\n  -H "x-admin-key: 82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a" \\\n  -H "Content-Type: application/json" \\\n  -d '{"ip_address": "YOUR_VM_PUBLIC_IP"}'`;
 
@@ -182,6 +254,40 @@ export default component$(() => {
               </div>
             </section>
 
+            {stuck && (
+              <section class="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 mb-6">
+                <h3 class="text-sm font-bold text-red-400 mb-2">Provisioning Taking Longer Than Expected</h3>
+                <p class="text-xs text-tertiary mb-4 leading-relaxed">
+                  This cluster has been provisioning for {elapsedMin} minutes. If you selected a region with limited capacity, the VM size may not be available. Try a different region like <span class="font-semibold text-on-surface">West US 2</span>.
+                </p>
+                <Form action={retryAction} class="flex flex-col gap-3">
+                  <input type="hidden" name="cluster_id" value={cluster.id} />
+                  <input type="hidden" name="storage_gb" value={cluster.storage_gb || 50} />
+                  <div class="flex items-end gap-3">
+                    <div class="flex-1">
+                      <label class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-1 block">Region</label>
+                      <select name="region" class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-low px-3 py-2 text-on-surface text-sm outline-none focus:border-primary">
+                        <option value="westus2" selected>West US 2 (Washington)</option>
+                        <option value="eastus">East US (Virginia)</option>
+                        <option value="westeurope">West Europe (Netherlands)</option>
+                        <option value="northeurope">North Europe (Ireland)</option>
+                        <option value="southeastasia">Southeast Asia (Singapore)</option>
+                      </select>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={retrying.value}
+                      class="rounded-lg bg-red-600 hover:bg-red-700 px-4 py-2 text-xs font-bold text-white transition-all flex items-center gap-2 shrink-0"
+                      onClick$={() => { retrying.value = true; }}
+                    >
+                      <RefreshCwIcon class="w-3.5 h-3.5" />
+                      Retry Provisioning
+                    </button>
+                  </div>
+                </Form>
+              </section>
+            )}
+
             <div class="flex justify-between items-center px-2">
               <Link href="/platform" class="text-xs font-bold text-tertiary hover:text-primary transition-colors flex items-center gap-1">
                 <ArrowLeftIcon class="w-3.5 h-3.5" /> Return to Mission Control
@@ -211,17 +317,39 @@ export default component$(() => {
             <p class="text-tertiary text-sm mb-6">
               The Azure VM could not be created for cluster <span class="font-semibold text-on-surface">{cluster.name}</span>.
             </p>
-            <div class="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 mb-8 text-left">
+            <div class="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 mb-6 text-left">
               <p class="text-xs font-bold uppercase tracking-widest text-red-400 mb-2">What went wrong</p>
               <p class="text-sm text-tertiary leading-relaxed">
-                The VM size <code class="font-mono text-amber-400">{vmSize}</code> is not available in <span class="font-semibold text-on-surface">{(cluster.region || "eastus").toUpperCase()}</span>.
+                The VM size <code class="font-mono text-amber-400">{vmSize}</code> is not available in <span class="font-semibold text-on-surface">{(cluster.region || "westus2").toUpperCase()}</span>.
                 This is a capacity restriction in that Azure region — your subscription and payment are valid.
               </p>
             </div>
+            <div class="rounded-2xl border border-primary/20 bg-primary/5 p-6 mb-8 text-left">
+              <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2">Retry with a different region</p>
+              <Form action={retryAction} class="flex items-end gap-3">
+                <input type="hidden" name="cluster_id" value={cluster.id} />
+                <input type="hidden" name="storage_gb" value={cluster.storage_gb || 50} />
+                <div class="flex-1">
+                  <select name="region" class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-low px-3 py-2 text-on-surface text-sm outline-none focus:border-primary">
+                    <option value="westus2" selected>West US 2 (Washington)</option>
+                    <option value="eastus">East US (Virginia)</option>
+                    <option value="westeurope">West Europe (Netherlands)</option>
+                    <option value="northeurope">North Europe (Ireland)</option>
+                    <option value="southeastasia">Southeast Asia (Singapore)</option>
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  disabled={retrying.value}
+                  class="rounded-lg bg-primary hover:bg-primary/90 px-4 py-2 text-sm font-bold text-on-primary transition-all flex items-center gap-2 shrink-0"
+                  onClick$={() => { retrying.value = true; }}
+                >
+                  <RefreshCwIcon class="w-3.5 h-3.5" />
+                  Retry Provisioning
+                </button>
+              </Form>
+            </div>
             <div class="flex items-center justify-center gap-4 flex-wrap">
-              <Link href={`/platform/clusters/new?tier=azure_standard`} class="rounded-lg bg-primary px-6 py-3 font-bold text-sm text-on-primary transition-all hover:scale-[1.02]">
-                Try a Different VM Size
-              </Link>
               <Link href="/platform" class="rounded-lg border border-outline-variant/20 px-6 py-3 font-bold text-sm text-on-surface transition-all hover:bg-surface-container-high">
                 Back to Mission Control
               </Link>

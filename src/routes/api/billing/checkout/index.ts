@@ -11,7 +11,7 @@ export const onPost: RequestHandler = async (event) => {
   const body = (await event.parseBody()) as { tier?: string; name?: string; region?: string; storage_gb?: string } | null;
   const tier = body?.tier || "fractional";
   const name = (body?.name || "My Cluster").trim();
-  const region = body?.region || "eastus";
+  const region = body?.region || "westus2";
   const storageGb = tier === "fractional" ? 10 : Math.max(10, Math.min(1000, parseInt(body?.storage_gb || "50", 10) || 50));
 
   const supabase = getAdminSupabaseClient(event.env);
