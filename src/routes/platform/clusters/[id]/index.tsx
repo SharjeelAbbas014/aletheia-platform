@@ -51,7 +51,7 @@ export const useDeleteCluster = routeAction$(async (data, event) => {
   // 1. Get cluster detail to verify ownership
   const { data: cluster } = await supabase
     .from("clusters")
-    .select("user_id, tier")
+    .select("user_id, tier, region, status")
     .eq("id", clusterId)
     .single();
 
@@ -59,7 +59,30 @@ export const useDeleteCluster = routeAction$(async (data, event) => {
     throw event.error(404, "Cluster not found");
   }
 
-  // 2. Cancel Stripe subscription if it's a dedicated VM and user has subscription
+  // 2. Delete Azure VM if dedicated tier
+  if (cluster.tier !== "fractional" && cluster.region && cluster.region !== "shared") {
+    const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
+    const functionUrl = `${supabaseUrl}/functions/v1/cleanup-vm`;
+
+    try {
+      const fnRes = await fetch(functionUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: event.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+        },
+        body: JSON.stringify({ clusterId, region: cluster.region }),
+      });
+      if (!fnRes.ok) {
+        const err = await fnRes.json();
+        console.error(`Azure cleanup failed for ${clusterId}: ${err.error}`);
+      }
+    } catch (fnErr: any) {
+      console.error(`Azure cleanup call failed for ${clusterId}:`, fnErr.message);
+    }
+  }
+
+  // 3. Cancel Stripe subscription if it's a dedicated VM and user has subscription
   if (cluster.tier !== "fractional") {
     const { data: sub } = await supabase
       .from("subscriptions")
@@ -94,7 +117,7 @@ export const useDeleteCluster = routeAction$(async (data, event) => {
       .eq("user_id", user.user_id);
   }
 
-  // 3. Soft delete the cluster
+  // 4. Soft delete the cluster
   const { error } = await supabase
     .from("clusters")
     .update({ status: "deleted" })
