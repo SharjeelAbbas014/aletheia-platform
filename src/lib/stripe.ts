@@ -49,7 +49,7 @@ export async function constructWebhookEvent(
   rawBody: string,
   signature: string
 ) {
-  return getStripeClient(env).webhooks.constructEvent(
+  return getStripeClient(env).webhooks.constructEventAsync(
     rawBody,
     signature,
     env.get("STRIPE_WEBHOOK_SECRET") || ""
