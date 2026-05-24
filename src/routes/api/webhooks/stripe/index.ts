@@ -70,8 +70,8 @@ export const onPost: RequestHandler = async (event) => {
       } else if (userId && subscriptionId) {
         try {
           const sub = await retrieveStripeSubscription(event.env, subscriptionId);
-          const priceId = sub.items.data[0]?.price.id;
-          const tier = (sub.metadata?.tier as string) || sub.items.data[0]?.price.nickname?.toLowerCase() || "dedicated_l4";
+          const priceId = sub.items?.data?.[0]?.price?.id;
+          const tier = (sub.metadata?.tier as string) || sub.items?.data?.[0]?.price?.nickname || "dedicated_l4";
           const storageGb = parseInt(sub.metadata?.storage_gb || "50", 10);
           const vmSize = {
             azure_micro: "Standard_B1s",
@@ -82,15 +82,15 @@ export const onPost: RequestHandler = async (event) => {
             dedicated_l4: "Standard_NV4as_v4",
           }[tier];
 
-          const vmMonthlyPrice = (sub.items.data[0]?.price.unit_amount || 0) / 100;
+          const vmMonthlyPrice = (sub.items?.data?.[0]?.price?.unit_amount || 0) / 100;
           await upsertSubscription(event.env, userId, {
             stripe_customer_id: customerId,
             stripe_subscription_id: subscriptionId,
             stripe_price_id: priceId,
             tier,
             status: sub.status,
-            current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+            current_period_start: sub.current_period_start ? new Date(sub.current_period_start * 1000).toISOString() : undefined,
+            current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : undefined,
             vm_size: vmSize || undefined,
             vm_monthly_price: vmMonthlyPrice,
             storage_gb: storageGb,
@@ -110,30 +110,41 @@ export const onPost: RequestHandler = async (event) => {
               .update({ tier, storage_gb: storageGb })
               .eq("id", clusterId);
           }
-        } catch (err) {
-          console.error("Webhook processing failed for subscription:", err);
+        } catch (err: any) {
+          console.error("[Stripe Webhook] checkout.session.completed subscription processing failed", {
+            userId,
+            clusterId,
+            subscriptionId,
+            error: err.message,
+            stack: err.stack?.slice(0, 500),
+          });
         }
       }
       break;
     }
 
     case "customer.subscription.updated": {
-      const sub = stripeEvent.data.object;
-      const subId = sub.id;
-      const priceId = sub.items.data[0]?.price.id;
-      const tier = (sub.metadata?.tier as string) || sub.items.data[0]?.price.nickname?.toLowerCase() || "dedicated_l4";
+      try {
+        const sub = stripeEvent.data.object;
+        const subId = sub.id;
+        if (!subId) break;
+        const priceId = sub.items?.data?.[0]?.price?.id;
+        const tier = (sub.metadata?.tier as string) || sub.items?.data?.[0]?.price?.nickname || "dedicated_l4";
 
-      await supabase
-        .from("subscriptions")
-        .update({
-          stripe_price_id: priceId,
-          tier,
-          status: sub.status,
-          current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("stripe_subscription_id", subId);
+        await supabase
+          .from("subscriptions")
+          .update({
+            stripe_price_id: priceId || undefined,
+            tier,
+            status: sub.status || "active",
+            current_period_start: sub.current_period_start ? new Date(sub.current_period_start * 1000).toISOString() : undefined,
+            current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : undefined,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", subId);
+      } catch (err: any) {
+        console.error("[Stripe Webhook] customer.subscription.updated failed", err);
+      }
       break;
     }
 
