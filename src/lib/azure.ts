@@ -32,22 +32,285 @@ export function getProvisioningSteps(createdAt: string, region: string, size: st
     });
 }
 
+interface AzureAccessToken {
+  token: string;
+  expiresOn: number;
+}
+
+async function getAzureToken(
+  tenantId: string,
+  clientId: string,
+  clientSecret: string
+): Promise<AzureAccessToken> {
+  const authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: clientId,
+    client_secret: clientSecret,
+    scope: "https://management.azure.com/.default",
+  });
+
+  const res = await fetch(authUrl, {
+    method: "POST",
+    body,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Azure OAuth failed (${res.status}): ${text}`);
+  }
+
+  const data = await res.json();
+  return {
+    token: data.access_token,
+    expiresOn: Date.now() + data.expires_in * 1000,
+  };
+}
+
+async function ensureResourceGroup(
+  token: string,
+  subscriptionId: string,
+  region: string
+): Promise<void> {
+  const rgName = `aletheia-rg-${region}`;
+  const url = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}?api-version=2021-04-01`;
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ location: region }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to create resource group: ${text}`);
+  }
+}
+
+function buildARMTemplate(
+  clusterId: string,
+  size: string,
+  storageGb: number,
+  region: string,
+  adminKey: string
+): object {
+  const vmName = `aletheia-vm-${clusterId.slice(0, 8)}`;
+  const nicName = `${vmName}-nic`;
+  const publicIpName = `${vmName}-pip`;
+  const nsgName = `${vmName}-nsg`;
+  const vnetName = `${vmName}-vnet`;
+  const osDiskName = `${vmName}-osdisk`;
+  const dataDiskName = `${vmName}-datadisk`;
+
+  return {
+    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    contentVersion: "1.0.0.0",
+    parameters: {},
+    variables: {},
+    resources: [
+      {
+        type: "Microsoft.Network/publicIPAddresses",
+        apiVersion: "2023-09-01",
+        name: publicIpName,
+        location: region,
+        sku: { name: "Standard" },
+        properties: {
+          publicIPAllocationMethod: "Static",
+          dnsSettings: {
+            domainNameLabel: vmName.toLowerCase(),
+          },
+        },
+      },
+      {
+        type: "Microsoft.Network/networkSecurityGroups",
+        apiVersion: "2023-09-01",
+        name: nsgName,
+        location: region,
+        properties: {
+          securityRules: [
+            {
+              name: "SSH",
+              properties: {
+                protocol: "Tcp",
+                sourcePortRange: "*",
+                destinationPortRange: "22",
+                sourceAddressPrefix: "*",
+                destinationAddressPrefix: "*",
+                access: "Allow",
+                priority: 1000,
+                direction: "Inbound",
+              },
+            },
+            {
+              name: "AletheiaDB-API",
+              properties: {
+                protocol: "Tcp",
+                sourcePortRange: "*",
+                destinationPortRange: "8443",
+                sourceAddressPrefix: "*",
+                destinationAddressPrefix: "*",
+                access: "Allow",
+                priority: 1001,
+                direction: "Inbound",
+              },
+            },
+          ],
+        },
+      },
+      {
+        type: "Microsoft.Network/virtualNetworks",
+        apiVersion: "2023-09-01",
+        name: vnetName,
+        location: region,
+        properties: {
+          addressSpace: { addressPrefixes: ["10.0.0.0/16"] },
+          subnets: [
+            {
+              name: "default",
+              properties: {
+                addressPrefix: "10.0.0.0/24",
+                networkSecurityGroup: { id: `[resourceId('Microsoft.Network/networkSecurityGroups', '${nsgName}')]` },
+              },
+            },
+          ],
+        },
+        dependsOn: [nsgName],
+      },
+      {
+        type: "Microsoft.Network/networkInterfaces",
+        apiVersion: "2023-09-01",
+        name: nicName,
+        location: region,
+        properties: {
+          ipConfigurations: [
+            {
+              name: "ipconfig1",
+              properties: {
+                subnet: {
+                  id: `[resourceId('Microsoft.Network/virtualNetworks/subnets', '${vnetName}', 'default')]`,
+                },
+                publicIPAddress: {
+                  id: `[resourceId('Microsoft.Network/publicIPAddresses', '${publicIpName}')]`,
+                },
+              },
+            },
+          ],
+        },
+        dependsOn: [vnetName, publicIpName],
+      },
+      {
+        type: "Microsoft.Compute/virtualMachines",
+        apiVersion: "2023-09-01",
+        name: vmName,
+        location: region,
+        properties: {
+          hardwareProfile: { vmSize: size },
+          storageProfile: {
+            imageReference: {
+              publisher: "Canonical",
+              offer: "0001-com-ubuntu-server-jammy",
+              sku: "22_04-lts-gen2",
+              version: "latest",
+            },
+            osDisk: {
+              name: osDiskName,
+              createOption: "FromImage",
+              managedDisk: { storageAccountType: "Premium_LRS" },
+              diskSizeGB: 30,
+            },
+            dataDisks: [
+              {
+                name: dataDiskName,
+                lun: 0,
+                createOption: "Empty",
+                diskSizeGB: storageGb,
+                managedDisk: { storageAccountType: "Premium_LRS" },
+              },
+            ],
+          },
+          osProfile: {
+            computerName: vmName,
+            adminUsername: "aletheia",
+            adminPassword: generatePassword(),
+            linuxConfiguration: {
+              disablePasswordAuthentication: false,
+            },
+          },
+          networkProfile: {
+            networkInterfaces: [
+              {
+                id: `[resourceId('Microsoft.Network/networkInterfaces', '${nicName}')]`,
+                properties: { primary: true },
+              },
+            ],
+          },
+          diagnosticsProfile: {
+            bootDiagnostics: { enabled: false },
+          },
+        },
+        dependsOn: [nicName],
+      },
+      {
+        type: "Microsoft.Compute/virtualMachines/extensions",
+        apiVersion: "2023-09-01",
+        name: `${vmName}/bootstrap`,
+        location: region,
+        properties: {
+          publisher: "Microsoft.Azure.Extensions",
+          type: "CustomScript",
+          typeHandlerVersion: "2.1",
+          autoUpgradeMinorVersion: true,
+          settings: {
+            commandToExecute: `curl -sSfL "https://aletheiadb.com/install.sh" | bash -s -- --admin-key "${adminKey}" --cluster-id "${clusterId}" --data-disk "/dev/disk/azure/scsi1/lun0"`,
+          },
+        },
+        dependsOn: [vmName],
+      },
+    ],
+    outputs: {
+      vmName: { type: "string", value: vmName },
+      publicIP: {
+        type: "string",
+        value: `[reference(resourceId('Microsoft.Network/publicIPAddresses', '${publicIpName}')).dnsSettings.fqdn]`,
+      },
+      endpointURL: {
+        type: "string",
+        value: `[concat('https://', reference(resourceId('Microsoft.Network/publicIPAddresses', '${publicIpName}')).dnsSettings.fqdn, ':8443')]`,
+      },
+    },
+  };
+}
+
+function generatePassword(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+  let password = "Aletheia1!";
+  for (let i = 0; i < 20; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
+
 /**
  * Real Azure REST API provisioning client.
- * Attempts to deploy a dedicated Azure VM template if credentials are provided,
- * otherwise returns a mock token to trigger the simulated edge queue.
+ * Deploys a dedicated Azure VM via ARM template and installs the AletheiaDB engine.
  */
 export async function triggerAzureVMProvisioning(
   env: RequestEventCommon["env"],
   clusterId: string,
   tier: string,
   region: string,
-  size: string
-): Promise<{ success: boolean; mode: "real" | "mock"; details?: string }> {
+  size: string,
+  storageGb: number = 50
+): Promise<{ success: boolean; mode: "real" | "mock"; details?: string; endpointUrl?: string }> {
   const clientId = env.get("AZURE_CLIENT_ID");
   const clientSecret = env.get("AZURE_CLIENT_SECRET");
   const tenantId = env.get("AZURE_TENANT_ID");
   const subscriptionId = env.get("AZURE_SUBSCRIPTION_ID");
+  const adminKey = env.get("ALETHEIADB_ADMIN_KEY") || "";
 
   if (!clientId || !clientSecret || !tenantId || !subscriptionId) {
     console.log(`[Azure Provisioning] Missing credentials. Simulating provisioning for cluster ${clusterId}.`);
@@ -55,49 +318,57 @@ export async function triggerAzureVMProvisioning(
   }
 
   try {
-    console.log(`[Azure Provisioning] Authenticating service principal for Azure SDK...`);
-    // 1. Get OAuth2 Token from Azure Active Directory
-    const authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-    const body = new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: clientId,
-      client_secret: clientSecret,
-      scope: "https://management.azure.com/.default",
+    console.log(`[Azure Provisioning] Authenticating with Azure AD...`);
+    const { token } = await getAzureToken(tenantId, clientId, clientSecret);
+
+    console.log(`[Azure Provisioning] Ensuring resource group aletheia-rg-${region}...`);
+    await ensureResourceGroup(token, subscriptionId, region);
+
+    const rgName = `aletheia-rg-${region}`;
+    const deploymentName = `aletheia-vm-deploy-${clusterId}`;
+    const deploymentUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}/providers/Microsoft.Resources/deployments/${deploymentName}?api-version=2021-04-01`;
+
+    const armTemplate = buildARMTemplate(clusterId, size, storageGb, region, adminKey);
+
+    console.log(`[Azure Provisioning] Submitting ARM deployment for VM size ${size}, ${storageGb} GB storage in ${region}...`);
+
+    const deployRes = await fetch(deploymentUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        properties: {
+          mode: "Incremental",
+          template: armTemplate,
+        },
+      }),
     });
 
-    const tokenRes = await fetch(authUrl, {
-      method: "POST",
-      body,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
-
-    if (!tokenRes.ok) {
-      throw new Error(`Azure OAuth authentication failed: ${tokenRes.statusText}`);
+    if (!deployRes.ok) {
+      const text = await deployRes.text();
+      throw new Error(`ARM deployment failed (${deployRes.status}): ${text}`);
     }
 
-    const tokenData = await tokenRes.json();
-    const accessToken = tokenData.access_token;
+    const deployData = await deployRes.json();
+    const outputs = deployData.properties?.outputs || {};
+    const endpointUrl = outputs.endpointURL?.value || `https://${clusterId}.vm.aletheiadb.com:8443`;
 
-    console.log(`[Azure Provisioning] Launching deployment for VM size ${size} in region ${region}...`);
-    // 2. Call Azure Resource Manager API to deploy a VM template
-    const deploymentUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/aletheia-rg-${region}/providers/Microsoft.Resources/deployments/aletheia-vm-deploy-${clusterId}?api-version=2021-04-01`;
-    
-    // We would send a PUT request with an ARM template payload to provision standard VMs
-    // To be safe in production & avoid breaking the UI on invalid trial subscriptions, 
-    // we log the operation and return success.
-    console.log(`[Azure Provisioning] Azure REST request successfully dispatched to resource manager.`);
+    console.log(`[Azure Provisioning] Deployment submitted successfully. Endpoint will be available at ${endpointUrl}`);
 
     return {
       success: true,
       mode: "real",
-      details: `Dispatched ARM template PUT request to Microsoft.Resources/deployments.`,
+      details: `ARM deployment ${deploymentName} submitted.`,
+      endpointUrl,
     };
   } catch (err: any) {
     console.error("[Azure Provisioning] Real provisioning failed. Falling back to simulation.", err);
     return {
       success: true,
       mode: "mock",
-      details: `Authentication/SDK failure: ${err.message}`,
+      details: `Provisioning failure: ${err.message}`,
     };
   }
 }

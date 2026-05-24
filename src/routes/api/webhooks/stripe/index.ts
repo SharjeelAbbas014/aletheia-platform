@@ -103,11 +103,12 @@ export const onPost: RequestHandler = async (event) => {
             description: `AletheiaDB - Dedicated VM (${tier.replace("_", " ")}, ${storageGb} GB Storage)`,
           });
 
-          // Update cluster with tier and storage capacity, but do NOT set status: "active"
+          // Activate the cluster since payment succeeded
           if (clusterId) {
+            const vmEndpoint = `https://${clusterId}.vm.aletheiadb.com`;
             await supabase
               .from("clusters")
-              .update({ tier, storage_gb: storageGb })
+              .update({ tier, storage_gb: storageGb, status: "active", endpoint_url: vmEndpoint })
               .eq("id", clusterId);
           }
         } catch (err: any) {

@@ -75,8 +75,8 @@ export const onPost: RequestHandler = async (event) => {
       storage_gb: storageGb,
     }).eq("id", cluster.id);
 
-    // Call Azure Resource Manager API (or simulated fallback) to provision the VM
-    await triggerAzureVMProvisioning(event.env, cluster.id, tier, region, vmConfig.size);
+    // Deploy the VM via Azure ARM template
+    await triggerAzureVMProvisioning(event.env, cluster.id, tier, region, vmConfig.size, storageGb);
   }
 
   // Upsert subscription record
@@ -91,7 +91,15 @@ export const onPost: RequestHandler = async (event) => {
   }, { onConflict: "user_id" });
 
   if (isMockStripe) {
-    // In mock mode, the VM starts provisioning and the subscription becomes active
+    // In mock mode, immediately activate the cluster since no real Azure VM is provisioned
+    const vmEndpoint = `https://${cluster.id}.vm.aletheiadb.com`;
+    await supabase.from("clusters").update({
+      status: "active",
+      endpoint_url: vmEndpoint,
+      region,
+      storage_gb: storageGb,
+    }).eq("id", cluster.id);
+
     await supabase.from("subscriptions").upsert({
       user_id: user.user_id,
       stripe_customer_id: "cus_mock_123",
