@@ -6,7 +6,7 @@ export interface Cluster {
   id: string;
   name: string;
   tier: "fractional" | "dedicated_l4" | "dedicated_t4";
-  status: "provisioning" | "active" | "suspended" | "deleted";
+  status: "provisioning" | "active" | "suspended" | "deleted" | "failed";
   endpoint_url: string;
   region: string;
   created_at_ms: number;

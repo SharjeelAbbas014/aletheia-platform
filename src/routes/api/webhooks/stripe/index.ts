@@ -2,7 +2,6 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { upsertSubscription } from "~/lib/subscriptions";
 import { constructWebhookEvent, retrieveStripeSubscription } from "~/lib/stripe";
-import { triggerAzureVMProvisioning } from "~/lib/azure";
 
 export const onPost: RequestHandler = async (event) => {
   const rawBody = await event.request.clone().text();
@@ -104,13 +103,60 @@ export const onPost: RequestHandler = async (event) => {
             description: `AletheiaDB - Dedicated VM (${tier.replace("_", " ")}, ${storageGb} GB Storage)`,
           });
 
-          // Activate the cluster since payment succeeded
+          // Provision Azure VM after payment
           if (clusterId) {
-            const vmEndpoint = `https://${clusterId}.vm.aletheiadb.com`;
-            await supabase
+            const { data: existingCluster } = await supabase
               .from("clusters")
-              .update({ tier, storage_gb: storageGb, status: "active", endpoint_url: vmEndpoint })
-              .eq("id", clusterId);
+              .select("region, status")
+              .eq("id", clusterId)
+              .maybeSingle();
+
+            // Only provision if the cluster hasn't been activated already
+            if (existingCluster && existingCluster.status !== "active") {
+              const clusterRegion = existingCluster?.region || "eastus";
+              const vmSize = {
+                azure_micro: "Standard_B1s",
+                azure_standard: "Standard_B2s",
+                azure_pro: "Standard_D2as_v5",
+                azure_scale: "Standard_D4as_v5",
+                azure_gpu: "Standard_NC4as_T4",
+                dedicated_l4: "Standard_NV4as_v4",
+              }[tier] || "Standard_B1s";
+
+              console.log(`[Webhook] Provisioning Azure VM for cluster ${clusterId} (${vmSize}, ${clusterRegion}, ${storageGb}GB)`);
+
+              const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
+              const functionUrl = `${supabaseUrl}/functions/v1/provision-vm`;
+
+              try {
+                const fnRes = await fetch(functionUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${event.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""}`,
+                  },
+                  body: JSON.stringify({ clusterId, tier, region: clusterRegion, vmSize, storageGb }),
+                });
+
+                const fnResult = await fnRes.json();
+                if (fnResult.submitted) {
+                  await supabase.from("clusters").update({
+                    tier, storage_gb: storageGb, region: clusterRegion,
+                  }).eq("id", clusterId);
+                  console.log(`[Webhook] Azure deployment submitted for ${clusterId} in ${clusterRegion}`);
+                } else {
+                  await supabase.from("clusters").update({
+                    tier, storage_gb: storageGb, status: "failed",
+                  }).eq("id", clusterId);
+                  console.error(`[Webhook] Cluster ${clusterId} provisioning failed: ${fnResult.error}`);
+                }
+              } catch (fnErr: any) {
+                await supabase.from("clusters").update({
+                  tier, storage_gb: storageGb, status: "failed",
+                }).eq("id", clusterId);
+                console.error(`[Webhook] Supabase Edge Function call failed:`, fnErr.message);
+              }
+            }
           }
         } catch (err: any) {
           console.error("[Stripe Webhook] checkout.session.completed subscription processing failed", {

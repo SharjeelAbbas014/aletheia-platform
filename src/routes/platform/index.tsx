@@ -406,7 +406,8 @@ export default component$(() => {
                               <h4 class="font-bold text-on-surface text-lg">{cluster.name}</h4>
                               <span class={`rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest ${cluster.status === "active" ? "bg-green-500/10 text-green-400" :
                                 cluster.status === "provisioning" ? "bg-yellow-500/10 text-yellow-400" :
-                                  "bg-red-500/10 text-red-400"
+                                cluster.status === "failed" ? "bg-red-500/10 text-red-400" :
+                                  "bg-outline-variant/10 text-tertiary"
                                 }`}>{cluster.status}</span>
                               <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">{cluster.tier}</span>
                             </div>

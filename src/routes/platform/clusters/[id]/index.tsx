@@ -199,6 +199,39 @@ export default component$(() => {
     );
   }
 
+  if (cluster.status === "failed") {
+    return (
+      <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
+        <main class="flex-grow flex items-center justify-center p-8 lg:p-12 mb-20 max-w-2xl mx-auto w-full pt-[104px]">
+          <div class="w-full text-center">
+            <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-400 mb-4">
+              <ActivityIcon class="w-6 h-6" />
+            </div>
+            <h1 class="font-headline text-3xl font-extrabold tracking-tighter text-on-surface mb-2">Provisioning Failed</h1>
+            <p class="text-tertiary text-sm mb-6">
+              The Azure VM could not be created for cluster <span class="font-semibold text-on-surface">{cluster.name}</span>.
+            </p>
+            <div class="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 mb-8 text-left">
+              <p class="text-xs font-bold uppercase tracking-widest text-red-400 mb-2">What went wrong</p>
+              <p class="text-sm text-tertiary leading-relaxed">
+                The VM size <code class="font-mono text-amber-400">{vmSize}</code> is not available in <span class="font-semibold text-on-surface">{(cluster.region || "eastus").toUpperCase()}</span>.
+                This is a capacity restriction in that Azure region — your subscription and payment are valid.
+              </p>
+            </div>
+            <div class="flex items-center justify-center gap-4 flex-wrap">
+              <Link href={`/platform/clusters/new?tier=azure_standard`} class="rounded-lg bg-primary px-6 py-3 font-bold text-sm text-on-primary transition-all hover:scale-[1.02]">
+                Try a Different VM Size
+              </Link>
+              <Link href="/platform" class="rounded-lg border border-outline-variant/20 px-6 py-3 font-bold text-sm text-on-surface transition-all hover:bg-surface-container-high">
+                Back to Mission Control
+              </Link>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
       <main class="flex-1 overflow-y-auto p-8 lg:p-12 mb-20 max-w-5xl mx-auto w-full pt-[104px]">

@@ -295,46 +295,27 @@ function generatePassword(): string {
 }
 
 /**
- * Returns an ordered list of VM sizes to try for a given requested size.
- * Falls back to larger/cross-family sizes if the first is unavailable.
+ * Real Azure REST API provisioning client.
+ * Single-attempt deployment of a dedicated Azure VM via ARM template.
  */
 function getSizeFallbacks(requested: string): string[] {
   const fallbackMap: Record<string, string[]> = {
-    Standard_B1s: [
-      "Standard_B1s", "Standard_B2s", "Standard_B2pts_v2", "Standard_B2als_v2",
-      "Standard_D2s_v5", "Standard_D2as_v5", "Standard_D2ads_v5",
-      "Standard_DS1_v2", "Standard_B1ms", "Standard_D2_v5",
-    ],
-    Standard_B2s: [
-      "Standard_B2s", "Standard_B2pts_v2", "Standard_B2als_v2",
-      "Standard_D2s_v5", "Standard_D4as_v5", "Standard_D4s_v5",
-      "Standard_D2as_v5", "Standard_B4ms",
-    ],
-    Standard_D2as_v5: [
-      "Standard_D2as_v5", "Standard_D2s_v5", "Standard_D4as_v5",
-      "Standard_D4s_v5", "Standard_D2ads_v5",
-    ],
-    Standard_D4as_v5: [
-      "Standard_D4as_v5", "Standard_D4s_v5", "Standard_D8as_v5",
-      "Standard_D8s_v5",
-    ],
-    Standard_NV4as_v4: [
-      "Standard_NV4as_v4", "Standard_NC4as_T4", "Standard_NC6s_v3",
-      "Standard_NV6s_v2", "Standard_NC8as_T4",
-    ],
-    Standard_NC4as_T4: [
-      "Standard_NC4as_T4", "Standard_NC6s_v3", "Standard_NC8as_T4",
-      "Standard_NV6s_v2",
-    ],
+    Standard_B1s: ["Standard_B1s", "Standard_D2s_v5", "Standard_D2as_v5"],
+    Standard_B2s: ["Standard_B2s", "Standard_D2as_v5", "Standard_D4as_v5"],
+    Standard_D2as_v5: ["Standard_D2as_v5", "Standard_D4as_v5"],
+    Standard_D4as_v5: ["Standard_D4as_v5"],
+    Standard_NV4as_v4: ["Standard_NV4as_v4", "Standard_NC4as_T4"],
+    Standard_NC4as_T4: ["Standard_NC4as_T4"],
   };
-  return fallbackMap[requested] || [requested, ...["Standard_D2s_v5", "Standard_D2as_v5", "Standard_D4s_v5"]];
+  return fallbackMap[requested] || [requested, "Standard_D2as_v5"];
 }
 
-const FALLBACK_REGIONS = ["eastus", "westus2", "northeurope", "westeurope", "southeastasia"];
+const FALLBACK_REGIONS = ["eastus", "westeurope", "westus2"];
 
 /**
- * Real Azure REST API provisioning client.
- * Deploys a dedicated Azure VM via ARM template and installs the AletheiaDB engine.
+ * Provisions a single dedicated Azure VM via ARM template for the exact
+ * SKU and region requested. No fallback — either the SKU is available
+ * or the deployment fails with a clear error.
  */
 export async function triggerAzureVMProvisioning(
   env: RequestEventCommon["env"],
@@ -343,7 +324,7 @@ export async function triggerAzureVMProvisioning(
   region: string,
   size: string,
   storageGb: number = 50
-): Promise<{ success: boolean; mode: "real" | "mock"; details?: string; endpointUrl?: string; deployedRegion?: string; deployedSize?: string }> {
+): Promise<{ success: boolean; mode: "real" | "error"; details?: string; endpointUrl?: string }> {
   const clientId = env.get("AZURE_CLIENT_ID");
   const clientSecret = env.get("AZURE_CLIENT_SECRET");
   const tenantId = env.get("AZURE_TENANT_ID");
@@ -351,100 +332,69 @@ export async function triggerAzureVMProvisioning(
   const adminKey = env.get("ALETHEIADB_ADMIN_KEY") || "";
 
   if (!clientId || !clientSecret || !tenantId || !subscriptionId) {
-    console.log(`[Azure Provisioning] Missing credentials. Simulating provisioning for cluster ${clusterId}.`);
-    return { success: true, mode: "mock" };
+    return {
+      success: false,
+      mode: "error",
+      details: "Azure credentials not configured. Set AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID, and AZURE_SUBSCRIPTION_ID.",
+    };
   }
 
   try {
     console.log(`[Azure Provisioning] Authenticating with Azure AD...`);
     const { token } = await getAzureToken(tenantId, clientId, clientSecret);
 
-    const fallbackSizes = getSizeFallbacks(size);
+    const rgName = `aletheia-rg-${region}`;
     const deploymentName = `aletheia-vm-deploy-${clusterId}`;
-    let lastError: string = "";
-    let deployData: any = null;
-    let deployedRegion = region;
-    let deployedSize = size;
+    const deploymentUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}/providers/Microsoft.Resources/deployments/${deploymentName}?api-version=2021-04-01`;
 
-    console.log(`[Azure Provisioning] Ensuring resource group in ${region}...`);
+    console.log(`[Azure Provisioning] Ensuring resource group ${rgName}...`);
     await ensureResourceGroup(token, subscriptionId, region);
 
-    // Try requested size, then fallback sizes if SkuNotAvailable,
-    // then try fallback regions if all sizes fail in the requested region
-    const regionsToTry = [...new Set([region, ...FALLBACK_REGIONS])];
+    const armTemplate = buildARMTemplate(clusterId, size, storageGb, region, adminKey);
 
-    for (const tryRegion of regionsToTry) {
-      const rgName = `aletheia-rg-${tryRegion}`;
-      const deploymentUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}/providers/Microsoft.Resources/deployments/${deploymentName}?api-version=2021-04-01`;
+    console.log(`[Azure Provisioning] Submitting ARM deployment — VM size ${size}, ${storageGb} GB SSD, region ${region}...`);
 
-      // Ensure the resource group exists in this region
-      await ensureResourceGroup(token, subscriptionId, tryRegion);
+    const deployRes = await fetch(deploymentUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        properties: {
+          mode: "Incremental",
+          template: armTemplate,
+        },
+      }),
+    });
 
-      for (const trySize of fallbackSizes) {
-        const armTemplate = buildARMTemplate(clusterId, trySize, storageGb, tryRegion, adminKey);
-        console.log(`[Azure Provisioning] Attempting ARM deployment with VM size ${trySize} in ${tryRegion}...`);
-
-        const deployRes = await fetch(deploymentUrl, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            properties: {
-              mode: "Incremental",
-              template: armTemplate,
-            },
-          }),
-        });
-
-        if (deployRes.ok) {
-          deployData = await deployRes.json();
-          deployedRegion = tryRegion;
-          deployedSize = trySize;
-          console.log(`[Azure Provisioning] Deployment submitted successfully with size ${trySize} in ${tryRegion}.`);
-          break;
-        }
-
-        const text = await deployRes.text();
-        const isSkuError = text.includes("SkuNotAvailable");
-        lastError = text;
-
-        if (!isSkuError) {
-          // Non-sku error (auth, quota, etc.) — stop retrying entirely
-          throw new Error(`ARM deployment failed (${deployRes.status}): ${text}`);
-        }
-
-        console.log(`[Azure Provisioning] Size ${trySize} not available in ${tryRegion}. Trying next fallback...`);
-      }
-
-      if (deployData) break;
-      console.log(`[Azure Provisioning] Region ${tryRegion} exhausted. Trying next region...`);
+    if (!deployRes.ok) {
+      const text = await deployRes.text();
+      const isSkuError = text.includes("SkuNotAvailable");
+      const message = isSkuError
+        ? `VM size ${size} is not available in ${region}. Try a different region or VM size.`
+        : `ARM deployment failed (${deployRes.status}). Please check Azure subscription limits.`;
+      throw new Error(message);
     }
 
-    if (!deployData) {
-      throw new Error(`All VM sizes unavailable across all regions. Last error: ${lastError}`);
-    }
-
+    const deployData = await deployRes.json();
     const outputs = deployData.properties?.outputs || {};
     const endpointUrl = outputs.endpointURL?.value || `https://${clusterId}.vm.aletheiadb.com:8443`;
 
-    console.log(`[Azure Provisioning] Deployment submitted successfully. Endpoint will be available at ${endpointUrl}`);
+    console.log(`[Azure Provisioning] Deployment submitted. VM will boot at ${endpointUrl}`);
 
     return {
       success: true,
       mode: "real",
-      deployedRegion,
-      deployedSize,
-      details: `ARM deployment ${deploymentName} submitted in ${deployedRegion} with ${deployedSize}.`,
+      details: `ARM deployment ${deploymentName} submitted in ${region}. VM provisioning takes 3-5 minutes.`,
       endpointUrl,
     };
   } catch (err: any) {
-    console.error("[Azure Provisioning] Real provisioning failed. Falling back to simulation.", err);
+    console.error(`[Azure Provisioning] Deployment failed for cluster ${clusterId}:`, err.message);
     return {
-      success: true,
-      mode: "mock",
-      details: `Provisioning failure: ${err.message}`,
+      success: false,
+      mode: "error",
+      details: err.message,
     };
   }
 }

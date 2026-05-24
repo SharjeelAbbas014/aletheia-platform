@@ -3,7 +3,6 @@ import { getAdminSupabaseClient } from "~/lib/supabase";
 import { getCurrentUser } from "~/lib/auth";
 import { getStripeClient, createStripeCustomer } from "~/lib/stripe";
 import { createCluster } from "~/lib/clusters";
-import { triggerAzureVMProvisioning } from "~/lib/azure";
 
 export const onPost: RequestHandler = async (event) => {
   const user = getCurrentUser(event.cookie);
@@ -65,8 +64,8 @@ export const onPost: RequestHandler = async (event) => {
   }
 
   const totalCents = vmConfig.priceCents + (storageGb * 15);
-
-  // Update cluster status to provisioning for BYOC VM tiers
+  // Update cluster status to provisioning for BYOC VM tiers.
+  // Azure provisioning happens later in the webhook after payment.
   if (vmConfig) {
     await supabase.from("clusters").update({
       tier,
@@ -74,34 +73,6 @@ export const onPost: RequestHandler = async (event) => {
       status: "provisioning",
       storage_gb: storageGb,
     }).eq("id", cluster.id);
-
-    // Start Azure provisioning in background — Vercel Edge has a 25s response
-    // deadline, but the ARM deployment runs async after the redirect is sent.
-    // The webhook will activate the cluster regardless if this doesn't complete.
-    triggerAzureVMProvisioning(event.env, cluster.id, tier, region, vmConfig.size, storageGb)
-      .then(async (provisionResult) => {
-        const actualRegion = provisionResult.deployedRegion || region;
-        if (provisionResult.mode === "mock") {
-          const vmEndpoint = provisionResult.endpointUrl || `https://${cluster.id}.vm.aletheiadb.com`;
-          await supabase.from("clusters").update({
-            status: "active",
-            endpoint_url: vmEndpoint,
-            region: actualRegion,
-            storage_gb: storageGb,
-          }).eq("id", cluster.id);
-          console.log(`[Azure Provisioning] Cluster ${cluster.id} activated with mock endpoint ${vmEndpoint}`);
-        } else {
-          console.log(`[Azure Provisioning] Deployment submitted for cluster ${cluster.id} in ${actualRegion} with ${provisionResult.deployedSize}`);
-          if (actualRegion !== region) {
-            await supabase.from("clusters").update({
-              region: actualRegion,
-            }).eq("id", cluster.id);
-          }
-        }
-      })
-      .catch((err) => {
-        console.error("[Azure Provisioning] Background provisioning error", err);
-      });
   }
 
   // Upsert subscription record
