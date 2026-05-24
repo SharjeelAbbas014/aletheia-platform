@@ -2,6 +2,7 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { upsertSubscription } from "~/lib/subscriptions";
 import { constructWebhookEvent, retrieveStripeSubscription } from "~/lib/stripe";
+import { triggerAzureVMProvisioning } from "~/lib/azure";
 
 export const onPost: RequestHandler = async (event) => {
   const rawBody = await event.request.clone().text();
