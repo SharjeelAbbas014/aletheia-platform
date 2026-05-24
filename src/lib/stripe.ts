@@ -47,12 +47,14 @@ export async function createPortalSession(
 export async function constructWebhookEvent(
   env: RequestEventCommon["env"],
   rawBody: string,
-  signature: string
+  signature: string,
+  secret?: string
 ) {
+  const webhookSecret = secret || env.get("STRIPE_WEBHOOK_SECRET") || "";
   return getStripeClient(env).webhooks.constructEventAsync(
     rawBody,
     signature,
-    env.get("STRIPE_WEBHOOK_SECRET") || ""
+    webhookSecret
   );
 }
 

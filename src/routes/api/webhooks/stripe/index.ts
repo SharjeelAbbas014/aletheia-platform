@@ -4,15 +4,24 @@ import { upsertSubscription } from "~/lib/subscriptions";
 import { constructWebhookEvent, retrieveStripeSubscription } from "~/lib/stripe";
 
 export const onPost: RequestHandler = async (event) => {
-  const rawBody = await event.request.text();
+  const rawBody = await event.request.clone().text();
   const signature = event.request.headers.get("stripe-signature") || "";
 
   if (!signature) throw event.error(400, "Missing stripe-signature");
 
+  const webhookSecret = event.env.get("STRIPE_WEBHOOK_SECRET") || "";
+  if (!webhookSecret) throw event.error(500, "STRIPE_WEBHOOK_SECRET not configured");
+
   let stripeEvent;
   try {
-    stripeEvent = await constructWebhookEvent(event.env, rawBody, signature);
+    stripeEvent = await constructWebhookEvent(event.env, rawBody, signature, webhookSecret);
   } catch (err: any) {
+    console.error("[Stripe Webhook] Verification failed", {
+      bodyLength: rawBody.length,
+      signaturePrefix: signature.slice(0, 20),
+      secretPrefix: webhookSecret.slice(0, 12),
+      error: err.message,
+    });
     throw event.error(400, `Webhook error: ${err.message}`);
   }
 
