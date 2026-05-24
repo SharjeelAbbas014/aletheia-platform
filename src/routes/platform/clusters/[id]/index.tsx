@@ -15,6 +15,7 @@ import {
   DatabaseIcon,
   UsersIcon,
   FileTextIcon,
+  ServerIcon,
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
@@ -219,13 +220,23 @@ export default component$(() => {
               </div>
               <p class="text-tertiary font-mono text-sm">Cluster ID: {cluster.id.slice(0, 16)}...</p>
             </div>
-            <Link 
-              href={`/platform/clusters/new?tier=dedicated_l4`} 
-              class="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-6 py-3 font-bold text-sm text-orange-400 transition-all hover:bg-orange-500 hover:text-white shadow-lg"
-            >
-              <RocketIcon class="w-4 h-4" />
-              Migrate to Dedicated
-            </Link>
+            {cluster.tier === "fractional" ? (
+              <Link 
+                href={`/platform/clusters/new?tier=dedicated_l4`} 
+                class="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-6 py-3 font-bold text-sm text-orange-400 transition-all hover:bg-orange-500 hover:text-white shadow-lg"
+              >
+                <RocketIcon class="w-4 h-4" />
+                Migrate to Dedicated
+              </Link>
+            ) : (
+              <div class="flex items-center gap-3 rounded-xl bg-surface-container-low px-5 py-3 border border-outline-variant/10">
+                <ServerIcon class="w-5 h-5 text-primary" />
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">VM Status</p>
+                  <p class="text-sm font-bold text-green-400">Deployed</p>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -267,6 +278,31 @@ export default component$(() => {
             <p class="text-3xl font-extrabold">{stats ? formatBytes(stats.storage_bytes) : "—"}</p>
           </div>
         </section>
+
+        {/* VM Specs (dedicated clusters only) */}
+        {cluster.tier !== "fractional" && (
+          <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 mb-8">
+            <h2 class="text-lg font-bold mb-4">Server Specifications</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-1">VM Size</p>
+                <p class="font-mono text-sm font-bold">{vmSize}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-1">Region</p>
+                <p class="font-mono text-sm font-bold">{(cluster.region || "eastus").toUpperCase()}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-1">SSD Storage</p>
+                <p class="font-mono text-sm font-bold">{cluster.storage_gb || 50} GB Premium SSD</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-1">Status</p>
+                <p class="font-mono text-sm font-bold text-green-400">Active</p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Connection Details */}
         <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 mb-8">

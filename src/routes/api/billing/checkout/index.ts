@@ -78,15 +78,20 @@ export const onPost: RequestHandler = async (event) => {
     // Deploy the VM via Azure ARM template
     const provisionResult = await triggerAzureVMProvisioning(event.env, cluster.id, tier, region, vmConfig.size, storageGb);
 
-    // If Azure provisioning fell back to mock (no creds or all SKUs unavailable),
-    // activate the cluster immediately so it's not stuck in provisioning
+    // If provisioning fell back to mock or a different region, update the cluster record
+    const actualRegion = provisionResult.deployedRegion || region;
     if (provisionResult.mode === "mock") {
       const vmEndpoint = provisionResult.endpointUrl || `https://${cluster.id}.vm.aletheiadb.com`;
       await supabase.from("clusters").update({
         status: "active",
         endpoint_url: vmEndpoint,
-        region,
+        region: actualRegion,
         storage_gb: storageGb,
+      }).eq("id", cluster.id);
+    } else if (actualRegion !== region) {
+      // Real mode but deployed to a different region — update the record
+      await supabase.from("clusters").update({
+        region: actualRegion,
       }).eq("id", cluster.id);
     }
   }
