@@ -47,6 +47,13 @@ export const onPost: RequestHandler = async (event) => {
               status: "active",
               updated_at: new Date().toISOString(),
             }, { onConflict: "user_id" });
+
+            // Record purchase
+            await supabase.from("purchases").insert({
+              user_id: userId,
+              amount: (session.amount_total || 500) / 100,
+              description: `Prepaid Credits - Refill ${tokenCount.toLocaleString()} truths`,
+            });
           } catch (err) {
             console.error("Failed to credit prepaid tokens:", err);
           }
@@ -56,7 +63,17 @@ export const onPost: RequestHandler = async (event) => {
           const sub = await retrieveStripeSubscription(event.env, subscriptionId);
           const priceId = sub.items.data[0]?.price.id;
           const tier = (sub.metadata?.tier as string) || sub.items.data[0]?.price.nickname?.toLowerCase() || "dedicated_l4";
+          const storageGb = parseInt(sub.metadata?.storage_gb || "50", 10);
+          const vmSize = {
+            azure_micro: "Standard_B1s",
+            azure_standard: "Standard_B2s",
+            azure_pro: "Standard_D2as_v5",
+            azure_scale: "Standard_D4as_v5",
+            azure_gpu: "Standard_NC4as_T4",
+            dedicated_l4: "Standard_NV4as_v4",
+          }[tier];
 
+          const vmMonthlyPrice = (sub.items.data[0]?.price.unit_amount || 0) / 100;
           await upsertSubscription(event.env, userId, {
             stripe_customer_id: customerId,
             stripe_subscription_id: subscriptionId,
@@ -65,17 +82,27 @@ export const onPost: RequestHandler = async (event) => {
             status: sub.status,
             current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
             current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+            vm_size: vmSize || undefined,
+            vm_monthly_price: vmMonthlyPrice,
+            storage_gb: storageGb,
           });
 
-          // Activate the cluster if it was in provisioning
+          // Record purchase
+          await supabase.from("purchases").insert({
+            user_id: userId,
+            amount: vmMonthlyPrice,
+            description: `AletheiaDB - Dedicated VM (${tier.replace("_", " ")}, ${storageGb} GB Storage)`,
+          });
+
+          // Update cluster with tier and storage capacity, but do NOT set status: "active"
           if (clusterId) {
             await supabase
               .from("clusters")
-              .update({ status: "active", tier })
+              .update({ tier, storage_gb: storageGb })
               .eq("id", clusterId);
           }
-        } catch {
-          // Log and continue — don't fail the webhook
+        } catch (err) {
+          console.error("Webhook processing failed for subscription:", err);
         }
       }
       break;

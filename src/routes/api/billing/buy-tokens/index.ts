@@ -89,6 +89,13 @@ export const onPost: RequestHandler = async (event) => {
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
 
+    // Record mock purchase
+    await supabase.from("purchases").insert({
+      user_id: user.user_id,
+      amount: pack.priceCents / 100,
+      description: `Prepaid Credits - Refill ${pack.tokens.toLocaleString()} truths`,
+    });
+
     throw event.redirect(302, `/platform/billing?success=true&tokens=${pack.tokens}&mock=true`);
   }
 

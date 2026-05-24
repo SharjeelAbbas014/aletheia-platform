@@ -12,13 +12,16 @@ import {
   KeyIcon,
   Loader2Icon,
   CreditCardIcon,
-  SettingsIcon
+  SettingsIcon,
+  CheckIcon,
+  ExternalLinkIcon
 } from "lucide-qwik";
 import {
   Form,
   Link,
   routeAction$,
   routeLoader$,
+  useLocation,
   type RequestHandler,
   type DocumentHead
 } from "@builder.io/qwik-city";
@@ -35,6 +38,7 @@ import { requireAuth } from "~/lib/auth";
 import { CONTACT_MAILTO } from "~/constants/contact";
 import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
+import { getAdminSupabaseClient } from "~/lib/supabase";
 
 function formatDate(value: number, locale?: string) {
   return new Intl.DateTimeFormat(locale, {
@@ -63,18 +67,24 @@ const LocalDateTime = component$((props: { value: number | null }) => {
 
 export const usePlatformData = routeLoader$(async (event) => {
   const user = requireAuth(event);
+  const supabase = getAdminSupabaseClient(event.env);
+  if (!supabase) throw event.error(500, "Database connection offline");
 
-  const [keys, usage, clusters] = await Promise.all([
+  const [keys, usage, clusters, sub, purchases] = await Promise.all([
     getApiKeys(event),
     getUsageStats(event),
-    getClusters(event)
+    getClusters(event),
+    supabase.from("subscriptions").select("*").eq("user_id", user.user_id).maybeSingle().then(res => res.data),
+    supabase.from("purchases").select("*").eq("user_id", user.user_id).order("created_at", { ascending: false }).then(res => res.data || [])
   ]);
 
   return {
     user,
     keys,
     usage,
-    clusters
+    clusters,
+    sub,
+    purchases
   };
 });
 
@@ -107,6 +117,90 @@ export const useRevokeApiKeyAction = routeAction$(async (data, event) => {
   };
 });
 
+const plans = [
+  {
+    id: "fractional",
+    name: "Fractional",
+    price: "$1.00",
+    unit: "/1M truths",
+    description: "Pay-as-you-go on the AletheiaDB shared engine",
+    features: ["Hosted on engine.aletheiadb.com", "Shared database substrate", "10K free operations/mo", "Access via global API"],
+    cta: "Current Plan",
+    highlighted: false,
+  },
+  {
+    id: "azure_micro",
+    name: "Developer Micro",
+    price: "$12.00",
+    unit: "/month",
+    description: "Azure Standard_B1s dedicated VM",
+    features: ["1 vCPU | 1 GiB RAM", "Isolated SQLite substrate", "Best for sandboxing & dev", "Aletheia cut included"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "azure_standard",
+    name: "Agent Standard",
+    price: "$40.00",
+    unit: "/month",
+    description: "Azure Standard_B2s dedicated VM",
+    features: ["2 vCPUs | 4 GiB RAM", "Multi-agent core substrate", "Isolated SQLite index", "Fast vector search"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "azure_pro",
+    name: "Production Core",
+    price: "$90.00",
+    unit: "/month",
+    description: "Azure Standard_D2as_v5 dedicated VM",
+    features: ["2 vCPUs | 8 GiB RAM", "50 GB Premium SSD", "Dedicated production load", "Zero noisy neighbors"],
+    cta: "Deploy VM",
+    highlighted: true,
+  },
+  {
+    id: "azure_scale",
+    name: "Scale Master",
+    price: "$175.00",
+    unit: "/month",
+    description: "Azure Standard_D4as_v5 dedicated VM",
+    features: ["4 vCPUs | 16 GiB RAM", "100 GB Premium SSD", "Massive graph crawls", "Local re-ranking models"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "dedicated_l4",
+    name: "Dedicated Pro",
+    price: "$400.00",
+    unit: "/month",
+    description: "Azure Standard_NV4as_v4 dedicated VM",
+    features: ["4 vCPUs | 14 GiB RAM", "1/8 AMD Radeon Pro V320 GPU", "Hardware accelerated hosting", "Dedicated memory engine"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "azure_gpu",
+    name: "GPU Superbrain",
+    price: "$450.00",
+    unit: "/month",
+    description: "Azure Standard_NC4as_T4 GPU VM",
+    features: ["4 vCPUs | 28 GiB RAM", "1 NVIDIA T4 GPU", "Ultra-low latency embeddings", "Local re-ranking inference"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: "Custom",
+    unit: "",
+    description: "Custom deployment, on-premise option",
+    features: ["Unlimited requests", "Unlimited storage", "Dedicated infrastructure", "Custom SLA", "24/7 priority support"],
+    cta: "Contact Sales",
+    highlighted: false,
+    contact: true,
+  },
+];
+
 export default component$(() => {
   const platformData = usePlatformData();
   const createKeyAction = useCreateApiKeyAction();
@@ -115,7 +209,9 @@ export default component$(() => {
   const usage = platformData.value.usage;
   const clusters = platformData.value.clusters;
 
-  const activeMissionTab = useSignal<"overview" | "api">("overview");
+  const loc = useLocation();
+  const initialTab = (loc.url.searchParams.get("tab") as any) || "overview";
+  const activeMissionTab = useSignal<"overview" | "api" | "billing">(initialTab);
   const activeApiTab = useSignal<"keys" | "create">("keys");
   const newApiKeyName = useSignal("");
 
@@ -143,14 +239,30 @@ export default component$(() => {
 
 
           <nav class="space-y-1">
-            <a class="flex items-center gap-3 rounded-md bg-primary/10 px-4 py-2 text-primary transition-all" href="/platform">
+            <button
+              type="button"
+              class={`flex w-full items-center gap-3 rounded-md px-4 py-2 text-left transition-all ${
+                activeMissionTab.value === "overview" || activeMissionTab.value === "api"
+                  ? "bg-primary/10 text-primary font-bold"
+                  : "text-tertiary hover:bg-surface-container-low hover:text-on-surface"
+              }`}
+              onClick$={() => { activeMissionTab.value = "overview"; }}
+            >
               <LayoutDashboardIcon class="w-4 h-4" />
               Mission Control
-            </a>
-            <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="/platform/billing">
+            </button>
+            <button
+              type="button"
+              class={`flex w-full items-center gap-3 rounded-md px-4 py-2 text-left transition-all ${
+                activeMissionTab.value === "billing"
+                  ? "bg-primary/10 text-primary font-bold"
+                  : "text-tertiary hover:bg-surface-container-low hover:text-on-surface"
+              }`}
+              onClick$={() => { activeMissionTab.value = "billing"; }}
+            >
               <CreditCardIcon class="w-4 h-4" />
               Billing
-            </a>
+            </button>
             <a class="flex items-center gap-3 rounded-md px-4 py-2 text-tertiary transition-all hover:bg-surface-container-low hover:text-on-surface" href="/platform/settings">
               <SettingsIcon class="w-4 h-4" />
               Settings
@@ -179,22 +291,32 @@ export default component$(() => {
       {/* Main Content */}
       <main class="ml-0 flex-1 overflow-y-auto p-8 md:ml-64 lg:p-12">
         <header class="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <div>
-            <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface">Mission Control</h1>
-            <p class="mt-2 text-tertiary">Real-time oversight of your agent's cognitive substrate.</p>
-          </div>
-          <div class="flex items-center gap-4 rounded-xl bg-surface-container-low p-2">
-            <div class="px-4 py-2 text-center">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-primary">Engine Status</p>
-              <div class="flex items-center gap-2 mt-1 justify-center">
-                <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                <p class="font-mono text-xs text-on-surface">NOMINAL</p>
+          {activeMissionTab.value === "billing" ? (
+            <div>
+              <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface">Billing & Prepaid Usage</h1>
+              <p class="mt-2 text-tertiary">Manage your cognitive memory credits and hosting plans.</p>
+            </div>
+          ) : (
+            <div>
+              <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface">Mission Control</h1>
+              <p class="mt-2 text-tertiary">Real-time oversight of your agent's cognitive substrate.</p>
+            </div>
+          )}
+          {activeMissionTab.value !== "billing" && (
+            <div class="flex items-center gap-4 rounded-xl bg-surface-container-low p-2">
+              <div class="px-4 py-2 text-center">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-primary">Engine Status</p>
+                <div class="flex items-center gap-2 mt-1 justify-center">
+                  <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <p class="font-mono text-xs text-on-surface">NOMINAL</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </header>
 
-        <div class="mb-10 inline-flex rounded-2xl border border-outline-variant/15 bg-surface-container-low p-1">
+        {activeMissionTab.value !== "billing" && (
+          <div class="mb-10 inline-flex rounded-2xl border border-outline-variant/15 bg-surface-container-low p-1">
           <button
             type="button"
             class={`flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold uppercase tracking-[0.24em] transition-colors ${
@@ -224,8 +346,9 @@ export default component$(() => {
             API Access
           </button>
         </div>
+        )}
 
-        {activeMissionTab.value === "overview" ? (
+        {activeMissionTab.value === "overview" && (
           <>
             <section class="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 transition-colors hover:bg-surface-container-high">
@@ -315,7 +438,9 @@ export default component$(() => {
               </aside>
             </div>
           </>
-        ) : (
+        )}
+
+        {activeMissionTab.value === "api" && (
           <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
             <div class="lg:col-span-2 space-y-8">
               <section>
@@ -490,6 +615,203 @@ client.ingest(
                 </a>
               </div>
             </aside>
+          </div>
+        )}
+
+        {activeMissionTab.value === "billing" && (
+          <div class="space-y-12">
+            {/* Prepaid Token Balance & Monthly Free Allocation */}
+            <section class="grid gap-6 md:grid-cols-2 animate-fade-in">
+              {/* Token Credits Status */}
+              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 flex flex-col justify-between">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2 flex items-center gap-1">
+                    <CheckIcon class="w-4 h-4 text-primary" /> Active Credits
+                  </p>
+                  <h2 class="text-3xl font-extrabold text-on-surface">
+                    {platformData.value.sub?.token_balance !== undefined ? platformData.value.sub.token_balance.toLocaleString() : "10,000"}
+                    <span class="text-sm font-medium text-tertiary ml-2">truths remaining</span>
+                  </h2>
+                  
+                  {/* Monthly Free Tier Progress */}
+                  {platformData.value.sub?.token_balance !== undefined && platformData.value.sub.token_balance <= 10000 ? (
+                    <div class="mt-6">
+                      <div class="flex justify-between text-xs font-bold text-tertiary mb-1">
+                        <span>Monthly Free Allocation</span>
+                        <span>{platformData.value.sub.token_balance.toLocaleString()} / 10,000 left</span>
+                      </div>
+                      <div class="w-full bg-outline-variant/20 rounded-full h-2 overflow-hidden">
+                        <div 
+                          class="bg-primary h-full transition-all duration-500" 
+                          style={{ width: `${(platformData.value.sub.token_balance / 10000) * 100}%` }}
+                        ></div>
+                      </div>
+                      <p class="text-[10px] text-tertiary mt-2">Resets automatically every 30 days. Ingestions and queries deduct 1 credit each.</p>
+                    </div>
+                  ) : (
+                    <p class="text-xs text-green-400 font-medium mt-4">
+                      Free tier fully utilized. Active prepaid growth credits: {(((platformData.value.sub?.token_balance || 10000) - 10000)).toLocaleString()} truths.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Refill Tokens Selector */}
+              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6">
+                <p class="text-xs font-bold uppercase tracking-widest text-tertiary mb-4">Refill Prepaid Tokens</p>
+                <div class="space-y-3">
+                  {[
+                    { id: "starter", name: "Starter Refill ($5.00)", desc: "3.1M truths (~$1.60/M)", tokens: 3125000 },
+                    { id: "growth", name: "Growth Refill ($10.00)", desc: "6.6M truths (~$1.50/M)", tokens: 6666666 },
+                    { id: "scale", name: "Scale Refill ($20.00)", desc: "15.0M truths (~$1.33/M)", tokens: 15000000 },
+                  ].map((pack) => (
+                    <form key={pack.id} method="post" action="/api/billing/buy-tokens" class="flex items-center justify-between p-3 rounded-xl border border-outline-variant/5 bg-black/20 hover:border-primary/30 transition-all">
+                      <input type="hidden" name="package_id" value={pack.id} />
+                      <div>
+                        <p class="text-sm font-bold">{pack.name}</p>
+                        <p class="text-[10px] text-tertiary">{pack.desc}</p>
+                      </div>
+                      <button type="submit" class="rounded-lg bg-primary px-4 py-2 font-bold text-xs text-on-primary hover:opacity-90 transition-opacity">
+                        Buy
+                      </button>
+                    </form>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Current Plan Info */}
+            {platformData.value.sub && (
+              <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-bold uppercase tracking-widest text-tertiary mb-1">Current Plan</p>
+                    <p class="text-2xl font-bold capitalize">{platformData.value.sub.tier?.replace("_", " ") || "Fractional"}</p>
+                    <p class="text-sm text-tertiary mt-1">
+                      Status: <span class="capitalize text-green-400 font-medium">{platformData.value.sub.status}</span>
+                    </p>
+                  </div>
+                  {platformData.value.sub.stripe_customer_id && (
+                    <form method="post" action="/api/billing/portal">
+                      <button
+                        type="submit"
+                        class="flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/20 px-6 py-3 font-bold text-sm text-primary transition-all hover:bg-primary hover:text-white"
+                      >
+                        <CreditCardIcon class="w-4 h-4" />
+                        Manage in Stripe
+                        <ExternalLinkIcon class="w-3 h-3" />
+                      </button>
+                    </form>
+                  )}
+                </div>
+                {platformData.value.sub.current_period_end && (
+                  <p class="text-xs text-tertiary mt-3">
+                    Current period ends: {new Date(platformData.value.sub.current_period_end).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Plan Cards */}
+            <div>
+              <h2 class="text-xl font-bold text-on-surface mb-6">Hosting Plans</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {plans.map((plan) => {
+                  const isCurrent = platformData.value.sub?.tier === plan.id;
+                  return (
+                    <div
+                      key={plan.id}
+                      class={`rounded-2xl border p-6 flex flex-col ${
+                        plan.highlighted ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20" : "border-outline-variant/10 bg-surface-container-low"
+                      } ${isCurrent ? "ring-2 ring-primary" : ""}`}
+                    >
+                      {plan.highlighted && !isCurrent && (
+                        <span class="text-xs font-bold uppercase tracking-widest text-primary mb-2">Popular</span>
+                      )}
+                      <h3 class="text-xl font-bold">{plan.name}</h3>
+                      <p class="text-3xl font-extrabold mt-2">
+                        {plan.price}<span class="text-sm font-normal text-tertiary">{plan.unit}</span>
+                      </p>
+                      <p class="text-sm text-tertiary mt-2 mb-4">{plan.description}</p>
+                      <ul class="space-y-2 flex-1 mb-6">
+                        {plan.features.map((f) => (
+                          <li key={f} class="flex items-start gap-2 text-sm">
+                            <CheckIcon class="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      {isCurrent ? (
+                        <button disabled class="w-full py-3 px-4 rounded-xl border border-outline-variant/20 text-sm font-bold text-tertiary cursor-default">
+                          Current Plan
+                        </button>
+                      ) : plan.contact ? (
+                        <a href="mailto:sales@aletheiadb.com" class="block w-full text-center py-3 px-4 rounded-xl border border-outline-variant/20 text-sm font-bold hover:bg-surface-container-high transition-colors">
+                          Contact Sales
+                        </a>
+                      ) : (
+                        <Link href={`/platform/clusters/new?tier=${plan.id}`} class="block w-full text-center py-3 px-4 rounded-xl bg-primary text-on-primary text-sm font-bold hover:opacity-90 transition-opacity">
+                          {plan.cta}
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Purchase History */}
+            <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 shadow-lg">
+              <h2 class="text-xl font-bold text-on-surface mb-2">Purchase History</h2>
+              <p class="text-xs text-tertiary mb-6">A record of your past prepaid credit refills, dedicated VMs, and hosting plan upgrades.</p>
+              
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left text-sm text-on-surface">
+                  <thead>
+                    <tr class="border-b border-outline-variant/10 text-xs font-bold uppercase tracking-widest text-tertiary">
+                      <th class="py-3 px-4">Date</th>
+                      <th class="py-3 px-4">Description</th>
+                      <th class="py-3 px-4 text-right">Amount</th>
+                      <th class="py-3 px-4 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-outline-variant/5">
+                    {platformData.value.purchases?.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} class="py-8 text-center text-tertiary">
+                          No purchases found. Use a credit refill package or deploy a dedicated VM.
+                        </td>
+                      </tr>
+                    ) : (
+                      platformData.value.purchases?.map((p: any) => (
+                        <tr key={p.id} class="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                          <td class="py-4 px-4 font-mono text-xs text-tertiary">
+                            {new Date(p.created_at).toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </td>
+                          <td class="py-4 px-4 font-semibold text-on-surface">
+                            {p.description}
+                          </td>
+                          <td class="py-4 px-4 text-right font-mono font-bold text-on-surface">
+                            ${Number(p.amount).toFixed(2)}
+                          </td>
+                          <td class="py-4 px-4 text-center">
+                            <span class="inline-flex rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-bold text-green-400">
+                              Paid
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
         )}
       </main>

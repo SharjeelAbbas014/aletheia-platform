@@ -3,14 +3,17 @@ import { getAdminSupabaseClient } from "~/lib/supabase";
 import { getCurrentUser } from "~/lib/auth";
 import { getStripeClient, createStripeCustomer } from "~/lib/stripe";
 import { createCluster } from "~/lib/clusters";
+import { triggerAzureVMProvisioning } from "~/lib/azure";
 
 export const onPost: RequestHandler = async (event) => {
   const user = getCurrentUser(event.cookie);
   if (!user) throw event.error(401, "Unauthorized");
 
-  const body = (await event.parseBody()) as { tier?: string; name?: string } | null;
+  const body = (await event.parseBody()) as { tier?: string; name?: string; region?: string; storage_gb?: string } | null;
   const tier = body?.tier || "fractional";
   const name = (body?.name || "My Cluster").trim();
+  const region = body?.region || "eastus";
+  const storageGb = tier === "fractional" ? 10 : Math.max(10, Math.min(1000, parseInt(body?.storage_gb || "50", 10) || 50));
 
   const supabase = getAdminSupabaseClient(event.env);
   if (!supabase) throw event.error(500, "Internal Server Error - Database connection offline");
@@ -53,7 +56,7 @@ export const onPost: RequestHandler = async (event) => {
     azure_pro: { name: "Production Core", description: "Azure Standard_D2as_v5 dedicated VM", priceCents: 9000, size: "Standard_D2as_v5" },
     azure_scale: { name: "Scale Master", description: "Azure Standard_D4as_v5 dedicated VM", priceCents: 17500, size: "Standard_D4as_v5" },
     azure_gpu: { name: "GPU Superbrain", description: "Azure Standard_NC4as_T4 dedicated VM", priceCents: 45000, size: "Standard_NC4as_T4" },
-    dedicated_l4: { name: "Dedicated Pro", description: "Dedicated L4 instance, predictable pricing", priceCents: 40000, size: "Standard_NC6s_v3" },
+    dedicated_l4: { name: "Dedicated Pro", description: "Azure Standard_NV4as_v4 dedicated VM", priceCents: 40000, size: "Standard_NV4as_v4" },
   };
 
   const vmConfig = vmConfigs[tier];
@@ -61,13 +64,19 @@ export const onPost: RequestHandler = async (event) => {
     throw event.error(400, "Invalid tier selected for deployment");
   }
 
+  const totalCents = vmConfig.priceCents + (storageGb * 15);
+
   // Update cluster status to provisioning for BYOC VM tiers
   if (vmConfig) {
     await supabase.from("clusters").update({
       tier,
-      region: "eastus2",
+      region,
       status: "provisioning",
+      storage_gb: storageGb,
     }).eq("id", cluster.id);
+
+    // Call Azure Resource Manager API (or simulated fallback) to provision the VM
+    await triggerAzureVMProvisioning(event.env, cluster.id, tier, region, vmConfig.size);
   }
 
   // Upsert subscription record
@@ -77,28 +86,30 @@ export const onPost: RequestHandler = async (event) => {
     tier,
     status: "incomplete",
     vm_size: vmConfig?.size || undefined,
-    vm_monthly_price: vmConfig ? vmConfig.priceCents / 100 : undefined,
+    vm_monthly_price: vmConfig ? totalCents / 100 : undefined,
+    storage_gb: storageGb,
   }, { onConflict: "user_id" });
 
   if (isMockStripe) {
-    if (vmConfig) {
-      await supabase.from("clusters").update({
-        tier,
-        region: "eastus2",
-        status: "active", // Provision immediately in mock mode
-      }).eq("id", cluster.id);
-    }
-
+    // In mock mode, the VM starts provisioning and the subscription becomes active
     await supabase.from("subscriptions").upsert({
       user_id: user.user_id,
       stripe_customer_id: "cus_mock_123",
       tier,
       status: "active",
       vm_size: vmConfig?.size || undefined,
-      vm_monthly_price: vmConfig ? vmConfig.priceCents / 100 : undefined,
+      vm_monthly_price: vmConfig ? totalCents / 100 : undefined,
+      storage_gb: storageGb,
     }, { onConflict: "user_id" });
 
-    throw event.redirect(302, `/platform/billing?success=true&mock=true`);
+    // Record mock purchase
+    await supabase.from("purchases").insert({
+      user_id: user.user_id,
+      amount: totalCents / 100,
+      description: `AletheiaDB - Dedicated VM (${vmConfig.name}, ${storageGb} GB Storage)`,
+    });
+
+    throw event.redirect(302, `/platform/clusters/${cluster.id}?success=true&mock=true`);
   }
 
   const stripe = getStripeClient(event.env);
@@ -112,10 +123,10 @@ export const onPost: RequestHandler = async (event) => {
         price_data: {
           currency: "usd",
           product_data: {
-            name: `AletheiaDB - ${vmConfig.name}`,
-            description: vmConfig.description,
+            name: `AletheiaDB - ${vmConfig.name} (${storageGb} GB Storage)`,
+            description: `${vmConfig.description} with ${storageGb} GB SSD storage included.`,
           },
-          unit_amount: vmConfig.priceCents,
+          unit_amount: totalCents,
           recurring: {
             interval: "month",
           },
@@ -124,11 +135,11 @@ export const onPost: RequestHandler = async (event) => {
       },
     ],
     subscription_data: {
-      metadata: { user_id: user.user_id, cluster_id: cluster.id, tier },
+      metadata: { user_id: user.user_id, cluster_id: cluster.id, tier, storage_gb: String(storageGb) },
     },
-    success_url: `${origin}/platform/billing?success=true`,
+    success_url: `${origin}/platform/clusters/${cluster.id}?success=true`,
     cancel_url: `${origin}/platform/clusters/${cluster.id}?canceled=true`,
-    metadata: { user_id: user.user_id, cluster_id: cluster.id, tier },
+    metadata: { user_id: user.user_id, cluster_id: cluster.id, tier, storage_gb: String(storageGb) },
   });
 
   throw event.redirect(302, session.url!);

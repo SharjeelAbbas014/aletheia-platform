@@ -8,7 +8,7 @@ import { getSubscription } from "~/lib/subscriptions";
 import { requireAuth } from "~/lib/auth";
 
 export const onRequest: RequestHandler = (event) => {
-  setPrivateNoStore(event);
+  throw event.redirect(302, "/platform?tab=billing");
 };
 
 export const useBillingData = routeLoader$(async (event) => {
@@ -65,6 +65,16 @@ const plans = [
     unit: "/month",
     description: "Azure Standard_D4as_v5 dedicated VM",
     features: ["4 vCPUs | 16 GiB RAM", "100 GB Premium SSD", "Massive graph crawls", "Local re-ranking models"],
+    cta: "Deploy VM",
+    highlighted: false,
+  },
+  {
+    id: "dedicated_l4",
+    name: "Dedicated Pro",
+    price: "$400.00",
+    unit: "/month",
+    description: "Azure Standard_NV4as_v4 dedicated VM",
+    features: ["4 vCPUs | 14 GiB RAM", "1/8 AMD Radeon Pro V320 GPU", "Hardware accelerated hosting", "Dedicated memory engine"],
     cta: "Deploy VM",
     highlighted: false,
   },

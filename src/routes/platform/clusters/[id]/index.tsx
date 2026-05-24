@@ -1,8 +1,9 @@
-import { component$ } from "@builder.io/qwik";
-import { routeLoader$, routeAction$, Form, Link, type DocumentHead } from "@builder.io/qwik-city";
+import { component$, useVisibleTask$ } from "@builder.io/qwik";
+import { routeLoader$, routeAction$, Form, Link, type DocumentHead, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { buildSeoHead } from "~/lib/seo";
 import { setPrivateNoStore } from "~/lib/cache";
 import type { RequestHandler } from "@builder.io/qwik-city";
+import { getProvisioningSteps } from "~/lib/azure";
 import {
   ArrowLeftIcon,
   RocketIcon,
@@ -27,12 +28,15 @@ export const useClusterDetail = routeLoader$(async (event) => {
   const user = requireAuth(event);
   const clusterId = event.params.id;
   const supabase = getAdminSupabaseClient(event.env);
+  if (!supabase) throw event.error(500, "Database connection offline");
+
   const { data: cluster } = await supabase
     .from("clusters")
     .select("*")
     .eq("id", clusterId)
     .single();
   if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
+
   const coreStats = await getCoreClusterStats(cluster.id);
   return { cluster, coreStats, user };
 });
@@ -107,6 +111,27 @@ export default component$(() => {
   const cluster = data.value.cluster as any;
   const stats = data.value.coreStats as any;
 
+  const vmSize = {
+    azure_micro: "Standard_B1s",
+    azure_standard: "Standard_B2s",
+    azure_pro: "Standard_D2as_v5",
+    azure_scale: "Standard_D4as_v5",
+    azure_gpu: "Standard_NC4as_T4",
+    dedicated_l4: "Standard_NV4as_v4",
+  }[cluster.tier as string] || "Standard_B1s";
+
+  const loc = useLocation();
+  const nav = useNavigate();
+
+  useVisibleTask$(({ cleanup }) => {
+    if (cluster.status === "provisioning") {
+      const interval = setInterval(() => {
+        nav(loc.url.pathname);
+      }, 3000);
+      cleanup(() => clearInterval(interval));
+    }
+  });
+
   const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
   const formatBytes = (b: number) => {
     if (!b) return "0 B";
@@ -115,6 +140,63 @@ export default component$(() => {
     const i = Math.floor(Math.log(b) / Math.log(k));
     return `${(b / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
   };
+
+  if (cluster.status === "provisioning") {
+    const platformUrl = loc.url.origin;
+    const activateCurl = `curl -X POST ${platformUrl}/api/clusters/${cluster.id}/activate \\\n  -H "x-admin-key: 82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a" \\\n  -H "Content-Type: application/json" \\\n  -d '{"ip_address": "YOUR_VM_PUBLIC_IP"}'`;
+
+    return (
+      <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
+        <main class="flex-grow flex items-center justify-center p-8 lg:p-12 mb-20 max-w-2xl mx-auto w-full pt-[104px]">
+          <div class="w-full">
+            <header class="mb-8 text-center">
+              <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 mb-4 animate-pulse">
+                <ActivityIcon class="w-6 h-6" />
+              </div>
+              <h1 class="font-headline text-3xl font-extrabold tracking-tighter text-on-surface">Provisioning Dedicated VM</h1>
+              <p class="text-tertiary mt-2 text-sm">Cluster Name: <span class="text-on-surface font-semibold">{cluster.name}</span></p>
+              <p class="text-[10px] text-tertiary mt-1">Region: {cluster.region?.toUpperCase()} • VM Size: {vmSize} • Storage: {cluster.storage_gb || 10} GB SSD</p>
+            </header>
+
+            <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 mb-6 shadow-lg shadow-black/20">
+              <h3 class="text-sm font-bold mb-2 text-on-surface">Waiting for Server Boot</h3>
+              <p class="text-xs text-tertiary mb-6 leading-relaxed">
+                The virtual machine instance is being allocated in Azure. Once the VM boots up and starts the AletheiaDB engine, it must send an activation signal to our API gateway to transition this cluster to active.
+              </p>
+
+              <div class="border-t border-outline-variant/10 pt-4">
+                <p class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Activation Callback Command</p>
+                <p class="text-[11px] text-tertiary mb-3 leading-relaxed">
+                  Run this command from your VM bootstrap script (cloud-init) or manually to report your server's public IP and activate it:
+                </p>
+                <div class="flex items-start gap-2 rounded-lg bg-black/40 p-3 font-mono text-[11px] text-amber-400 border border-amber-500/20 whitespace-pre overflow-x-auto">
+                  <code class="flex-1">{activateCurl}</code>
+                  <button 
+                    class="p-1 hover:bg-amber-500/20 rounded transition-colors text-amber-400 self-start shrink-0" 
+                    onClick$={() => navigator.clipboard.writeText(activateCurl)}
+                  >
+                    <CopyIcon class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <div class="flex justify-between items-center px-2">
+              <Link href="/platform" class="text-xs font-bold text-tertiary hover:text-primary transition-colors flex items-center gap-1">
+                <ArrowLeftIcon class="w-3.5 h-3.5" /> Return to Mission Control
+              </Link>
+              <button 
+                onClick$={() => nav(loc.url.pathname)} 
+                class="rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary hover:text-white px-4 py-2 text-xs font-bold text-primary transition-all"
+              >
+                Refresh Status
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
@@ -137,13 +219,13 @@ export default component$(() => {
               </div>
               <p class="text-tertiary font-mono text-sm">Cluster ID: {cluster.id.slice(0, 16)}...</p>
             </div>
-            <form method="post" action="/api/billing/checkout">
-              <input type="hidden" name="tier" value="dedicated_l4" />
-              <button type="submit" class="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-6 py-3 font-bold text-sm text-orange-400 transition-all hover:bg-orange-500 hover:text-white shadow-lg">
-                <RocketIcon class="w-4 h-4" />
-                Migrate to Dedicated
-              </button>
-            </form>
+            <Link 
+              href={`/platform/clusters/new?tier=dedicated_l4`} 
+              class="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-6 py-3 font-bold text-sm text-orange-400 transition-all hover:bg-orange-500 hover:text-white shadow-lg"
+            >
+              <RocketIcon class="w-4 h-4" />
+              Migrate to Dedicated
+            </Link>
           </div>
         </header>
 

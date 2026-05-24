@@ -3,6 +3,10 @@
 -- Ensure clusters.tier supports custom VM tier strings (convert enum to text)
 alter table if exists public.clusters alter column tier type text;
 
+-- Add storage_gb column to clusters and subscriptions tables if they don't exist
+alter table if exists public.clusters add column if not exists storage_gb integer default 10;
+alter table if exists public.subscriptions add column if not exists storage_gb integer default 10;
+
 -- 1. Teams
 create table if not exists public.teams (
   id uuid default gen_random_uuid() primary key,
@@ -102,13 +106,38 @@ alter table public.usage_daily enable row level security;
 alter table public.context_templates enable row level security;
 alter table public.connector_configs enable row level security;
 
+-- 8. Purchases (transaction history)
+create table if not exists public.purchases (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  amount numeric(10, 2) not null,
+  description text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.purchases enable row level security;
+
 -- Policies
+drop policy if exists "Users can read their teams" on public.teams;
 create policy "Users can read their teams" on public.teams for select using (id in (select team_id from public.team_members where user_id = auth.uid()));
+
+drop policy if exists "Members can read team members" on public.team_members;
 create policy "Members can read team members" on public.team_members for select using (team_id in (select team_id from public.team_members where user_id = auth.uid()));
+
+drop policy if exists "Users can read own subscriptions" on public.subscriptions;
 create policy "Users can read own subscriptions" on public.subscriptions for select using (user_id = auth.uid());
+
+drop policy if exists "Owners can read cluster usage" on public.usage_daily;
 create policy "Owners can read cluster usage" on public.usage_daily for select using (cluster_id in (select id from public.clusters where user_id = auth.uid()));
+
+drop policy if exists "Owners can manage templates" on public.context_templates;
 create policy "Owners can manage templates" on public.context_templates for all using (cluster_id in (select id from public.clusters where user_id = auth.uid()));
+
+drop policy if exists "Owners can manage connectors" on public.connector_configs;
 create policy "Owners can manage connectors" on public.connector_configs for all using (cluster_id in (select id from public.clusters where user_id = auth.uid()));
+
+drop policy if exists "Users can read own purchases" on public.purchases;
+create policy "Users can read own purchases" on public.purchases for select using (user_id = auth.uid());
 
 -- Auto-create personal team on signup
 create or replace function public.handle_new_user() returns trigger as $$

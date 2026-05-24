@@ -22,6 +22,24 @@ export default component$(() => {
   const initialTier = loc.url.searchParams.get("tier") || "fractional";
   const selectedTier = useSignal<string>(initialTier);
   const clusterName = useSignal<string>('');
+  const storageGb = useSignal<number>(50);
+
+  const vmPrices: Record<string, number> = {
+    azure_micro: 1200,
+    azure_standard: 4000,
+    azure_pro: 9000,
+    azure_scale: 17500,
+    azure_gpu: 45000,
+    dedicated_l4: 40000,
+  };
+
+  const getButtonText = () => {
+    if (selectedTier.value === 'fractional') return 'Deploy Free Cluster';
+    const basePriceCents = vmPrices[selectedTier.value] || 0;
+    const storagePriceCents = storageGb.value * 15;
+    const totalCents = basePriceCents + storagePriceCents;
+    return `Pay $${(totalCents / 100).toFixed(2)} / month`;
+  };
 
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
@@ -50,7 +68,22 @@ export default component$(() => {
           </section>
 
           <section class="mb-12">
-            <h2 class="text-xl font-bold mb-4">2. Select Compute Tier</h2>
+            <h2 class="text-xl font-bold mb-4">2. Select Azure Region</h2>
+            <select
+              name="region"
+              class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-low px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors max-w-md cursor-pointer"
+              required
+            >
+              <option value="eastus" selected>East US (Virginia)</option>
+              <option value="westus2">West US 2 (Washington)</option>
+              <option value="northeurope">North Europe (Ireland)</option>
+              <option value="westeurope">West Europe (Netherlands)</option>
+              <option value="southeastasia">Southeast Asia (Singapore)</option>
+            </select>
+          </section>
+
+          <section class="mb-12">
+            <h2 class="text-xl font-bold mb-4">3. Select Compute Tier</h2>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[
                 {
@@ -124,6 +157,20 @@ export default component$(() => {
                   priceText: "$175.00 / month"
                 },
                 {
+                  id: "dedicated_l4",
+                  name: "Dedicated Pro",
+                  subName: "Azure Standard_NV4as_v4",
+                  badge: "GPU VM",
+                  badgeClass: "bg-red-500/10 text-red-400",
+                  features: [
+                    "4 vCPUs | 14 GiB RAM",
+                    "1/8 AMD Radeon Pro V320 GPU",
+                    "Hardware accelerated hosting",
+                    "Dedicated memory engine"
+                  ],
+                  priceText: "$400.00 / month"
+                },
+                {
                   id: "azure_gpu",
                   name: "GPU Superbrain",
                   subName: "Azure Standard_NC4as_T4",
@@ -179,13 +226,44 @@ export default component$(() => {
             </div>
           </section>
 
+          {selectedTier.value !== 'fractional' && (
+            <section class="mb-12">
+              <h2 class="text-xl font-bold mb-2">4. Configure Dedicated Storage</h2>
+              <p class="text-xs text-tertiary mb-4">Select the SSD storage capacity for your database VM ($0.15 per GB / month).</p>
+              <div class="flex items-center gap-6 bg-surface-container-low border border-outline-variant/10 rounded-2xl p-6 max-w-xl">
+                <div class="flex-grow">
+                  <input
+                    type="range"
+                    name="storage_gb"
+                    min="10"
+                    max="1000"
+                    step="10"
+                    bind:value={storageGb}
+                    class="w-full accent-primary cursor-pointer"
+                  />
+                  <div class="flex justify-between text-[10px] text-tertiary font-bold mt-2 font-mono">
+                    <span>10 GB</span>
+                    <span>250 GB</span>
+                    <span>500 GB</span>
+                    <span>750 GB</span>
+                    <span>1000 GB (1 TB)</span>
+                  </div>
+                </div>
+                <div class="text-center bg-black/30 border border-outline-variant/10 px-6 py-4 rounded-xl shrink-0 min-w-[120px]">
+                  <p class="text-2xl font-extrabold font-mono text-on-surface">{storageGb.value} GB</p>
+                  <p class="text-[10px] text-primary font-bold mt-1">+${(storageGb.value * 0.15).toFixed(2)}/mo</p>
+                </div>
+              </div>
+            </section>
+          )}
+
           <section class="mt-12 flex justify-end">
             <button
               type="submit"
               disabled={!clusterName.value}
               class="rounded-lg bg-primary px-8 py-3 font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {selectedTier.value === 'fractional' ? 'Deploy Free Cluster' : 'Proceed to Checkout'}
+              {getButtonText()}
             </button>
           </section>
         </form>

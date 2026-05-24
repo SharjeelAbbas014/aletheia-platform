@@ -19,6 +19,7 @@ export async function getSubscription(event: RequestEventCommon): Promise<Subscr
   const user = getCurrentUser(event.cookie);
   if (!user) return null;
   const supabase = getAdminSupabaseClient(event.env);
+  if (!supabase) return null;
   const { data } = await supabase
     .from("subscriptions")
     .select("*")
@@ -38,9 +39,13 @@ export async function upsertSubscription(
     status: string;
     current_period_start?: string;
     current_period_end?: string;
+    vm_size?: string;
+    vm_monthly_price?: number;
+    storage_gb?: number;
   }
 ) {
   const supabase = getAdminSupabaseClient(env);
+  if (!supabase) throw new Error("Database connection offline");
   const { data: existing } = await supabase
     .from("subscriptions")
     .select("id")
