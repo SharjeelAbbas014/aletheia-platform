@@ -651,7 +651,18 @@ export default component$(() => {
   const heroWarmupResult = useSignal<HeroWarmupResult | null>(null);
   const heroDemoRunning = useSignal(false);
   const heroWarmupRunning = useSignal(false);
+  const demoKey = useSignal("");
   const heroDemoMode = useSignal<"store" | "recall" | null>(null);
+
+  useVisibleTask$(() => {
+    let key = localStorage.getItem("aletheia_demo_key");
+    if (!key) {
+      const randomPart = Math.random().toString(36).substring(2, 8);
+      key = `demo_${randomPart}`;
+      localStorage.setItem("aletheia_demo_key", key);
+    }
+    demoKey.value = key;
+  });
 
   const readJsonResponse = $(
     async (
@@ -724,6 +735,7 @@ export default component$(() => {
         body: JSON.stringify({
           action,
           message,
+          demoKey: demoKey.value,
         }),
       });
       const nextResult = (await readJsonResponse(
@@ -753,6 +765,13 @@ export default component$(() => {
       heroDemoRunning.value = false;
       heroDemoMode.value = null;
     }
+  });
+
+  const regenerateKey = $(() => {
+    const randomPart = Math.random().toString(36).substring(2, 8);
+    const key = `demo_${randomPart}`;
+    demoKey.value = key;
+    localStorage.setItem("aletheia_demo_key", key);
   });
 
   useVisibleTask$(({ cleanup }) => {
@@ -1784,6 +1803,38 @@ export default component$(() => {
                       {heroWarmupRunning.value ? "Warming Engine..." : "Warm Up Database"}
                       <MaterialIcon name="bolt" class="text-xs text-primary" />
                     </button>
+                  </div>
+
+                  <div class="rounded-xl border border-white/5 bg-black/25 p-5">
+                    <div class="flex items-center justify-between mb-3">
+                      <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-primary">
+                        Demo Memory Session Key
+                      </p>
+                      <button
+                        type="button"
+                        class="text-[9px] font-mono text-tertiary hover:text-primary transition-colors flex items-center gap-1 disabled:opacity-50"
+                        onClick$={regenerateKey}
+                      >
+                        <MaterialIcon name="published_with_changes" class="text-[10px]" />
+                        Regenerate
+                      </button>
+                    </div>
+                    <div class="relative flex items-center">
+                      <input
+                        type="text"
+                        class="w-full rounded-lg border border-white/5 bg-black/35 px-3 py-2 text-xs text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 font-mono"
+                        value={demoKey.value}
+                        onInput$={(_, currentTarget) => {
+                          const cleanKey = currentTarget.value.trim();
+                          demoKey.value = cleanKey;
+                          localStorage.setItem("aletheia_demo_key", cleanKey);
+                        }}
+                        placeholder="Enter custom session key..."
+                      />
+                    </div>
+                    <p class="mt-2 text-[10px] text-tertiary leading-relaxed">
+                      Memories are stored and queried using this unique key. It isolates your demo session and persists across reloads.
+                    </p>
                   </div>
 
                   <div class="space-y-3">

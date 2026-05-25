@@ -66,7 +66,18 @@ function sanitizeIp(value: string) {
   return value.trim().replace(/^::ffff:/, "");
 }
 
-export function resolveHeroEntityId(event: HeroIdentityEvent) {
+export function resolveHeroEntityId(event: HeroIdentityEvent, demoKey?: string) {
+  if (demoKey && demoKey.trim()) {
+    const safeKey = demoKey
+      .trim()
+      .replace(/[^a-zA-Z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
+    if (safeKey) {
+      return `visitor-${safeKey}`;
+    }
+  }
+
   const forwardedFor = event.request?.headers
     .get("x-forwarded-for")
     ?.split(",")[0]
@@ -80,6 +91,7 @@ export function resolveHeroEntityId(event: HeroIdentityEvent) {
     .toLowerCase();
   return `visitor-${safeIp || "unknown-ip"}`;
 }
+
 
 export function buildHeroMemoryId(entityId: string, timestamp: number) {
   return `${entityId}::hero-demo::${timestamp}`;

@@ -45,7 +45,9 @@ export const onPost: RequestHandler = async (event) => {
     return;
   }
 
-  const entityId = resolveHeroEntityId(event);
+  const demoKey = body.demoKey ? String(body.demoKey).trim() : undefined;
+
+  const entityId = resolveHeroEntityId(event, demoKey);
   const now = Date.now();
   const memoryId = buildHeroMemoryId(entityId, now);
   let ingestResponse: Response;

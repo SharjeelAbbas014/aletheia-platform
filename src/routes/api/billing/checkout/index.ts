@@ -50,11 +50,11 @@ export const onPost: RequestHandler = async (event) => {
   }
 
   const vmConfigs: Record<string, { name: string; description: string; priceCents: number; size: string }> = {
-    azure_micro: { name: "Developer Micro", description: "Azure Standard_D2s_v5 dedicated VM", priceCents: 1200, size: "Standard_D2s_v5" },
-    azure_standard: { name: "Agent Standard", description: "Azure Standard_D2as_v5 dedicated VM", priceCents: 4000, size: "Standard_D2as_v5" },
-    azure_pro: { name: "Production Core", description: "Azure Standard_D4s_v5 dedicated VM", priceCents: 9000, size: "Standard_D4s_v5" },
-    azure_scale: { name: "Scale Master", description: "Azure Standard_D4as_v5 dedicated VM", priceCents: 17500, size: "Standard_D4as_v5" },
-    azure_gpu: { name: "GPU Superbrain", description: "Azure Standard_NC4as_T4 dedicated VM", priceCents: 45000, size: "Standard_NC4as_T4" },
+    azure_micro: { name: "Developer Micro", description: "Azure Standard_B2als_v2 dedicated VM", priceCents: 3900, size: "Standard_B2als_v2" },
+    azure_standard: { name: "Agent Standard", description: "Azure Standard_D2as_v5 dedicated VM", priceCents: 8900, size: "Standard_D2as_v5" },
+    azure_pro: { name: "Production Core", description: "Azure Standard_D4as_v5 dedicated VM", priceCents: 17900, size: "Standard_D4as_v5" },
+    azure_scale: { name: "Scale Master", description: "Azure Standard_D8as_v5 dedicated VM", priceCents: 35900, size: "Standard_D8as_v5" },
+    azure_gpu: { name: "GPU Superbrain", description: "Azure Standard_NC4as_T4 dedicated VM", priceCents: 54900, size: "Standard_NC4as_T4" },
     dedicated_l4: { name: "Dedicated Pro", description: "Azure Standard_NV6as_v4 dedicated VM", priceCents: 40000, size: "Standard_NV6as_v4" },
   };
 

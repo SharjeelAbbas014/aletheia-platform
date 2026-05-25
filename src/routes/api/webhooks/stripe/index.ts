@@ -74,10 +74,10 @@ export const onPost: RequestHandler = async (event) => {
           const tier = (sub.metadata?.tier as string) || sub.items?.data?.[0]?.price?.nickname || "dedicated_l4";
           const storageGb = parseInt(sub.metadata?.storage_gb || "50", 10);
           const vmSize = {
-            azure_micro: "Standard_D2s_v5",
+            azure_micro: "Standard_B2als_v2",
             azure_standard: "Standard_D2as_v5",
-            azure_pro: "Standard_D4s_v5",
-            azure_scale: "Standard_D4as_v5",
+            azure_pro: "Standard_D4as_v5",
+            azure_scale: "Standard_D8as_v5",
             azure_gpu: "Standard_NC4as_T4",
             dedicated_l4: "Standard_NV6as_v4",
           }[tier];
@@ -115,10 +115,10 @@ export const onPost: RequestHandler = async (event) => {
             if (existingCluster && existingCluster.status !== "active") {
               const clusterRegion = existingCluster?.region || "westus2";
               const vmSize = {
-                azure_micro: "Standard_D2s_v5",
+                azure_micro: "Standard_B2als_v2",
                 azure_standard: "Standard_D2as_v5",
-                azure_pro: "Standard_D4s_v5",
-                azure_scale: "Standard_D4as_v5",
+                azure_pro: "Standard_D4as_v5",
+                azure_scale: "Standard_D8as_v5",
                 azure_gpu: "Standard_NC4as_T4",
                 dedicated_l4: "Standard_NV6as_v4",
               }[tier] || "Standard_D2s_v5";
