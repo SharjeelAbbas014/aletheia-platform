@@ -199,14 +199,14 @@ curl -sSfL -o aletheia-engine \\
   "https://fnovrnadrvimlvqwecgs.supabase.co/storage/v1/object/public/aletheia-binaries/aletheia-latest" \\
   -H "User-Agent: aletheia-bootstrap" || \\
 curl -sSfL -o aletheia-engine "$BINARY_URL" || \\
-{ echo "[4/6] Binary download failed — will build from source" | tee -a $LOG; BUILD_FROM_SOURCE=1; }
+{ echo "[4/6] Binary download failed - will build from source" | tee -a $LOG; BUILD_FROM_SOURCE=1; }
 
 if [ -f aletheia-engine ] && [ -s aletheia-engine ]; then
   sudo mv aletheia-engine /usr/local/bin/aletheia-engine
   sudo chmod +x /usr/local/bin/aletheia-engine
   echo "[4/6] Binary installed: $(file /usr/local/bin/aletheia-engine | head -c 80)"
 else
-  echo "[4/6] Binary not available — engine not installed"
+  echo "[4/6] Binary not available - engine not installed"
 fi
 
 # Write systemd service
@@ -240,7 +240,7 @@ if [ -f /usr/local/bin/aletheia-engine ]; then
   echo "[5/6] Engine started, waiting for health..."
   for i in $(seq 1 30); do
     if curl -sf http://localhost:3000/health >/dev/null 2>&1; then
-      echo "[5/6] Engine is healthy after ${i}s"
+      echo "[5/6] Engine is healthy after \${i}s"
       break
     fi
     sleep 2
@@ -260,7 +260,7 @@ echo "[6/6] Activation result: $ACTIVATE_RESULT"
 
 echo "Bootstrap complete for cluster ${clusterId}"`;
 
-  const encodedScript = btoa(bootstrapCmd);
+  const encodedScript = btoa(new TextEncoder().encode(bootstrapCmd).reduce((s, b) => s + String.fromCharCode(b), ""));
 
   return {
     $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
