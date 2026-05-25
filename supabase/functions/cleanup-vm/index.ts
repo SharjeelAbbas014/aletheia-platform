@@ -45,22 +45,46 @@ serve(async (req) => {
 
     const { access_token: token } = await authRes.json();
 
-    // Delete the ARM deployment (removes all resources created by it)
+    const vmName = `aletheia-vm-${clusterId.slice(0, 8)}`;
+    const nicName = `${vmName}-nic`;
+    const publicIpName = `${vmName}-pip`;
+    const nsgName = `${vmName}-nsg`;
+    const vnetName = `${vmName}-vnet`;
     const rgName = `aletheia-rg-${region}`;
     const deploymentName = `aletheia-vm-deploy-${clusterId}`;
-    const deleteUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}/providers/Microsoft.Resources/deployments/${deploymentName}?api-version=2021-04-01`;
 
-    const deleteRes = await fetch(deleteUrl, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const apiBase = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}`;
 
-    if (!deleteRes.ok && deleteRes.status !== 404) {
-      const text = await deleteRes.text();
-      throw new Error(`Azure cleanup failed: ${text}`);
+    // Must delete in dependency order: VM → NIC → IP → NSG → VNet
+    const resources = [
+      { type: "Microsoft.Compute/virtualMachines", name: vmName, ver: "2023-09-01" },
+      { type: "Microsoft.Network/networkInterfaces", name: nicName, ver: "2023-09-01" },
+      { type: "Microsoft.Network/publicIPAddresses", name: publicIpName, ver: "2023-09-01" },
+      { type: "Microsoft.Network/networkSecurityGroups", name: nsgName, ver: "2023-09-01" },
+      { type: "Microsoft.Network/virtualNetworks", name: vnetName, ver: "2023-09-01" },
+      { type: "Microsoft.Resources/deployments", name: deploymentName, ver: "2021-04-01" },
+    ];
+
+    const results: string[] = [];
+
+    for (const r of resources) {
+      const url = `${apiBase}/providers/${r.type}/${r.name}?api-version=${r.ver}`;
+      const deleteRes = await fetch(url, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (deleteRes.status === 404) {
+        results.push(`${r.name}: not-found`);
+      } else if (deleteRes.ok || deleteRes.status === 202) {
+        results.push(`${r.name}: deleted`);
+      } else {
+        const text = await deleteRes.text();
+        results.push(`${r.name}: failed (${deleteRes.status})`);
+        console.error(`[cleanup-vm] Failed to delete ${r.name}: ${text.slice(0, 200)}`);
+      }
     }
 
-    return new Response(JSON.stringify({ deleted: true }), {
+    return new Response(JSON.stringify({ deleted: true, results }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

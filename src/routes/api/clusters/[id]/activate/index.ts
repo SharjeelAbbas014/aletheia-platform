@@ -32,7 +32,7 @@ export const onPost: RequestHandler = async (event) => {
     .from("clusters")
     .update({
       status: "active",
-      endpoint_url: `http://${ipAddress}:3000/api`,
+      endpoint_url: `http://${ipAddress}:3000`,
     })
     .eq("id", clusterId)
     .select();

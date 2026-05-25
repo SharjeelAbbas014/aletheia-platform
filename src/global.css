@@ -188,8 +188,8 @@ pre {
 }
 
 ::selection {
-  background: var(--accent-lime);
-  color: var(--ink);
+  background: #d5ff49;
+  color: #101413;
 }
 
 .shell {
