@@ -45,6 +45,7 @@ import { CONTACT_MAILTO } from "~/constants/contact";
 import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
 import { getAdminSupabaseClient } from "~/lib/supabase";
+import { getCoreClusterStats } from "~/lib/aletheia-core";
 
 function formatDate(value: number, locale?: string) {
   return new Intl.DateTimeFormat(locale, {
@@ -85,19 +86,66 @@ export const usePlatformData = routeLoader$(async (event) => {
     getTeamMembers(event),
   ]);
 
+  // Fetch real-time total usage & storage stats across all active clusters
+  const activeClusters = (clusters || []).filter(c => c.status === "active");
+  const allStats = await Promise.all(
+    activeClusters.map(cluster => 
+      getCoreClusterStats(cluster.id, cluster.endpoint_url, cluster.engine_key)
+    )
+  );
+
+  const combinedStats = allStats.reduce<{
+    memory_count: number;
+    entity_count: number;
+    fact_count: number;
+    storage_bytes: number;
+    request_count: number;
+    ingest_count: number;
+    query_count: number;
+  }>((acc, stats) => {
+    if (stats) {
+      acc.memory_count += stats.memory_count || 0;
+      acc.entity_count += stats.entity_count || 0;
+      acc.fact_count += stats.fact_count || 0;
+      acc.storage_bytes += stats.storage_bytes || 0;
+      acc.request_count += stats.request_count || 0;
+      acc.ingest_count += stats.ingest_count || 0;
+      acc.query_count += stats.query_count || 0;
+    }
+    return acc;
+  }, {
+    memory_count: 0,
+    entity_count: 0,
+    fact_count: 0,
+    storage_bytes: 0,
+    request_count: 0,
+    ingest_count: 0,
+    query_count: 0,
+  });
+
+  // Merge the usage stats from DB with engine total stats for real-time accuracy
+  const mergedUsage = {
+    request_count: Math.max(usage?.request_count || 0, combinedStats.request_count),
+    ingest_count: Math.max(usage?.ingest_count || 0, combinedStats.ingest_count),
+    query_count: Math.max(usage?.query_count || 0, combinedStats.query_count),
+    temporal_query_count: usage?.temporal_query_count || 0,
+    last_request_ms: usage?.last_request_ms ?? null,
+  };
+
   const clusterId = clusters[0]?.id || "";
   const templates = clusterId ? await getContextTemplates(event, clusterId) : [];
 
   return {
     user,
     keys,
-    usage,
+    usage: mergedUsage,
     clusters,
     sub,
     purchases,
     members,
     templates,
-    clusterId
+    clusterId,
+    combinedStats
   };
 });
 
@@ -254,6 +302,16 @@ export default component$(() => {
   const keys = platformData.value.keys;
   const usage = platformData.value.usage;
   const clusters = platformData.value.clusters;
+  const combinedStats = platformData.value.combinedStats || { memory_count: 0, entity_count: 0, fact_count: 0, storage_bytes: 0 };
+
+  const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
+  const formatBytes = (b: number) => {
+    if (!b) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(b) / Math.log(k));
+    return `${(b / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+  };
 
   const loc = useLocation();
   const initialTab = (loc.url.searchParams.get("tab") as any) || "overview";
@@ -501,6 +559,28 @@ export default component$(() => {
                     <LocalDateTime value={usage?.last_request_ms ?? null} />
                   </p>
                 </div>
+              </div>
+            </section>
+
+            <div class="mb-4 flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-tertiary">Combined Knowledge Space</h3>
+            </div>
+            <section class="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Total Memories</p>
+                <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum(combinedStats.memory_count)}</p>
+              </div>
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Total Entities</p>
+                <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum(combinedStats.entity_count)}</p>
+              </div>
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Total Facts</p>
+                <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum(combinedStats.fact_count)}</p>
+              </div>
+              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Combined Storage</p>
+                <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatBytes(combinedStats.storage_bytes)}</p>
               </div>
             </section>
 

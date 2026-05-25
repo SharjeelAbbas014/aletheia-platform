@@ -11,6 +11,9 @@ export interface CoreClusterStats {
   entity_count: number;
   fact_count: number;
   storage_bytes: number;
+  request_count?: number;
+  ingest_count?: number;
+  query_count?: number;
 }
 
 export async function provisionCluster(clusterId: string, userId: string): Promise<boolean> {
@@ -38,11 +41,18 @@ export async function deprovisionCluster(clusterId: string): Promise<boolean> {
   }
 }
 
-export async function getCoreClusterStats(clusterId: string): Promise<CoreClusterStats | null> {
+export async function getCoreClusterStats(
+  clusterId: string,
+  endpointUrl?: string,
+  engineKey?: string
+): Promise<CoreClusterStats | null> {
   try {
+    const url = endpointUrl ? endpointUrl.replace(/\/+$/, "") : getAletheiaDBCoreUrl();
+    const key = engineKey || getAdminKey();
+    
     const res = await fetch(
-      `${getAletheiaDBCoreUrl()}/admin/clusters/${encodeURIComponent(clusterId)}/stats`,
-      { headers: { "x-api-key": getAdminKey() } }
+      `${url}/admin/clusters/${encodeURIComponent(clusterId)}/stats`,
+      { headers: { "x-api-key": key } }
     );
     if (!res.ok) return null;
     return await res.json();
@@ -50,3 +60,4 @@ export async function getCoreClusterStats(clusterId: string): Promise<CoreCluste
     return null;
   }
 }
+

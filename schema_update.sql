@@ -161,3 +161,8 @@ begin
   where user_id = uid;
 end;
 $$ language plpgsql security definer;
+
+-- 9. Dedicated / User-Deployed Server Updates
+alter table if exists public.clusters add column if not exists engine_key text;
+alter table if exists public.api_keys add column if not exists cluster_id uuid references public.clusters(id) on delete cascade;
+

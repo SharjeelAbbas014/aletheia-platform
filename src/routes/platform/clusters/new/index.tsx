@@ -1,5 +1,5 @@
 import { component$, useSignal } from "@builder.io/qwik";
-import { Form, Link, type DocumentHead, useLocation } from "@builder.io/qwik-city";
+import { Form, Link, type DocumentHead, useLocation, routeAction$ } from "@builder.io/qwik-city";
 import { buildSeoHead } from "~/lib/seo";
 import { setPrivateNoStore } from "~/lib/cache";
 import type { RequestHandler } from "@builder.io/qwik-city";
@@ -11,11 +11,30 @@ import {
   ZapIcon
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
+import { connectCluster } from "~/lib/clusters";
+
+export const useConnectCluster = routeAction$(async (data, event) => {
+  const name = String(data.name || "").trim();
+  const endpointUrl = String(data.endpoint_url || "").trim();
+  const engineKey = String(data.engine_key || "").trim();
+
+  if (!name || !endpointUrl || !engineKey) {
+    return event.fail(400, { message: "All fields are required" });
+  }
+
+  const cluster = await connectCluster(event, name, endpointUrl, engineKey);
+  if (!cluster) {
+    return event.fail(500, { message: "Failed to connect cluster" });
+  }
+
+  throw event.redirect(302, `/platform/clusters/${cluster.id}`);
+});
 
 export const onRequest: RequestHandler = (event) => {
   setPrivateNoStore(event);
   requireAuth(event);
 };
+
 
 export default component$(() => {
   const loc = useLocation();
@@ -23,6 +42,7 @@ export default component$(() => {
   const selectedTier = useSignal<string>(initialTier);
   const clusterName = useSignal<string>('');
   const storageGb = useSignal<number>(50);
+  const connectAction = useConnectCluster();
 
   const vmPrices: Record<string, number> = {
     azure_micro: 1200,
@@ -41,7 +61,9 @@ export default component$(() => {
     return `Pay $${(totalCents / 100).toFixed(2)} / month`;
   };
 
-  const integrationPath = useSignal<"shared" | "dedicated">(initialTier === "fractional" ? "shared" : "dedicated");
+  const integrationPath = useSignal<"shared" | "dedicated" | "self_hosted">(
+    initialTier === "fractional" ? "shared" : initialTier === "self_hosted" ? "self_hosted" : "dedicated"
+  );
 
   return (
     <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
@@ -58,7 +80,7 @@ export default component$(() => {
         {/* 1. Integration Model Choice */}
         <section class="mb-12">
           <h2 class="text-xl font-bold mb-4">1. Select Deployment Pathway</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
             {/* Option A: Shared Cloud (Pay-Per-Usage) */}
             <label
               class={`cursor-pointer rounded-2xl border-2 p-6 flex flex-col justify-between transition-all relative ${
@@ -85,7 +107,7 @@ export default component$(() => {
                       integrationPath.value = "shared";
                       selectedTier.value = "fractional";
                     }}
-                    class="h-5 w-5 accent-primary cursor-pointer shrink-0 animate-pulse"
+                    class="h-5 w-5 accent-primary cursor-pointer shrink-0"
                   />
                 </div>
                 <p class="text-sm text-tertiary mb-6 leading-relaxed">
@@ -117,7 +139,7 @@ export default component$(() => {
               }`}
               onClick$={() => {
                 integrationPath.value = "dedicated";
-                if (selectedTier.value === "fractional") {
+                if (selectedTier.value === "fractional" || selectedTier.value === "self_hosted") {
                   selectedTier.value = "azure_micro"; // default dedicated tier
                 }
               }}
@@ -134,7 +156,7 @@ export default component$(() => {
                     checked={integrationPath.value === "dedicated"}
                     onChange$={() => {
                       integrationPath.value = "dedicated";
-                      if (selectedTier.value === "fractional") {
+                      if (selectedTier.value === "fractional" || selectedTier.value === "self_hosted") {
                         selectedTier.value = "azure_micro";
                       }
                     }}
@@ -160,10 +182,59 @@ export default component$(() => {
                 </ul>
               </div>
             </label>
+
+            {/* Option C: Self-Hosted / User-Deployed (Connect Existing) */}
+            <label
+              class={`cursor-pointer rounded-2xl border-2 p-6 flex flex-col justify-between transition-all relative ${
+                integrationPath.value === "self_hosted"
+                  ? "border-primary bg-primary/5 shadow-lg"
+                  : "border-outline-variant/10 bg-surface-container-low hover:border-primary/50"
+              }`}
+              onClick$={() => {
+                integrationPath.value = "self_hosted";
+                selectedTier.value = "self_hosted";
+              }}
+            >
+              <div>
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 class="font-extrabold text-xl text-on-surface">Connect Existing Server</h3>
+                    <p class="text-xs text-amber-400 font-mono mt-1">Self-Hosted • Bring Your Own Server</p>
+                  </div>
+                  <input
+                    type="radio"
+                    name="path"
+                    checked={integrationPath.value === "self_hosted"}
+                    onChange$={() => {
+                      integrationPath.value = "self_hosted";
+                      selectedTier.value = "self_hosted";
+                    }}
+                    class="h-5 w-5 accent-primary cursor-pointer shrink-0"
+                  />
+                </div>
+                <p class="text-sm text-tertiary mb-6 leading-relaxed">
+                  Register a server running the AletheiaDB engine on your own infrastructure (AWS, GCP, local, etc.). We'll connect using its public URL and Engine Key to render stats and graphs in this dashboard.
+                </p>
+                <ul class="text-xs text-tertiary space-y-2 mb-6 border-t border-outline-variant/10 pt-4">
+                  <li class="flex items-center gap-2">
+                    <CheckCircle2Icon class="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>Unlimited truths / operations (VM hosted by you)</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <CheckCircle2Icon class="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>Uses your custom Endpoint URL</span>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <CheckCircle2Icon class="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>Authenticates using your Engine Key</span>
+                  </li>
+                </ul>
+              </div>
+            </label>
           </div>
         </section>
 
-        {integrationPath.value === "shared" ? (
+        {integrationPath.value === "shared" && (
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-8 max-w-xl text-center">
             <RocketIcon class="w-12 h-12 text-primary mx-auto mb-4 animate-pulse" />
             <h3 class="text-xl font-bold text-on-surface mb-2">Ready to ingest memories immediately</h3>
@@ -177,7 +248,9 @@ export default component$(() => {
               Go to API Access & Create Key
             </Link>
           </div>
-        ) : (
+        )}
+
+        {integrationPath.value === "dedicated" && (
           <form action="/api/billing/checkout" method="post" class="space-y-12 animate-fade-in">
             <section>
               <h2 class="text-xl font-bold mb-4">2. Select Azure Region</h2>
@@ -375,6 +448,62 @@ export default component$(() => {
               </button>
             </section>
           </form>
+        )}
+
+        {integrationPath.value === "self_hosted" && (
+          <Form action={connectAction} class="space-y-12 animate-fade-in max-w-xl bg-surface-container-low border border-outline-variant/10 rounded-2xl p-8 shadow-lg shadow-black/25">
+            <section>
+              <h2 class="text-xl font-bold mb-6 text-on-surface">2. Server Connection Details</h2>
+              <div class="space-y-6">
+                <div>
+                  <label class="text-xs font-bold uppercase tracking-widest text-tertiary mb-1.5 block">Cluster Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors text-sm"
+                    placeholder="e.g. self-hosted-memory-engine"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="text-xs font-bold uppercase tracking-widest text-tertiary mb-1.5 block">Endpoint URL</label>
+                  <input
+                    type="url"
+                    name="endpoint_url"
+                    class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors text-sm"
+                    placeholder="e.g. http://localhost:3000 or https://my-engine.domain.com"
+                    required
+                  />
+                  <p class="text-[10px] text-tertiary mt-1.5">Direct URL to your deployed AletheiaDB engine endpoint.</p>
+                </div>
+                <div>
+                  <label class="text-xs font-bold uppercase tracking-widest text-tertiary mb-1.5 block">Engine Key / Admin Key</label>
+                  <input
+                    type="password"
+                    name="engine_key"
+                    class="w-full rounded-lg border border-outline-variant/20 bg-surface-container-highest px-4 py-3 text-on-surface outline-none focus:border-primary transition-colors text-sm"
+                    placeholder="Enter the ALETHEIA_API_KEY from your server"
+                    required
+                  />
+                  <p class="text-[10px] text-tertiary mt-1.5">Master key configured on your serverless or VM instance.</p>
+                </div>
+              </div>
+            </section>
+
+            {connectAction.value?.message && (
+              <p class="text-sm text-red-400 font-semibold">{connectAction.value.message}</p>
+            )}
+
+            <section class="mt-8 flex justify-end">
+              <button
+                type="submit"
+                disabled={connectAction.isRunning}
+                class="rounded-lg bg-primary px-8 py-3 font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {connectAction.isRunning ? "Connecting..." : "Connect Server"}
+              </button>
+            </section>
+          </Form>
         )}
       </main>
     </div>

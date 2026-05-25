@@ -49,7 +49,7 @@ export async function getApiKeys(event: RequestEventCommon): Promise<ApiKey[]> {
   }
 }
 
-export async function createApiKey(event: RequestEventCommon, name: string): Promise<ApiKey | null> {
+export async function createApiKey(event: RequestEventCommon, name: string, clusterId?: string): Promise<ApiKey | null> {
   try {
     const user = getCurrentUser(event.cookie);
     if (!user) return null;
@@ -63,7 +63,8 @@ export async function createApiKey(event: RequestEventCommon, name: string): Pro
         .insert({
             user_id: user.user_id,
             name,
-            key_value: rawKey
+            key_value: rawKey,
+            cluster_id: clusterId || null
         })
         .select()
         .single();
@@ -71,6 +72,39 @@ export async function createApiKey(event: RequestEventCommon, name: string): Pro
     if (error || !data) {
         console.error("Supabase API Key Creation Error", error);
         return null;
+    }
+
+    // Push the key to the cluster if it's a dedicated / user-deployed server
+    if (clusterId) {
+      const { data: cluster } = await supabase
+          .from("clusters")
+          .select("endpoint_url, engine_key")
+          .eq("id", clusterId)
+          .maybeSingle();
+
+      if (cluster && cluster.engine_key) {
+        try {
+          const res = await fetch(`${cluster.endpoint_url.replace(/\/+$/, "")}/admin/api_keys`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": cluster.engine_key,
+            },
+            body: JSON.stringify({
+              key_id: data.id,
+              user_id: user.user_id,
+              name,
+              token: rawKey,
+              cluster_id: clusterId,
+            }),
+          });
+          if (!res.ok) {
+            console.error(`Failed to inject key to custom cluster ${clusterId}: ${res.status} ${await res.text()}`);
+          }
+        } catch (injectErr: any) {
+          console.error(`Failed to connect to cluster ${clusterId} for key injection:`, injectErr.message);
+        }
+      }
     }
 
     return {
@@ -93,25 +127,113 @@ export async function revokeApiKey(event: RequestEventCommon, keyId: string): Pr
     if (!user) return false;
 
     const supabase = getAdminSupabaseClient(event.env);
+    
+    // Get cluster info for this key to revoke it from the custom server if needed
+    const { data: keyInfo } = await supabase
+        .from("api_keys")
+        .select("cluster_id")
+        .eq("id", keyId)
+        .eq("user_id", user.user_id)
+        .maybeSingle();
+
     const { error } = await supabase
         .from("api_keys")
         .delete()
         .eq("id", keyId)
         .eq("user_id", user.user_id);
 
-    return !error;
+    if (error) return false;
+
+    if (keyInfo && keyInfo.cluster_id) {
+      const { data: cluster } = await supabase
+          .from("clusters")
+          .select("endpoint_url, engine_key")
+          .eq("id", keyInfo.cluster_id)
+          .maybeSingle();
+
+      if (cluster && cluster.engine_key) {
+        try {
+          const res = await fetch(`${cluster.endpoint_url.replace(/\/+$/, "")}/admin/api_keys/${encodeURIComponent(keyId)}`, {
+            method: "DELETE",
+            headers: {
+              "x-api-key": cluster.engine_key,
+            },
+          });
+          if (!res.ok) {
+            console.error(`Failed to revoke key from custom cluster ${keyInfo.cluster_id}: ${res.status}`);
+          }
+        } catch (revokeErr: any) {
+          console.error(`Failed to connect to cluster ${keyInfo.cluster_id} for key revocation:`, revokeErr.message);
+        }
+      }
+    }
+
+    return true;
   } catch (e) {
     return false;
   }
 }
 
+
 export async function getUsageStats(event: RequestEventCommon): Promise<UsageStats | null> {
-    // For now we mock the usage stats since it doesn't have a Supabase table.
-    return {
+  try {
+    const user = getCurrentUser(event.cookie);
+    if (!user) return null;
+
+    const supabase = getAdminSupabaseClient(event.env);
+
+    // 1. Fetch all clusters for the user to get their IDs
+    const { data: clusters, error: clustersErr } = await supabase
+      .from("clusters")
+      .select("id")
+      .eq("user_id", user.user_id)
+      .neq("status", "deleted");
+
+    if (clustersErr || !clusters || clusters.length === 0) {
+      return {
         request_count: 0,
         ingest_count: 0,
         query_count: 0,
         temporal_query_count: 0,
         last_request_ms: null
+      };
+    }
+
+    const clusterIds = clusters.map(c => c.id);
+
+    // 2. Fetch daily usage for all these clusters
+    const { data: usageData, error: usageErr } = await supabase
+      .from("usage_daily")
+      .select("request_count, ingest_count, query_count, graph_ops")
+      .in("cluster_id", clusterIds);
+
+    if (usageErr || !usageData) {
+      return {
+        request_count: 0,
+        ingest_count: 0,
+        query_count: 0,
+        temporal_query_count: 0,
+        last_request_ms: null
+      };
+    }
+
+    // 3. Aggregate usage
+    const totals = usageData.reduce(
+      (acc, d) => ({
+        request_count: acc.request_count + (d.request_count || 0),
+        ingest_count: acc.ingest_count + (d.ingest_count || 0),
+        query_count: acc.query_count + (d.query_count || 0),
+        temporal_query_count: acc.temporal_query_count + (d.graph_ops || 0),
+      }),
+      { request_count: 0, ingest_count: 0, query_count: 0, temporal_query_count: 0 }
+    );
+
+    return {
+      ...totals,
+      last_request_ms: null
     };
+  } catch (e) {
+    console.error("Error fetching usage stats:", e);
+    return null;
+  }
 }

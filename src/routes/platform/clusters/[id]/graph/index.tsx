@@ -1,5 +1,5 @@
 import { component$, useSignal } from "@builder.io/qwik";
-import { routeLoader$, Link, type DocumentHead } from "@builder.io/qwik-city";
+import { routeLoader$, routeAction$, Link, type DocumentHead } from "@builder.io/qwik-city";
 import { ArrowLeftIcon, SearchIcon, NetworkIcon } from "lucide-qwik";
 import { buildSeoHead } from "~/lib/seo";
 import { setPrivateNoStore } from "~/lib/cache";
@@ -19,8 +19,63 @@ export const useClusterData = routeLoader$(async (event) => {
   return { cluster: data, user };
 });
 
+export const useSearchGraphAction = routeAction$(async (data, event) => {
+  const user = requireAuth(event);
+  const clusterId = event.params.id;
+  const supabase = getAdminSupabaseClient(event.env);
+  if (!supabase) throw event.error(500, "Database connection offline");
+
+  const { data: cluster } = await supabase
+    .from("clusters")
+    .select("*")
+    .eq("id", clusterId)
+    .single();
+
+  if (!cluster || cluster.user_id !== user.user_id) {
+    throw event.error(404, "Not found");
+  }
+
+  const entity = String(data.entity || "");
+  if (!entity) return { success: false, error: "Entity is required" };
+
+  try {
+    const isFractional = cluster.tier === "fractional";
+    const url = isFractional 
+      ? (event.env.get("ALETHEIADB_URL") || process.env.ALETHEIADB_URL || "http://localhost:3000").replace(/\/+$/, "")
+      : cluster.endpoint_url.replace(/\/+$/, "");
+    const key = isFractional
+      ? (event.env.get("ALETHEIADB_ADMIN_KEY") || event.env.get("ALETHEIADB_API_KEY") || process.env.ALETHEIADB_ADMIN_KEY || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a")
+      : cluster.engine_key;
+
+    const res = await fetch(`${url}/graph/walk`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": key,
+      },
+      body: JSON.stringify({
+        entity,
+        depth: 2,
+        entity_id: isFractional ? `${user.user_id}::${entity}` : entity
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      return { success: false, error: `Engine error: ${res.status} ${text}` };
+    }
+
+    const result = await res.json();
+    return { success: true, nodes: result.nodes || [], edges: result.edges || [] };
+  } catch (err: any) {
+    console.error("Search graph error:", err);
+    return { success: false, error: "Failed to connect to the graph engine." };
+  }
+});
+
 export default component$(() => {
   const data = useClusterData();
+  const searchAction = useSearchGraphAction();
   const cluster = data.value.cluster as any;
   const searchEntity = useSignal("");
   const nodes = useSignal<{ id: string; label: string; kind: string }[]>([]);
@@ -31,26 +86,17 @@ export default component$(() => {
     if (!searchEntity.value.trim()) return;
     loading.value = true;
     error.value = "";
-    try {
-      const proxyBase = typeof window !== "undefined" ? `${window.location.origin}/api` : "/api";
-      const entityId = cluster?.id || "";
-      const res = await fetch(`${proxyBase}/graph/walk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": "platform" },
-        body: JSON.stringify({ entity: searchEntity.value, depth: 2, entity_id: entityId }),
-      });
-      const result = await res.json();
-      if (result.nodes) {
-        nodes.value = result.nodes.map((n: any) => ({
-          id: n.id,
-          label: n.label || n.id,
-          kind: n.kind,
-        }));
-      } else if (result.error) {
-        error.value = result.error;
-      }
-    } catch {
-      error.value = "Could not reach the graph. Ensure the AletheiaDB engine is running.";
+    
+    const result = await searchAction.submit({ entity: searchEntity.value });
+    
+    if (result.value?.success && result.value.nodes) {
+      nodes.value = result.value.nodes.map((n: any) => ({
+        id: n.id,
+        label: n.label || n.id,
+        kind: n.kind,
+      }));
+    } else {
+      error.value = result.value?.error || "Could not reach the graph. Ensure the AletheiaDB engine is running.";
     }
     loading.value = false;
   };

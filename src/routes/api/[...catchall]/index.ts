@@ -1,8 +1,7 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "~/lib/supabase";
-import { checkRateLimit, PLAN_RATE_LIMITS } from "~/lib/rate-limiter";
+import { checkRateLimit } from "~/lib/rate-limiter";
 import { recordUsage } from "~/lib/usage";
-// ALETHEIADB_URL and admin key are dynamically resolved per-request to support serverless/edge environments
 
 export const onRequest: RequestHandler = async (event) => {
   const { request, env, url, params } = event;
@@ -20,14 +19,14 @@ export const onRequest: RequestHandler = async (event) => {
     throw event.error(401, "Unauthorized - Missing API Key");
   }
 
-  // 2. Validate API Key against Supabase
+  // 2. Validate API Key against Supabase and get associated cluster details
   const supabase = getAdminSupabaseClient(env);
   if (!supabase) {
     throw event.error(500, "Internal Server Error - Database connection is offline");
   }
   const { data, error } = await supabase
     .from("api_keys")
-    .select("user_id, is_active, cluster_id")
+    .select("user_id, is_active, cluster_id, clusters(tier, endpoint_url, engine_key)")
     .eq("key_value", apiKey)
     .maybeSingle();
 
@@ -37,45 +36,48 @@ export const onRequest: RequestHandler = async (event) => {
 
   const userId = data.user_id;
   const clusterId = data.cluster_id;
+  const clusterData = data.clusters 
+    ? (Array.isArray(data.clusters) ? data.clusters[0] : data.clusters) 
+    : null;
 
-  // 3. Check and update prepaid token credits (with a 30-day lazy reset for the monthly 10k free tier tokens)
-  let { data: sub } = await supabase
-    .from("subscriptions")
-    .select("token_balance, free_tokens_granted_at")
-    .eq("user_id", userId)
-    .maybeSingle();
+  const isFractional = !clusterData || clusterData.tier === "fractional";
+  const customEndpointUrl = (clusterData as any)?.endpoint_url || "";
+  const customEngineKey = (clusterData as any)?.engine_key || "";
+  const clusterTier = (clusterData as any)?.tier || "fractional";
 
-  let tokenBalance = sub?.token_balance ?? 10000;
-  let lastGranted = sub?.free_tokens_granted_at ? new Date(sub.free_tokens_granted_at).getTime() : 0;
-  const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
-
-  if (Date.now() - lastGranted > oneMonthMs) {
-    tokenBalance = 10000;
-    lastGranted = Date.now();
-    await supabase.from("subscriptions").upsert({
-      user_id: userId,
-      token_balance: tokenBalance,
-      free_tokens_granted_at: new Date(lastGranted).toISOString(),
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id" });
-  }
-
-  if (tokenBalance <= 0) {
-    throw event.json(402, {
-      error: "Payment Required - Prepaid token balance exhausted. Please visit https://aletheiadb.com/platform/billing to purchase credits.",
-    });
-  }
-
-  // 3. Rate limiting — check tier limits
-  if (clusterId) {
-    const { data: cluster } = await supabase
-      .from("clusters")
-      .select("tier")
-      .eq("id", clusterId)
+  // 3. Billing check - only for fractional (shared) tier
+  if (isFractional) {
+    let { data: sub } = await supabase
+      .from("subscriptions")
+      .select("token_balance, free_tokens_granted_at")
+      .eq("user_id", userId)
       .maybeSingle();
 
-    const tier = (cluster as any)?.tier || "free";
-    const rateResult = await checkRateLimit(env, clusterId, tier);
+    let tokenBalance = sub?.token_balance ?? 10000;
+    let lastGranted = sub?.free_tokens_granted_at ? new Date(sub.free_tokens_granted_at).getTime() : 0;
+    const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
+
+    if (Date.now() - lastGranted > oneMonthMs) {
+      tokenBalance = 10000;
+      lastGranted = Date.now();
+      await supabase.from("subscriptions").upsert({
+        user_id: userId,
+        token_balance: tokenBalance,
+        free_tokens_granted_at: new Date(lastGranted).toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+    }
+
+    if (tokenBalance <= 0) {
+      throw event.json(402, {
+        error: "Payment Required - Prepaid token balance exhausted. Please visit https://aletheiadb.com/platform/billing to purchase credits.",
+      });
+    }
+  }
+
+  // 4. Rate limiting — check tier limits (skip for self_hosted VM)
+  if (clusterId && clusterTier !== "self_hosted") {
+    const rateResult = await checkRateLimit(env, clusterId, clusterTier);
 
     if (!rateResult.allowed) {
       throw event.json(429, {
@@ -86,7 +88,7 @@ export const onRequest: RequestHandler = async (event) => {
     }
   }
 
-  // 4. Clone and parse the request body to enforce namespace isolation
+  // 5. Clone and parse the request body to enforce namespace isolation (only for fractional)
   let bodyBuffer = await request.arrayBuffer();
   let bodyStr = new TextDecoder().decode(bodyBuffer);
   let isIngest = false;
@@ -96,10 +98,12 @@ export const onRequest: RequestHandler = async (event) => {
     try {
       const payload = JSON.parse(bodyStr);
 
-      if (payload.entity_id) {
-        payload.entity_id = `${userId}::${payload.entity_id}`;
-      } else {
-        payload.entity_id = userId;
+      if (isFractional) {
+        if (payload.entity_id) {
+          payload.entity_id = `${userId}::${payload.entity_id}`;
+        } else {
+          payload.entity_id = userId;
+        }
       }
 
       // Track what kind of operation this is for usage recording
@@ -111,14 +115,19 @@ export const onRequest: RequestHandler = async (event) => {
     } catch {}
   }
 
-  // 5. Proxy the request to the Rust engine
-  const aletheiaUrl = (env.get("ALETHEIADB_URL") || process.env.ALETHEIADB_URL || "http://localhost:3000").replace(/\/+$/, "");
-  const aletheiaAdminKey = env.get("ALETHEIADB_ADMIN_KEY") || env.get("ALETHEIADB_API_KEY") || process.env.ALETHEIADB_ADMIN_KEY || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
+  // 6. Proxy the request to the correct Rust engine
+  const targetUrl = isFractional
+    ? (env.get("ALETHEIADB_URL") || process.env.ALETHEIADB_URL || "http://localhost:3000").replace(/\/+$/, "")
+    : customEndpointUrl;
 
-  const proxyUrl = `${aletheiaUrl}/${params.catchall}${url.search}`;
+  const targetKey = isFractional
+    ? (env.get("ALETHEIADB_ADMIN_KEY") || env.get("ALETHEIADB_API_KEY") || process.env.ALETHEIADB_ADMIN_KEY || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a")
+    : customEngineKey;
+
+  const proxyUrl = `${targetUrl}/${params.catchall}${url.search}`;
   const headers = new Headers();
   headers.set("Content-Type", request.headers.get("content-type") || "application/json");
-  headers.set("x-api-key", aletheiaAdminKey);
+  headers.set("x-api-key", targetKey);
 
   try {
     const proxyResponse = await fetch(proxyUrl, {
@@ -132,7 +141,7 @@ export const onRequest: RequestHandler = async (event) => {
     newResponseHeaders.delete("content-encoding");
     newResponseHeaders.delete("transfer-encoding");
 
-    // 6. Record usage and decrement token balance
+    // 7. Record usage and decrement token balance
     if (clusterId && proxyResponse.ok) {
       try {
         await recordUsage(env, clusterId, {
@@ -141,11 +150,13 @@ export const onRequest: RequestHandler = async (event) => {
           ingests: isIngest ? 1 : 0,
         });
         
-        // Deduct 1 credit per truth/operation
-        await supabase.rpc("decrement_token_balance", {
-          uid: userId,
-          amount: 1,
-        });
+        if (isFractional) {
+          // Deduct 1 credit per truth/operation
+          await supabase.rpc("decrement_token_balance", {
+            uid: userId,
+            amount: 1,
+          });
+        }
       } catch {}
     }
 

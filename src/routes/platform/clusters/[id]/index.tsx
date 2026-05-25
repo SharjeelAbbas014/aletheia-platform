@@ -23,6 +23,7 @@ import {
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { getCoreClusterStats } from "~/lib/aletheia-core";
+import { createApiKey, revokeApiKey } from "~/lib/api-keys";
 
 export const onRequest: RequestHandler = (event) => {
   setPrivateNoStore(event);
@@ -41,10 +42,54 @@ export const useClusterDetail = routeLoader$(async (event) => {
     .single();
   if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
 
-  const coreStats = await getCoreClusterStats(cluster.id);
-  const apiKey = event.env.get("ALETHEIADB_ADMIN_KEY") || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
-  return { cluster, coreStats, user, apiKey };
+  const coreStats = await getCoreClusterStats(cluster.id, cluster.endpoint_url, cluster.engine_key);
+  const apiKey = cluster.engine_key || event.env.get("ALETHEIADB_ADMIN_KEY") || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
+
+  const { data: apiKeys } = await supabase
+      .from("api_keys")
+      .select("*")
+      .eq("user_id", user.user_id)
+      .eq("cluster_id", clusterId)
+      .order("created_at", { ascending: false });
+
+  const mappedKeys = apiKeys ? apiKeys.map((k: any) => ({
+      key_id: k.id,
+      name: k.name,
+      key_prefix: k.key_value.substring(0, 8),
+      created_at_ms: new Date(k.created_at).getTime(),
+      last_used_ms: k.last_used_at ? new Date(k.last_used_at).getTime() : null,
+      disabled: !k.is_active
+  })) : [];
+
+  return { cluster, coreStats, user, apiKey, apiKeys: mappedKeys };
 });
+
+export const useCreateClusterApiKey = routeAction$(async (data, event) => {
+  requireAuth(event);
+  const clusterId = event.params.id;
+  const name = String(data.name ?? "New API Key");
+
+  const newKey = await createApiKey(event, name, clusterId);
+
+  return {
+    success: !!newKey,
+    key: newKey
+  };
+});
+
+export const useRevokeClusterApiKey = routeAction$(async (data, event) => {
+  requireAuth(event);
+  const id = String(data.id ?? "");
+
+  if (id) {
+    await revokeApiKey(event, id);
+  }
+
+  return {
+    revoked: true
+  };
+});
+
 export const useDeleteCluster = routeAction$(async (data, event) => {
   const user = requireAuth(event);
   const clusterId = String(data.cluster_id || "");
@@ -199,15 +244,46 @@ export const useRetryProvision = routeAction$(async (data, event) => {
   }
 });
 
+function formatDate(value: number, locale?: string) {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}
+
+const LocalDateTime = component$((props: { value: number | null }) => {
+  const label = useSignal(
+    props.value ? formatDate(props.value, "en-US") : "Never"
+  );
+
+  useVisibleTask$(({ track }) => {
+    track(() => props.value);
+    if (!props.value) {
+      label.value = "Never";
+      return;
+    }
+
+    label.value = formatDate(props.value);
+  });
+
+  return <>{label.value}</>;
+});
+
 export default component$(() => {
   const data = useClusterDetail();
   const deleteAction = useDeleteCluster();
   const retryAction = useRetryProvision();
+  const createApiKeyAction = useCreateClusterApiKey();
+  const revokeApiKeyAction = useRevokeClusterApiKey();
   const cluster = data.value.cluster as any;
   const stats = data.value.coreStats as any;
   const apiKey = data.value.apiKey as string;
+  const apiKeys = data.value.apiKeys || [];
   const retrying = useSignal(false);
   const showKey = useSignal(false);
+  const newApiKeyName = useSignal("");
+  const showApiKeyCreate = useSignal(false);
+
 
   const vmSize = {
     azure_micro: "Standard_D2s_v5",
@@ -543,7 +619,7 @@ export default component$(() => {
               </div>
             </div>
             <div>
-              <p class="text-xs font-bold uppercase tracking-widest text-tertiary mb-1">Cluster API Key</p>
+              <p class="text-xs font-bold uppercase tracking-widest text-tertiary mb-1">Engine Admin Key / Master Key</p>
               <div class="flex items-center gap-2 rounded-lg bg-black/40 p-3 font-mono text-sm text-on-surface border border-outline-variant/20">
                 <span class="flex-1 truncate text-tertiary select-all">{showKey.value ? apiKey : "••••••••••••••••••••••••••••••••"}</span>
                 <button class="p-1 hover:bg-primary/20 rounded transition-colors text-tertiary shrink-0" onClick$={() => { showKey.value = !showKey.value; }}>
@@ -553,10 +629,94 @@ export default component$(() => {
                   <CopyIcon class="w-4 h-4" />
                 </button>
               </div>
-              <p class="text-xs text-tertiary mt-1">Use this key in the x-api-key header to authenticate API requests to your engine.</p>
+              <p class="text-xs text-tertiary mt-1">Use this key in the x-api-key header to perform administrative tasks or authenticate directly on your engine.</p>
             </div>
           </div>
         </section>
+
+        {/* API Key Management */}
+        <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 mb-8">
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="text-lg font-bold">API Key Management</h2>
+              <p class="text-xs text-tertiary mt-1">Generate staging, production, or client access keys specifically for this cluster.</p>
+            </div>
+            <button
+              onClick$={() => { showApiKeyCreate.value = !showApiKeyCreate.value; }}
+              class="rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary hover:text-white px-4 py-2 text-xs font-bold text-primary transition-all"
+            >
+              {showApiKeyCreate.value ? "Cancel" : "Generate Key"}
+            </button>
+          </div>
+
+          {showApiKeyCreate.value && (
+            <Form action={createApiKeyAction} class="mb-6 bg-black/25 border border-outline-variant/10 p-5 rounded-xl flex flex-col sm:flex-row gap-3 animate-fade-in">
+              <input
+                type="text"
+                name="name"
+                bind:value={newApiKeyName}
+                placeholder="Key identifier (e.g. Production Client 01)"
+                required
+                class="flex-grow rounded-lg border border-outline-variant/20 bg-surface-container-highest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={createApiKeyAction.isRunning}
+                class="rounded-lg bg-primary px-5 py-2 font-bold text-xs text-on-primary transition-all shrink-0"
+              >
+                {createApiKeyAction.isRunning ? "Generating..." : "Create"}
+              </button>
+            </Form>
+          )}
+
+          {createApiKeyAction.value?.success && createApiKeyAction.value.key?.token && (
+            <div class="mb-6 rounded-xl bg-green-500/10 border border-green-500/30 p-5">
+              <p class="text-xs font-bold text-green-400 mb-2">New Key Generated Successfully!</p>
+              <p class="text-xs text-tertiary mb-3">Copy your API key now. You won't be able to see it again.</p>
+              <div class="flex items-center gap-2 rounded-lg bg-black/40 p-3 font-mono text-xs text-green-400 border border-green-500/20">
+                <span class="flex-grow truncate">{createApiKeyAction.value.key.token}</span>
+                <button
+                  class="p-1 hover:bg-green-500/20 rounded transition-colors text-green-400 shrink-0"
+                  onClick$={() => navigator.clipboard.writeText(createApiKeyAction.value?.key?.token || "")}
+                >
+                  <CopyIcon class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Active Keys List */}
+          <div class="space-y-3">
+            {apiKeys.length === 0 ? (
+              <p class="text-xs text-tertiary text-center py-4 bg-black/25 rounded-xl">No API keys created for this cluster. Use the button above to generate one.</p>
+            ) : (
+              apiKeys.map((key: any) => (
+                <div key={key.key_id} class="flex items-center justify-between bg-black/20 rounded-xl p-4 border border-outline-variant/10">
+                  <div>
+                    <h4 class="text-sm font-bold">{key.name}</h4>
+                    <p class="text-[11px] font-mono text-tertiary mt-1 tracking-wider">{key.key_prefix}••••••••</p>
+                  </div>
+                  <div class="flex items-center gap-6">
+                    <div class="text-right hidden sm:block">
+                      <p class="text-[9px] font-bold text-tertiary uppercase">Created</p>
+                      <p class="font-mono text-[10px] mt-0.5"><LocalDateTime value={key.created_at_ms} /></p>
+                    </div>
+                    <Form action={revokeApiKeyAction}>
+                      <input type="hidden" name="id" value={key.key_id} />
+                      <button
+                        type="submit"
+                        class="rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white px-3 py-1.5 text-xs font-bold transition-all"
+                      >
+                        Revoke
+                      </button>
+                    </Form>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
 
         {/* Danger Zone */}
         <section class="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 mt-8">
