@@ -320,7 +320,7 @@ echo "Bootstrap complete for cluster ${clusterId}"`;
         properties: {
           hardwareProfile: { vmSize: size },
           storageProfile: {
-            imageReference: { publisher: "Canonical", offer: "0001-com-ubuntu-server-noble", sku: "24_04-lts-gen2", version: "latest" },
+            imageReference: { publisher: "Canonical", offer: "ubuntu-24_04-lts", sku: "server", version: "latest" },
             osDisk: { createOption: "FromImage", managedDisk: { storageAccountType: "Premium_LRS" }, diskSizeGB: 30 },
             dataDisks: [{ lun: 0, createOption: "Empty", diskSizeGB: storageGb, managedDisk: { storageAccountType: "Premium_LRS" } }],
           },
