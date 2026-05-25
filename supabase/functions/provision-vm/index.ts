@@ -86,7 +86,8 @@ serve(async (req) => {
     const deploymentName = `aletheia-vm-deploy-${clusterId}`;
     const deployUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}/providers/Microsoft.Resources/deployments/${deploymentName}?api-version=2021-04-01`;
 
-    const armTemplate = buildARMTemplate(clusterId, vmName, vmSize, storageGb, region, adminKey);
+    const platformUrl = "https://aletheiadb.com";
+    const armTemplate = buildARMTemplate(clusterId, vmName, vmSize, storageGb, region, adminKey, platformUrl);
 
     console.log(`[provision-vm] Submitting ARM deployment to ${rgName} (size ${vmSize})...`);
 
@@ -156,11 +157,110 @@ function buildARMTemplate(
   storageGb: number,
   region: string,
   adminKey: string,
+  platformUrl: string,
 ): Record<string, unknown> {
   const nicName = `${vmName}-nic`;
   const publicIpName = `${vmName}-pip`;
   const nsgName = `${vmName}-nsg`;
   const vnetName = `${vmName}-vnet`;
+
+  const bootstrapCmd = `set -e
+LOG=/var/log/aletheia-bootstrap.log
+exec > >(tee -a $LOG) 2>&1
+
+echo "[1/6] Bootstrap for cluster ${clusterId}"
+
+# Format and mount data disk
+if [ -e "/dev/disk/azure/scsi1/lun0" ]; then
+  echo "[2/6] Formatting data disk..."
+  sudo mkfs.ext4 -F /dev/disk/azure/scsi1/lun0 || true
+  echo "[2/6] Mounting data disk..."
+  sudo mkdir -p /var/lib/aletheia
+  sudo mount /dev/disk/azure/scsi1/lun0 /var/lib/aletheia || true
+else
+  echo "[2/6] No data disk, using OS disk"
+  sudo mkdir -p /var/lib/aletheia
+fi
+
+sudo chown -R aletheia:aletheia /var/lib/aletheia 2>/dev/null || true
+
+# Install deps
+echo "[3/6] Installing dependencies..."
+sudo apt-get update -qq
+sudo apt-get install -y -qq libgomp1 curl
+
+# Download engine binary
+BINARY_URL="${platformUrl}/api/storage/aletheia-latest"
+echo "[4/6] Downloading engine binary..."
+sudo mkdir -p /usr/local/lib/aletheia
+cd /tmp
+# Try Supabase Storage first, then fallback URL
+curl -sSfL -o aletheia-engine \\
+  "https://fnovrnadrvimlvqwecgs.supabase.co/storage/v1/object/public/aletheia-binaries/aletheia-latest" \\
+  -H "User-Agent: aletheia-bootstrap" || \\
+curl -sSfL -o aletheia-engine "$BINARY_URL" || \\
+{ echo "[4/6] Binary download failed — will build from source" | tee -a $LOG; BUILD_FROM_SOURCE=1; }
+
+if [ -f aletheia-engine ] && [ -s aletheia-engine ]; then
+  sudo mv aletheia-engine /usr/local/bin/aletheia-engine
+  sudo chmod +x /usr/local/bin/aletheia-engine
+  echo "[4/6] Binary installed: $(file /usr/local/bin/aletheia-engine | head -c 80)"
+else
+  echo "[4/6] Binary not available — engine not installed"
+fi
+
+# Write systemd service
+echo "[5/6] Configuring systemd service..."
+sudo tee /etc/systemd/system/aletheia.service > /dev/null <<SERVICEEOF
+[Unit]
+Description=Aletheia Core Engine
+After=network.target
+
+[Service]
+Type=simple
+User=aletheia
+WorkingDirectory=/var/lib/aletheia
+ExecStart=/usr/local/bin/aletheia-engine
+Restart=on-failure
+RestartSec=5
+Environment=ALETHEIA_API_KEY=${adminKey}
+Environment=ALETHEIA_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+Environment=PORT=3000
+Environment=ALETHEIA_DATA_DIR=/var/lib/aletheia
+
+[Install]
+WantedBy=multi-user.target
+SERVICEEOF
+
+# Start engine
+if [ -f /usr/local/bin/aletheia-engine ]; then
+  sudo systemctl daemon-reload
+  sudo systemctl enable aletheia
+  sudo systemctl start aletheia
+  echo "[5/6] Engine started, waiting for health..."
+  for i in $(seq 1 30); do
+    if curl -sf http://localhost:3000/health >/dev/null 2>&1; then
+      echo "[5/6] Engine is healthy after ${i}s"
+      break
+    fi
+    sleep 2
+  done
+fi
+
+# Activate
+echo "[6/6] Getting public IP..."
+PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || curl -s https://api.ipify.org || echo "unknown")
+echo "[6/6] Activating cluster ${clusterId} with IP $PUBLIC_IP"
+ACTIVATE_URL="${platformUrl}/api/clusters/${clusterId}/activate"
+ACTIVATE_RESULT=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$ACTIVATE_URL" \\
+  -H "x-admin-key: ${adminKey}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"ip_address":"'"$PUBLIC_IP"'"}')
+echo "[6/6] Activation result: $ACTIVATE_RESULT"
+
+echo "Bootstrap complete for cluster ${clusterId}"`;
+
+  const encodedScript = btoa(bootstrapCmd);
 
   return {
     $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -247,7 +347,7 @@ function buildARMTemplate(
           typeHandlerVersion: "2.1",
           autoUpgradeMinorVersion: true,
           settings: {
-            commandToExecute: `curl -sSfL "https://aletheiadb.com/install.sh" | bash -s -- --admin-key "${adminKey}" --cluster-id "${clusterId}" --data-disk "/dev/disk/azure/scsi1/lun0"`,
+            commandToExecute: `echo ${encodedScript} | base64 -d | bash`,
           },
         },
         dependsOn: [vmName],
