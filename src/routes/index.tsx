@@ -647,6 +647,7 @@ export default component$(() => {
   const heroMessage = useSignal(
     "I moved to Tokyo and I still prefer jasmine tea over coffee.",
   );
+  const heroQuery = useSignal("Where do I live?");
   const heroDemoResult = useSignal<HeroDemoResult | null>(null);
   const heroWarmupResult = useSignal<HeroWarmupResult | null>(null);
   const heroDemoRunning = useSignal(false);
@@ -710,7 +711,7 @@ export default component$(() => {
   });
 
   const runHeroDemo = $(async (action: "store" | "recall") => {
-    const message = heroMessage.value.trim();
+    const message = action === "store" ? heroMessage.value.trim() : heroQuery.value.trim();
     if (!message) {
       heroDemoResult.value = {
         ok: false,
@@ -1788,24 +1789,6 @@ export default component$(() => {
                   </div>
 
                   <div class="rounded-xl border border-white/5 bg-black/25 p-5">
-                    <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-primary mb-2">
-                      Pulse Cold Start Warm-Up
-                    </p>
-                    <p class="text-xs leading-relaxed text-tertiary mb-4">
-                      Trigger a heartbeat ping to reduce runtime retrieval latency before simulating the engine.
-                    </p>
-                    <button
-                      type="button"
-                      class="glass-panel inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-on-surface hover:bg-white/5 active:scale-[0.98] transition-all disabled:opacity-50"
-                      disabled={heroWarmupRunning.value}
-                      onClick$={runHeroWarmup}
-                    >
-                      {heroWarmupRunning.value ? "Warming Engine..." : "Warm Up Database"}
-                      <MaterialIcon name="bolt" class="text-xs text-primary" />
-                    </button>
-                  </div>
-
-                  <div class="rounded-xl border border-white/5 bg-black/25 p-5">
                     <div class="flex items-center justify-between mb-3">
                       <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-primary">
                         Demo Memory Session Key
@@ -1864,6 +1847,25 @@ export default component$(() => {
                         class="text-sm"
                       />
                     </button>
+
+                    <div class="grid grid-cols-2 gap-4 pt-1">
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Ingest Latency (Engine)
+                        </p>
+                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
+                          {heroDemoResult.value?.ingestLabel ?? "---"}
+                        </p>
+                      </div>
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Ingest Latency (Network RTT)
+                        </p>
+                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
+                          {heroDemoResult.value?.ingestRoundTripLabel ?? "---"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1885,23 +1887,19 @@ export default component$(() => {
                       </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                      <div class="rounded-xl border border-white/5 bg-black/25 p-4">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
-                          Ingest Latency
-                        </p>
-                        <p class="mt-1 text-base md:text-lg font-mono font-extrabold text-on-surface">
-                          {heroDemoResult.value?.ingestLabel ?? "---"}
-                        </p>
-                      </div>
-                      <div class="rounded-xl border border-primary/10 bg-black/25 p-4">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-primary">
-                          Query Latency
-                        </p>
-                        <p class="mt-1 text-base md:text-lg font-mono font-extrabold text-primary text-glow">
-                          {heroDemoResult.value?.queryLabel ?? "---"}
-                        </p>
-                      </div>
+                    <div class="space-y-3">
+                      <label class="block text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary">
+                        Memory Query (Semantic Search)
+                      </label>
+                      <textarea
+                        class="min-h-[80px] w-full rounded-xl border border-white/5 bg-black/35 px-4 py-3 text-xs md:text-sm text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 shadow-inner"
+                        placeholder="Where do I live?"
+                        value={heroQuery.value}
+                        onInput$={(_, currentTarget) => {
+                          heroQuery.value = currentTarget.value;
+                        }}
+                        required
+                      />
                     </div>
 
                     <button
@@ -1912,9 +1910,28 @@ export default component$(() => {
                     >
                       {heroDemoRunning.value && heroDemoMode.value === "recall"
                         ? "Retrieving..."
-                        : "Query Memory Surface"}
+                        : "Retrieve Memory"}
                       <MaterialIcon name="speed" class="text-sm text-primary" />
                     </button>
+
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Query Latency (Engine)
+                        </p>
+                        <p class="mt-1 text-sm font-mono font-extrabold text-primary text-glow">
+                          {heroDemoResult.value?.queryLabel ?? "---"}
+                        </p>
+                      </div>
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Query Latency (Network RTT)
+                        </p>
+                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
+                          {heroDemoResult.value?.queryRoundTripLabel ?? "---"}
+                        </p>
+                      </div>
+                    </div>
 
                     <div class="rounded-xl border border-white/5 bg-black/35 p-4 shadow-inner">
                       <div class="flex items-center justify-between mb-3">

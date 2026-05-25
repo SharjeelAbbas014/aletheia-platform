@@ -22,7 +22,7 @@ import {
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
-import { getCoreClusterStats } from "~/lib/aletheia-core";
+import { getCoreClusterStats, type HardwareStats } from "~/lib/aletheia-core";
 import { createApiKey, revokeApiKey } from "~/lib/api-keys";
 
 export const onRequest: RequestHandler = (event) => {
@@ -283,6 +283,27 @@ export default component$(() => {
   const showKey = useSignal(false);
   const newApiKeyName = useSignal("");
   const showApiKeyCreate = useSignal(false);
+  const hardwareStats = useSignal<HardwareStats | null>(null);
+
+  useVisibleTask$(({ cleanup }) => {
+    if (cluster.status !== "active" || cluster.tier === "fractional") return;
+    
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`/api/clusters/${cluster.id}/hardware`);
+        if (res.ok) {
+          hardwareStats.value = await res.json();
+        }
+      } catch (e) {
+        console.error("Failed to fetch hardware stats", e);
+      }
+    };
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 5000);
+    cleanup(() => clearInterval(interval));
+  });
+
 
 
   const vmSize = {
@@ -579,6 +600,112 @@ export default component$(() => {
             <p class="text-3xl font-extrabold">{stats ? formatBytes(stats.storage_bytes) : "—"}</p>
           </div>
         </section>
+
+        {/* Live Server Performance (dedicated clusters only) */}
+        {cluster.tier !== "fractional" && (
+          <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-bold flex items-center gap-2">
+                <ActivityIcon class="w-5 h-5 text-primary animate-pulse" /> Live Server Performance
+              </h2>
+              <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest animate-pulse">
+                Real-time (5s poll)
+              </span>
+            </div>
+
+            {!hardwareStats.value ? (
+              <div class="flex flex-col items-center justify-center py-6 text-tertiary">
+                <RefreshCwIcon class="w-6 h-6 animate-spin mb-2" />
+                <p class="text-xs">Connecting to engine hardware monitor...</p>
+              </div>
+            ) : (
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* CPU Utilization */}
+                <div class="p-4 rounded-xl bg-black/20 border border-outline-variant/5">
+                  <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">CPU Usage</p>
+                    <p class="text-sm font-bold font-mono">{hardwareStats.value.cpu_usage_percent.toFixed(1)}%</p>
+                  </div>
+                  <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden border border-outline-variant/10">
+                    <div 
+                      class="bg-primary h-full rounded-full transition-all duration-500" 
+                      style={{ width: `${Math.min(100, Math.max(0, hardwareStats.value.cpu_usage_percent))}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* RAM Utilization */}
+                <div class="p-4 rounded-xl bg-black/20 border border-outline-variant/5">
+                  <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">RAM Usage</p>
+                    <p class="text-sm font-bold font-mono">
+                      {hardwareStats.value.ram_used_mb}MB / {hardwareStats.value.ram_total_mb}MB
+                    </p>
+                  </div>
+                  <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden border border-outline-variant/10">
+                    <div 
+                      class="bg-indigo-500 h-full rounded-full transition-all duration-500" 
+                      style={{ width: `${Math.min(100, Math.max(0, (hardwareStats.value.ram_used_mb / (hardwareStats.value.ram_total_mb || 1)) * 100))}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Storage Disk Utilization */}
+                <div class="p-4 rounded-xl bg-black/20 border border-outline-variant/5">
+                  <div class="flex justify-between items-center mb-2">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary">Disk Storage</p>
+                    <p class="text-sm font-bold font-mono">
+                      {hardwareStats.value.storage_used_gb}GB / {hardwareStats.value.storage_total_gb}GB
+                    </p>
+                  </div>
+                  <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden border border-outline-variant/10">
+                    <div 
+                      class="bg-green-500 h-full rounded-full transition-all duration-500" 
+                      style={{ width: `${Math.min(100, Math.max(0, (hardwareStats.value.storage_used_gb / (hardwareStats.value.storage_total_gb || 1)) * 100))}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* GPU Performance (if available) */}
+                {hardwareStats.value.gpu_usage_percent !== null && (
+                  <div class="p-4 rounded-xl bg-black/20 border border-outline-variant/5 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                      <p class="text-[10px] font-bold uppercase tracking-widest text-amber-400 mb-1">NVIDIA GPU Acceleration</p>
+                    </div>
+                    <div>
+                      <div class="flex justify-between items-center mb-2">
+                        <p class="text-[11px] font-semibold text-tertiary">GPU Utilization</p>
+                        <p class="text-xs font-bold font-mono">{hardwareStats.value.gpu_usage_percent.toFixed(1)}%</p>
+                      </div>
+                      <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden border border-outline-variant/10">
+                        <div 
+                          class="bg-amber-500 h-full rounded-full transition-all duration-500" 
+                          style={{ width: `${Math.min(100, Math.max(0, hardwareStats.value.gpu_usage_percent))}%` }}
+                        />
+                      </div>
+                    </div>
+                    {hardwareStats.value.gpu_ram_used_mb !== null && hardwareStats.value.gpu_ram_total_mb !== null && (
+                      <div>
+                        <div class="flex justify-between items-center mb-2">
+                          <p class="text-[11px] font-semibold text-tertiary">GPU VRAM</p>
+                          <p class="text-xs font-bold font-mono">
+                            {hardwareStats.value.gpu_ram_used_mb}MB / {hardwareStats.value.gpu_ram_total_mb}MB
+                          </p>
+                        </div>
+                        <div class="w-full bg-black/40 rounded-full h-2 overflow-hidden border border-outline-variant/10">
+                          <div 
+                            class="bg-amber-600 h-full rounded-full transition-all duration-500" 
+                            style={{ width: `${Math.min(100, Math.max(0, (hardwareStats.value.gpu_ram_used_mb / (hardwareStats.value.gpu_ram_total_mb || 1)) * 100))}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* VM Specs (dedicated clusters only) */}
         {cluster.tier !== "fractional" && (

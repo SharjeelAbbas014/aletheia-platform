@@ -61,3 +61,34 @@ export async function getCoreClusterStats(
   }
 }
 
+export interface HardwareStats {
+  cpu_usage_percent: number;
+  ram_total_mb: number;
+  ram_used_mb: number;
+  storage_total_gb: number;
+  storage_used_gb: number;
+  gpu_usage_percent: number | null;
+  gpu_ram_total_mb: number | null;
+  gpu_ram_used_mb: number | null;
+}
+
+export async function getHardwareStats(
+  endpointUrl?: string,
+  engineKey?: string
+): Promise<HardwareStats | null> {
+  try {
+    const url = endpointUrl ? endpointUrl.replace(/\/+$/, "") : getAletheiaDBCoreUrl();
+    const key = engineKey || getAdminKey();
+    
+    const res = await fetch(
+      `${url}/admin/stats/hardware`,
+      { headers: { "x-api-key": key } }
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+
