@@ -287,7 +287,8 @@ echo "Bootstrap complete for cluster ${clusterId}"`;
         properties: {
           securityRules: [
             { name: "SSH", properties: { protocol: "Tcp", sourcePortRange: "*", destinationPortRange: "22", sourceAddressPrefix: "*", destinationAddressPrefix: "*", access: "Allow", priority: 1000, direction: "Inbound" } },
-            { name: "AletheiaDB-API", properties: { protocol: "Tcp", sourcePortRange: "*", destinationPortRange: "8443", sourceAddressPrefix: "*", destinationAddressPrefix: "*", access: "Allow", priority: 1001, direction: "Inbound" } },
+            { name: "Engine-API", properties: { protocol: "Tcp", sourcePortRange: "*", destinationPortRange: "3000", sourceAddressPrefix: "*", destinationAddressPrefix: "*", access: "Allow", priority: 1010, direction: "Inbound" } },
+            { name: "AletheiaDB-API", properties: { protocol: "Tcp", sourcePortRange: "*", destinationPortRange: "8443", sourceAddressPrefix: "*", destinationAddressPrefix: "*", access: "Allow", priority: 1020, direction: "Inbound" } },
           ],
         },
       },
