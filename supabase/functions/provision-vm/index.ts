@@ -249,7 +249,8 @@ fi
 
 # Activate
 echo "[6/6] Getting public IP..."
-PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || curl -s https://api.ipify.org || echo "unknown")
+PUBLIC_IP=$(curl -s -H "Metadata:true" "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text" 2>/dev/null)
+[ -z "$PUBLIC_IP" ] && PUBLIC_IP=$(curl -s http://checkip.amazonaws.com 2>/dev/null || curl -s https://api.ipify.org 2>/dev/null || echo "unknown")
 echo "[6/6] Activating cluster ${clusterId} with IP $PUBLIC_IP"
 ACTIVATE_URL="${platformUrl}/api/clusters/${clusterId}/activate"
 ACTIVATE_RESULT=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$ACTIVATE_URL" \\
@@ -319,7 +320,7 @@ echo "Bootstrap complete for cluster ${clusterId}"`;
         properties: {
           hardwareProfile: { vmSize: size },
           storageProfile: {
-            imageReference: { publisher: "Canonical", offer: "0001-com-ubuntu-server-jammy", sku: "22_04-lts-gen2", version: "latest" },
+            imageReference: { publisher: "Canonical", offer: "0001-com-ubuntu-server-noble", sku: "24_04-lts-gen2", version: "latest" },
             osDisk: { createOption: "FromImage", managedDisk: { storageAccountType: "Premium_LRS" }, diskSizeGB: 30 },
             dataDisks: [{ lun: 0, createOption: "Empty", diskSizeGB: storageGb, managedDisk: { storageAccountType: "Premium_LRS" } }],
           },

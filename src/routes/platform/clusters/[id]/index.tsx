@@ -17,6 +17,8 @@ import {
   FileTextIcon,
   ServerIcon,
   RefreshCwIcon,
+  EyeIcon,
+  EyeOffIcon,
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
@@ -40,7 +42,8 @@ export const useClusterDetail = routeLoader$(async (event) => {
   if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
 
   const coreStats = await getCoreClusterStats(cluster.id);
-  return { cluster, coreStats, user };
+  const apiKey = event.env.get("ALETHEIADB_ADMIN_KEY") || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
+  return { cluster, coreStats, user, apiKey };
 });
 export const useDeleteCluster = routeAction$(async (data, event) => {
   const user = requireAuth(event);
@@ -202,7 +205,9 @@ export default component$(() => {
   const retryAction = useRetryProvision();
   const cluster = data.value.cluster as any;
   const stats = data.value.coreStats as any;
+  const apiKey = data.value.apiKey as string;
   const retrying = useSignal(false);
+  const showKey = useSignal(false);
 
   const vmSize = {
     azure_micro: "Standard_D2s_v5",
@@ -540,9 +545,15 @@ export default component$(() => {
             <div>
               <p class="text-xs font-bold uppercase tracking-widest text-tertiary mb-1">Cluster API Key</p>
               <div class="flex items-center gap-2 rounded-lg bg-black/40 p-3 font-mono text-sm text-on-surface border border-outline-variant/20">
-                <span class="flex-1 truncate text-tertiary">••••••••••••••••••••••••••••••••</span>
+                <span class="flex-1 truncate text-tertiary select-all">{showKey.value ? apiKey : "••••••••••••••••••••••••••••••••"}</span>
+                <button class="p-1 hover:bg-primary/20 rounded transition-colors text-tertiary shrink-0" onClick$={() => { showKey.value = !showKey.value; }}>
+                  {showKey.value ? <EyeOffIcon class="w-4 h-4" /> : <EyeIcon class="w-4 h-4" />}
+                </button>
+                <button class="p-1 hover:bg-primary/20 rounded transition-colors text-primary shrink-0" onClick$={() => navigator.clipboard.writeText(apiKey)}>
+                  <CopyIcon class="w-4 h-4" />
+                </button>
               </div>
-              <p class="text-xs text-tertiary mt-1">Manage keys in Mission Control.</p>
+              <p class="text-xs text-tertiary mt-1">Use this key in the x-api-key header to authenticate API requests to your engine.</p>
             </div>
           </div>
         </section>
