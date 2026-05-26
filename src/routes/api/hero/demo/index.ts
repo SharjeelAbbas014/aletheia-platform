@@ -224,11 +224,27 @@ export const onPost: RequestHandler = async (event) => {
     return true;
   });
 
+  // Separate observation block from actual hits
+  const obsIndex = hits.findIndex((hit) => hit.memory_id === "observation_block");
+  let obsBlock: HeroMemoryHit | null = null;
+  if (obsIndex !== -1) {
+    obsBlock = hits.splice(obsIndex, 1)[0];
+  }
+
+  // Slice actual hits to 3
+  const slicedActualHits = hits.slice(0, 3);
+
+  // Combine them back: actual hits first, observation block at the end
+  const finalHits = [...slicedActualHits];
+  if (obsBlock) {
+    finalHits.push(obsBlock);
+  }
+
   const queryUs = readEngineTotalUs(queryResponse.headers);
   response.queryLabel = formatEngineMs(queryUs);
   response.queryRoundTripLabel = formatRoundTripMs(queryStartedAt);
   response.queryUnderBlink = queryUs != null && queryUs / 1000 < 100;
-  response.hits = hits.slice(0, 4).map((hit) => ({
+  response.hits = finalHits.map((hit) => ({
     ...hit,
     createdLabel: formatHeroTimestamp(hit.created_at_ms)
   }));
