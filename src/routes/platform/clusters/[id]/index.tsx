@@ -43,7 +43,6 @@ export const useClusterDetail = routeLoader$(async (event) => {
     .single();
   if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
 
-  const coreStats = await getCoreClusterStats(cluster.id, cluster.endpoint_url, cluster.engine_key);
   const apiKey = cluster.engine_key || event.env.get("ALETHEIADB_ADMIN_KEY") || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
 
   const { data: apiKeys } = await supabase
@@ -62,7 +61,7 @@ export const useClusterDetail = routeLoader$(async (event) => {
       disabled: !k.is_active
   })) : [];
 
-  return { cluster, coreStats, user, apiKey, apiKeys: mappedKeys };
+  return { cluster, user, apiKey, apiKeys: mappedKeys };
 });
 
 export const useCreateClusterApiKey = routeAction$(async (data, event) => {
@@ -276,7 +275,7 @@ export default component$(() => {
   const createApiKeyAction = useCreateClusterApiKey();
   const revokeApiKeyAction = useRevokeClusterApiKey();
   const cluster = data.value.cluster as any;
-  const stats = data.value.coreStats as any;
+  const stats = useSignal<any>(null);
   const apiKey = data.value.apiKey as string;
   const apiKeys = data.value.apiKeys || [];
   const retrying = useSignal(false);
@@ -302,6 +301,13 @@ export default component$(() => {
         } catch {}
       }, 5000);
       cleanup(() => clearInterval(interval));
+      return;
+    }
+
+    if (clusterStatus.value === "active") {
+      getCoreClusterStats(cluster.id, cluster.endpoint_url, cluster.engine_key).then(s => {
+        if (s) stats.value = s;
+      });
     }
 
     if (clusterStatus.value === "active" && cluster.tier !== "fractional") {
@@ -586,25 +592,25 @@ export default component$(() => {
             <div class="flex items-center gap-2 text-tertiary text-xs font-bold uppercase tracking-widest mb-2">
               <DatabaseIcon class="w-4 h-4" /> Memories
             </div>
-            <p class="text-3xl font-extrabold">{stats ? formatNum(stats.memory_count) : "—"}</p>
+            <p class="text-3xl font-extrabold">{stats.value ? formatNum(stats.value.memory_count) : "—"}</p>
           </div>
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-5">
             <div class="flex items-center gap-2 text-tertiary text-xs font-bold uppercase tracking-widest mb-2">
               <UsersIcon class="w-4 h-4" /> Entities
             </div>
-            <p class="text-3xl font-extrabold">{stats ? formatNum(stats.entity_count) : "—"}</p>
+            <p class="text-3xl font-extrabold">{stats.value ? formatNum(stats.value.entity_count) : "—"}</p>
           </div>
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-5">
             <div class="flex items-center gap-2 text-tertiary text-xs font-bold uppercase tracking-widest mb-2">
               <FileTextIcon class="w-4 h-4" /> Facts
             </div>
-            <p class="text-3xl font-extrabold">{stats ? formatNum(stats.fact_count) : "—"}</p>
+            <p class="text-3xl font-extrabold">{stats.value ? formatNum(stats.value.fact_count) : "—"}</p>
           </div>
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-5">
             <div class="flex items-center gap-2 text-tertiary text-xs font-bold uppercase tracking-widest mb-2">
               <ActivityIcon class="w-4 h-4" /> Storage
             </div>
-            <p class="text-3xl font-extrabold">{stats ? formatBytes(stats.storage_bytes) : "—"}</p>
+            <p class="text-3xl font-extrabold">{stats.value ? formatBytes(stats.value.storage_bytes) : "—"}</p>
           </div>
         </section>
 

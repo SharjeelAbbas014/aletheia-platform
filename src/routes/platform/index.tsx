@@ -1,4 +1,4 @@
-import { component$, useSignal, useTask$, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useTask$, useVisibleTask$, useStore } from "@builder.io/qwik";
 import {
   LayoutDashboardIcon,
   NetworkIcon,
@@ -87,66 +87,19 @@ export const usePlatformData = routeLoader$(async (event) => {
     getTeamMembers(event),
   ]);
 
-  // Fetch real-time total usage & storage stats across all active clusters
-  const activeClusters = (clusters || []).filter(c => c.status === "active");
-  const allStats = await Promise.all(
-    activeClusters.map(cluster => 
-      getCoreClusterStats(cluster.id, cluster.endpoint_url, cluster.engine_key)
-    )
-  );
-
-  const combinedStats = allStats.reduce<{
-    memory_count: number;
-    entity_count: number;
-    fact_count: number;
-    storage_bytes: number;
-    request_count: number;
-    ingest_count: number;
-    query_count: number;
-  }>((acc, stats) => {
-    if (stats) {
-      acc.memory_count += stats.memory_count || 0;
-      acc.entity_count += stats.entity_count || 0;
-      acc.fact_count += stats.fact_count || 0;
-      acc.storage_bytes += stats.storage_bytes || 0;
-      acc.request_count += stats.request_count || 0;
-      acc.ingest_count += stats.ingest_count || 0;
-      acc.query_count += stats.query_count || 0;
-    }
-    return acc;
-  }, {
-    memory_count: 0,
-    entity_count: 0,
-    fact_count: 0,
-    storage_bytes: 0,
-    request_count: 0,
-    ingest_count: 0,
-    query_count: 0,
-  });
-
-  // Merge the usage stats from DB with engine total stats for real-time accuracy
-  const mergedUsage = {
-    request_count: Math.max(usage?.request_count || 0, combinedStats.request_count),
-    ingest_count: Math.max(usage?.ingest_count || 0, combinedStats.ingest_count),
-    query_count: Math.max(usage?.query_count || 0, combinedStats.query_count),
-    temporal_query_count: usage?.temporal_query_count || 0,
-    last_request_ms: usage?.last_request_ms ?? null,
-  };
-
   const clusterId = clusters[0]?.id || "";
   const templates = clusterId ? await getContextTemplates(event, clusterId) : [];
 
   return {
     user,
     keys,
-    usage: mergedUsage,
+    usage,
     clusters,
     sub,
     purchases,
     members,
     templates,
     clusterId,
-    combinedStats
   };
 });
 
@@ -323,7 +276,7 @@ export default component$(() => {
   const keys = platformData.value.keys;
   const usage = platformData.value.usage;
   const clusters = platformData.value.clusters;
-  const combinedStats = platformData.value.combinedStats || { memory_count: 0, entity_count: 0, fact_count: 0, storage_bytes: 0 };
+  const combinedStats = useStore({ memory_count: 0, entity_count: 0, fact_count: 0, storage_bytes: 0 });
 
   const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
   const formatBytes = (b: number) => {
@@ -385,6 +338,27 @@ export default component$(() => {
       } catch {}
     }, 5000);
     cleanup(() => clearInterval(interval));
+  });
+
+  useVisibleTask$(async () => {
+    const active = clusters.filter(c => c.status === "active");
+    if (!active.length) return;
+    const results = await Promise.all(
+      active.map(c => getCoreClusterStats(c.id, c.endpoint_url, c.engine_key))
+    );
+    const merged = results.reduce((acc, s) => {
+      if (s) {
+        acc.memory_count += s.memory_count || 0;
+        acc.entity_count += s.entity_count || 0;
+        acc.fact_count += s.fact_count || 0;
+        acc.storage_bytes += s.storage_bytes || 0;
+      }
+      return acc;
+    }, { memory_count: 0, entity_count: 0, fact_count: 0, storage_bytes: 0 });
+    combinedStats.memory_count = merged.memory_count;
+    combinedStats.entity_count = merged.entity_count;
+    combinedStats.fact_count = merged.fact_count;
+    combinedStats.storage_bytes = merged.storage_bytes;
   });
 
   
