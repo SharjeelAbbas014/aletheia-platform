@@ -1,12 +1,7 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import { Link, useLocation } from "@builder.io/qwik-city";
 import type { AuthUser } from "~/lib/auth";
-import { 
-  LayoutDashboardIcon, 
-  LogOutIcon,
-  MenuIcon,
-  XIcon
-} from "lucide-qwik";
+import { LayoutDashboardIcon, LogOutIcon, MenuIcon, XIcon } from "lucide-qwik";
 
 export interface HeaderProps {
   user?: AuthUser | null;
@@ -22,13 +17,6 @@ export const Header = component$((props: HeaderProps) => {
 
   return (
     <header class="app-topbar fixed top-0 z-50 w-full font-body text-sm tracking-tight shadow-[0px_24px_48px_rgba(0,0,0,0.8)] antialiased">
-      {/* Development Banner */}
-      <div class="bg-primary/10 border-b border-primary/20 py-2 px-4 text-center">
-        <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-primary">
-          AletheiaDB is currently under development. For early access, 
-          <a href="mailto:sharjeel@aletheiadb.com" class="ml-1 underline hover:text-white transition-colors">contact us</a>.
-        </p>
-      </div>
       <div class="flex h-16 w-full items-center justify-between px-4 md:px-6">
         <div class="flex items-center gap-8">
           <Link
@@ -39,15 +27,15 @@ export const Header = component$((props: HeaderProps) => {
             }}
           >
             <div class="flex h-8 w-8 items-center justify-center rounded bg-primary shadow-lg shadow-primary/20 overflow-hidden">
-               <img
-                 src="/icon-64.png"
-                 alt="AletheiaDB"
-                 width={20}
-                 height={20}
-                 loading="eager"
-                 decoding="async"
-                 class="object-contain"
-               />
+              <img
+                src="/icon-64.png"
+                alt="AletheiaDB"
+                width={20}
+                height={20}
+                loading="eager"
+                decoding="async"
+                class="object-contain"
+              />
             </div>
             <span>AletheiaDB</span>
           </Link>
@@ -78,16 +66,24 @@ export const Header = component$((props: HeaderProps) => {
         <div class="flex items-center gap-3">
           <button
             type="button"
-            aria-label={mobileOpen.value ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={
+              mobileOpen.value
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
             aria-expanded={mobileOpen.value ? "true" : "false"}
             class="app-topbar-menu-button md:hidden"
             onClick$={() => {
               mobileOpen.value = !mobileOpen.value;
             }}
           >
-            {mobileOpen.value ? <XIcon class="w-6 h-6" /> : <MenuIcon class="w-6 h-6" />}
+            {mobileOpen.value ? (
+              <XIcon class="w-6 h-6" />
+            ) : (
+              <MenuIcon class="w-6 h-6" />
+            )}
           </button>
-          
+
           <div class="hidden items-center gap-4 md:flex">
             {props.user ? (
               <>
@@ -99,9 +95,12 @@ export const Header = component$((props: HeaderProps) => {
                   Console
                 </Link>
                 <form action="/logout" method="post">
-                   <button type="submit" class="text-tertiary hover:text-on-surface transition-colors mt-1">
-                      <LogOutIcon class="w-4 h-4" />
-                   </button>
+                  <button
+                    type="submit"
+                    class="text-tertiary hover:text-on-surface transition-colors mt-1"
+                  >
+                    <LogOutIcon class="w-4 h-4" />
+                  </button>
                 </form>
               </>
             ) : (
@@ -146,7 +145,10 @@ export const Header = component$((props: HeaderProps) => {
 
       {mobileOpen.value ? (
         <div class="app-topbar-mobile-nav md:hidden">
-          <nav class="app-topbar-mobile-nav-links" aria-label="Mobile site navigation">
+          <nav
+            class="app-topbar-mobile-nav-links"
+            aria-label="Mobile site navigation"
+          >
             <Link
               href="/docs"
               class={`app-topbar-mobile-link ${isDocs ? "app-topbar-mobile-link-active" : ""}`}
@@ -166,9 +168,9 @@ export const Header = component$((props: HeaderProps) => {
               Blog
             </Link>
             <div class="h-px w-full bg-outline-variant/10 my-2" />
-            
+
             {props.user ? (
-               <>
+              <>
                 <Link
                   href="/platform"
                   class="app-topbar-mobile-link font-bold text-primary"
@@ -179,12 +181,15 @@ export const Header = component$((props: HeaderProps) => {
                   Console
                 </Link>
                 <form action="/logout" method="post" class="p-4">
-                   <button type="submit" class="text-tertiary flex items-center gap-2">
-                      <LogOutIcon class="w-4 h-4" />
-                      Log out
-                   </button>
+                  <button
+                    type="submit"
+                    class="text-tertiary flex items-center gap-2"
+                  >
+                    <LogOutIcon class="w-4 h-4" />
+                    Log out
+                  </button>
                 </form>
-               </>
+              </>
             ) : (
               <>
                 <Link
