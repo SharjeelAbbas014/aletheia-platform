@@ -50,14 +50,18 @@ serve(async (req) => {
     const publicIpName = `${vmName}-pip`;
     const nsgName = `${vmName}-nsg`;
     const vnetName = `${vmName}-vnet`;
+    const osDiskName = `${vmName}-osdisk`;
+    const dataDiskName = `${vmName}-datadisk`;
     const rgName = `aletheia-rg-${region}`;
     const deploymentName = `aletheia-vm-deploy-${clusterId}`;
 
     const apiBase = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}`;
 
-    // Must delete in dependency order: VM → NIC → IP → NSG → VNet
+    // Must delete in dependency order: VM → disks → NIC → IP → NSG → VNet
     const resources = [
       { type: "Microsoft.Compute/virtualMachines", name: vmName, ver: "2023-09-01" },
+      { type: "Microsoft.Compute/disks", name: osDiskName, ver: "2023-09-01" },
+      { type: "Microsoft.Compute/disks", name: dataDiskName, ver: "2023-09-01" },
       { type: "Microsoft.Network/networkInterfaces", name: nicName, ver: "2023-09-01" },
       { type: "Microsoft.Network/publicIPAddresses", name: publicIpName, ver: "2023-09-01" },
       { type: "Microsoft.Network/networkSecurityGroups", name: nsgName, ver: "2023-09-01" },

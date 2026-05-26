@@ -163,6 +163,8 @@ function buildARMTemplate(
   const publicIpName = `${vmName}-pip`;
   const nsgName = `${vmName}-nsg`;
   const vnetName = `${vmName}-vnet`;
+  const osDiskName = `${vmName}-osdisk`;
+  const dataDiskName = `${vmName}-datadisk`;
 
   const bootstrapCmd = `set -e
 LOG=/var/log/aletheia-bootstrap.log
@@ -322,8 +324,8 @@ echo "Bootstrap complete for cluster ${clusterId}"`;
           hardwareProfile: { vmSize: size },
           storageProfile: {
             imageReference: { publisher: "Canonical", offer: "ubuntu-24_04-lts", sku: "server", version: "latest" },
-            osDisk: { createOption: "FromImage", managedDisk: { storageAccountType: "Premium_LRS" }, diskSizeGB: 30 },
-            dataDisks: [{ lun: 0, createOption: "Empty", diskSizeGB: storageGb, managedDisk: { storageAccountType: "Premium_LRS" } }],
+            osDisk: { name: osDiskName, createOption: "FromImage", managedDisk: { storageAccountType: "Premium_LRS" }, diskSizeGB: 30 },
+            dataDisks: [{ name: dataDiskName, lun: 0, createOption: "Empty", diskSizeGB: storageGb, managedDisk: { storageAccountType: "Premium_LRS" } }],
           },
           osProfile: {
             computerName: vmName,
