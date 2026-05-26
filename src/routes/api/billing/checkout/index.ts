@@ -55,7 +55,6 @@ export const onPost: RequestHandler = async (event) => {
     azure_pro: { name: "Production Core", description: "Azure Standard_D4as_v5 dedicated VM", priceCents: 17900, size: "Standard_D4as_v5" },
     azure_scale: { name: "Scale Master", description: "Azure Standard_D8as_v5 dedicated VM", priceCents: 35900, size: "Standard_D8as_v5" },
     azure_gpu: { name: "GPU Superbrain", description: "Azure Standard_NC4as_T4 dedicated VM", priceCents: 54900, size: "Standard_NC4as_T4" },
-    dedicated_l4: { name: "Dedicated Pro", description: "Azure Standard_NV6as_v4 dedicated VM", priceCents: 40000, size: "Standard_NV6as_v4" },
   };
 
   const vmConfig = vmConfigs[tier];

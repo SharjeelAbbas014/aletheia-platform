@@ -24,7 +24,6 @@ export const onPost: RequestHandler = async (event) => {
     azure_pro: "Standard_D4as_v5",
     azure_scale: "Standard_D8as_v5",
     azure_gpu: "Standard_NC4as_T4",
-    dedicated_l4: "Standard_NV6as_v4",
   };
 
   const tier = cluster.tier || "azure_standard";

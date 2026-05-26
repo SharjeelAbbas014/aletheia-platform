@@ -31,7 +31,6 @@ export default component$(() => {
     azure_pro: 17900,
     azure_scale: 35900,
     azure_gpu: 54900,
-    dedicated_l4: 40000,
   };
 
   const getButtonText = () => {
@@ -222,9 +221,9 @@ export default component$(() => {
                     badgeClass: "bg-green-500/10 text-green-400",
                     features: [
                       "2 vCPUs | 4 GiB RAM",
-                      "Dedicated instance",
-                      "Aletheia cut included",
-                      "Best for sandboxing & dev"
+                      "10 GB SSD standard storage",
+                      "Single-tenant VM instance",
+                      "Best for development & sandboxing"
                     ],
                     priceText: "$39.00 / month"
                   },
@@ -236,9 +235,9 @@ export default component$(() => {
                     badgeClass: "bg-blue-500/10 text-blue-400",
                     features: [
                       "2 vCPUs | 8 GiB RAM",
-                      "Multi-agent core",
-                      "Isolated SQLite index",
-                      "Fast vector search"
+                      "50 GB SSD standard storage",
+                      "Single-tenant VM instance",
+                      "Best for low-latency agent memory"
                     ],
                     priceText: "$89.00 / month"
                   },
@@ -250,9 +249,9 @@ export default component$(() => {
                     badgeClass: "bg-orange-500/10 text-orange-400",
                     features: [
                       "4 vCPUs | 16 GiB RAM",
-                      "Isolated storage allocation",
-                      "Dedicated prod load",
-                      "Zero noisy neighbors"
+                      "50 GB Premium SSD storage",
+                      "Single-tenant VM instance",
+                      "Best for high-concurrency production"
                     ],
                     priceText: "$179.00 / month"
                   },
@@ -264,25 +263,11 @@ export default component$(() => {
                     badgeClass: "bg-purple-500/10 text-purple-400",
                     features: [
                       "8 vCPUs | 32 GiB RAM",
-                      "Isolated storage allocation",
-                      "Massive graph crawls",
-                      "Local re-ranking models"
+                      "100 GB Premium SSD storage",
+                      "Single-tenant VM instance",
+                      "Best for large knowledge graphs"
                     ],
                     priceText: "$359.00 / month"
-                  },
-                  {
-                    id: "dedicated_l4",
-                    name: "Dedicated Pro",
-                    subName: "Azure Standard_NV6as_v4",
-                    badge: "GPU VM",
-                    badgeClass: "bg-red-500/10 text-red-400",
-                    features: [
-                      "6 vCPUs | 56 GiB RAM",
-                      "1 AMD Radeon Pro V620 GPU",
-                      "Hardware accelerated hosting",
-                      "Dedicated memory engine"
-                    ],
-                    priceText: "$400.00 / month"
                   },
                   {
                     id: "azure_gpu",
@@ -293,8 +278,8 @@ export default component$(() => {
                     features: [
                       "4 vCPUs | 28 GiB RAM",
                       "1 NVIDIA T4 GPU",
-                      "Ultra-low latency embeddings",
-                      "Local re-ranking inference"
+                      "Single-tenant GPU VM instance",
+                      "Hardware-accelerated embeddings & re-ranking"
                     ],
                     priceText: "$549.00 / month"
                   }

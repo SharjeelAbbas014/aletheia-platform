@@ -205,7 +205,6 @@ export const useRetryProvision = routeAction$(async (data, event) => {
     azure_pro: "Standard_D4as_v5",
     azure_scale: "Standard_D8as_v5",
     azure_gpu: "Standard_NC4as_T4",
-    dedicated_l4: "Standard_NV6as_v4",
   };
 
   const tier = cluster.tier || "azure_standard";
@@ -312,7 +311,6 @@ export default component$(() => {
     azure_pro: "Standard_D4as_v5",
     azure_scale: "Standard_D8as_v5",
     azure_gpu: "Standard_NC4as_T4",
-    dedicated_l4: "Standard_NV6as_v4",
   }[cluster.tier as string] || "Standard_D2s_v5";
 
   const loc = useLocation();
@@ -544,7 +542,7 @@ export default component$(() => {
             </div>
             {cluster.tier === "fractional" ? (
               <Link 
-                href={`/platform/clusters/new?tier=dedicated_l4`} 
+                href={`/platform/clusters/new?tier=azure_gpu`} 
                 class="flex items-center gap-2 rounded-lg bg-orange-500/10 border border-orange-500/20 px-6 py-3 font-bold text-sm text-orange-400 transition-all hover:bg-orange-500 hover:text-white shadow-lg"
               >
                 <RocketIcon class="w-4 h-4" />

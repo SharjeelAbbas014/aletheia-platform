@@ -71,7 +71,7 @@ export const onPost: RequestHandler = async (event) => {
         try {
           const sub = await retrieveStripeSubscription(event.env, subscriptionId);
           const priceId = sub.items?.data?.[0]?.price?.id;
-          const tier = (sub.metadata?.tier as string) || sub.items?.data?.[0]?.price?.nickname || "dedicated_l4";
+          const tier = (sub.metadata?.tier as string) || sub.items?.data?.[0]?.price?.nickname || "azure_standard";
           const storageGb = parseInt(sub.metadata?.storage_gb || "50", 10);
           const vmSize = {
             azure_micro: "Standard_B2als_v2",
@@ -79,7 +79,6 @@ export const onPost: RequestHandler = async (event) => {
             azure_pro: "Standard_D4as_v5",
             azure_scale: "Standard_D8as_v5",
             azure_gpu: "Standard_NC4as_T4",
-            dedicated_l4: "Standard_NV6as_v4",
           }[tier];
 
           const vmMonthlyPrice = (sub.items?.data?.[0]?.price?.unit_amount || 0) / 100;
@@ -120,7 +119,6 @@ export const onPost: RequestHandler = async (event) => {
                 azure_pro: "Standard_D4as_v5",
                 azure_scale: "Standard_D8as_v5",
                 azure_gpu: "Standard_NC4as_T4",
-                dedicated_l4: "Standard_NV6as_v4",
               }[tier] || "Standard_D2s_v5";
 
               console.log(`[Webhook] Provisioning Azure VM for cluster ${clusterId} (${vmSize}, ${clusterRegion}, ${storageGb}GB)`);
@@ -177,7 +175,7 @@ export const onPost: RequestHandler = async (event) => {
         const subId = sub.id;
         if (!subId) break;
         const priceId = sub.items?.data?.[0]?.price?.id;
-        const tier = (sub.metadata?.tier as string) || sub.items?.data?.[0]?.price?.nickname || "dedicated_l4";
+        const tier = (sub.metadata?.tier as string) || sub.items?.data?.[0]?.price?.nickname || "azure_standard";
 
         await supabase
           .from("subscriptions")

@@ -304,7 +304,6 @@ function getSizeFallbacks(requested: string): string[] {
     Standard_D2as_v5: ["Standard_D2as_v5", "Standard_D2s_v5"],
     Standard_D4as_v5: ["Standard_D4as_v5", "Standard_D4s_v5"],
     Standard_D8as_v5: ["Standard_D8as_v5"],
-    Standard_NV6as_v4: ["Standard_NV6as_v4"],
     Standard_NC4as_T4: ["Standard_NC4as_T4"],
   };
   return fallbackMap[requested] || [requested, "Standard_D2as_v5"];

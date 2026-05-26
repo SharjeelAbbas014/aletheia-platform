@@ -201,7 +201,12 @@ const plans = [
     price: "$1.00",
     unit: "/1M truths",
     description: "Pay-as-you-go on the AletheiaDB shared engine",
-    features: ["Hosted on engine.aletheiadb.com", "Shared database substrate", "10K free operations/mo", "Access via global API"],
+    features: [
+      "Shared compute instance",
+      "10,000 free operations/mo",
+      "$1.00 per million operations thereafter",
+      "Access via global API endpoint"
+    ],
     cta: "Current Plan",
     highlighted: false,
   },
@@ -211,7 +216,12 @@ const plans = [
     price: "$39.00",
     unit: "/month",
     description: "Azure Standard_B2als_v2 dedicated VM",
-    features: ["2 vCPUs | 4 GiB RAM", "Isolated SQLite substrate", "Best for sandboxing & dev", "Aletheia cut included"],
+    features: [
+      "2 vCPUs | 4 GiB RAM",
+      "10 GB SSD standard storage",
+      "Single-tenant VM instance",
+      "Best for development & sandboxing"
+    ],
     cta: "Deploy VM",
     highlighted: false,
   },
@@ -221,7 +231,12 @@ const plans = [
     price: "$89.00",
     unit: "/month",
     description: "Azure Standard_D2as_v5 dedicated VM",
-    features: ["2 vCPUs | 8 GiB RAM", "Multi-agent core substrate", "Isolated SQLite index", "Fast vector search"],
+    features: [
+      "2 vCPUs | 8 GiB RAM",
+      "50 GB SSD standard storage",
+      "Single-tenant VM instance",
+      "Best for low-latency agent memory"
+    ],
     cta: "Deploy VM",
     highlighted: false,
   },
@@ -231,7 +246,12 @@ const plans = [
     price: "$179.00",
     unit: "/month",
     description: "Azure Standard_D4as_v5 dedicated VM",
-    features: ["4 vCPUs | 16 GiB RAM", "50 GB Premium SSD", "Dedicated production load", "Zero noisy neighbors"],
+    features: [
+      "4 vCPUs | 16 GiB RAM",
+      "50 GB Premium SSD storage",
+      "Single-tenant VM instance",
+      "Best for high-concurrency production"
+    ],
     cta: "Deploy VM",
     highlighted: true,
   },
@@ -241,17 +261,12 @@ const plans = [
     price: "$359.00",
     unit: "/month",
     description: "Azure Standard_D8as_v5 dedicated VM",
-    features: ["8 vCPUs | 32 GiB RAM", "100 GB Premium SSD", "Massive graph crawls", "Local re-ranking models"],
-    cta: "Deploy VM",
-    highlighted: false,
-  },
-  {
-    id: "dedicated_l4",
-    name: "Dedicated Pro",
-    price: "$400.00",
-    unit: "/month",
-    description: "Azure Standard_NV6as_v4 dedicated VM",
-    features: ["6 vCPUs | 56 GiB RAM", "1 AMD Radeon Pro V620 GPU", "Hardware accelerated hosting", "Dedicated memory engine"],
+    features: [
+      "8 vCPUs | 32 GiB RAM",
+      "100 GB Premium SSD storage",
+      "Single-tenant VM instance",
+      "Best for large knowledge graphs"
+    ],
     cta: "Deploy VM",
     highlighted: false,
   },
@@ -261,7 +276,12 @@ const plans = [
     price: "$549.00",
     unit: "/month",
     description: "Azure Standard_NC4as_T4 GPU VM",
-    features: ["4 vCPUs | 28 GiB RAM", "1 NVIDIA T4 GPU", "Ultra-low latency embeddings", "Local re-ranking inference"],
+    features: [
+      "4 vCPUs | 28 GiB RAM",
+      "1 NVIDIA T4 GPU",
+      "Single-tenant GPU VM instance",
+      "Hardware-accelerated embeddings & re-ranking"
+    ],
     cta: "Deploy VM",
     highlighted: false,
   },

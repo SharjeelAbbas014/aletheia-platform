@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
 serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -39,10 +41,7 @@ serve(async (req) => {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
-    if (!authRes.ok) {
-      throw new Error(`Azure OAuth failed: ${await authRes.text()}`);
-    }
-
+    if (!authRes.ok) throw new Error(`Azure OAuth failed: ${await authRes.text()}`);
     const { access_token: token } = await authRes.json();
 
     const vmName = `aletheia-vm-${clusterId.slice(0, 8)}`;
@@ -57,38 +56,48 @@ serve(async (req) => {
 
     const apiBase = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}`;
 
-    // Must delete in dependency order: VM → disks → NIC → IP → NSG → VNet
-    const resources = [
-      { type: "Microsoft.Compute/virtualMachines", name: vmName, ver: "2023-09-01" },
-      { type: "Microsoft.Compute/disks", name: osDiskName, ver: "2023-09-01" },
-      { type: "Microsoft.Compute/disks", name: dataDiskName, ver: "2023-09-01" },
-      { type: "Microsoft.Network/networkInterfaces", name: nicName, ver: "2023-09-01" },
-      { type: "Microsoft.Network/publicIPAddresses", name: publicIpName, ver: "2023-09-01" },
-      { type: "Microsoft.Network/networkSecurityGroups", name: nsgName, ver: "2023-09-01" },
-      { type: "Microsoft.Network/virtualNetworks", name: vnetName, ver: "2023-09-01" },
-      { type: "Microsoft.Resources/deployments", name: deploymentName, ver: "2021-04-01" },
-    ];
-
-    const results: string[] = [];
-
-    for (const r of resources) {
-      const url = `${apiBase}/providers/${r.type}/${r.name}?api-version=${r.ver}`;
-      const deleteRes = await fetch(url, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (deleteRes.status === 404) {
-        results.push(`${r.name}: not-found`);
-      } else if (deleteRes.ok || deleteRes.status === 202) {
-        results.push(`${r.name}: deleted`);
-      } else {
-        const text = await deleteRes.text();
-        results.push(`${r.name}: failed (${deleteRes.status})`);
-        console.error(`[cleanup-vm] Failed to delete ${r.name}: ${text.slice(0, 200)}`);
+    async function deleteResource(type: string, name: string, ver: string): Promise<string> {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const url = `${apiBase}/providers/${type}/${name}?api-version=${ver}`;
+        const res = await fetch(url, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.status === 404) return `${name}: already-gone`;
+        if (res.ok || res.status === 202) return `${name}: deleted`;
+        if (attempt < 2) await delay(3000);
       }
+      return `${name}: failed`;
     }
 
-    return new Response(JSON.stringify({ deleted: true, results }), {
+    // 1. Delete VM (must complete before deleting NIC/disks)
+    const vmResult = await deleteResource("Microsoft.Compute/virtualMachines", vmName, "2023-09-01");
+    await delay(5000);
+
+    // 2. Disks (can be deleted after VM is gone)
+    const diskResults = [
+      await deleteResource("Microsoft.Compute/disks", osDiskName, "2023-09-01"),
+      await deleteResource("Microsoft.Compute/disks", dataDiskName, "2023-09-01"),
+    ];
+
+    // 3. NIC (requires VM gone)
+    await delay(3000);
+    const nicResult = await deleteResource("Microsoft.Network/networkInterfaces", nicName, "2023-09-01");
+
+    // 4. Public IP (requires NIC gone)
+    const pipResult = await deleteResource("Microsoft.Network/publicIPAddresses", publicIpName, "2023-09-01");
+
+    // 5. NSG and VNet (best-effort, may be shared)
+    const nsgResult = await deleteResource("Microsoft.Network/networkSecurityGroups", nsgName, "2023-09-01");
+    const vnetResult = await deleteResource("Microsoft.Network/virtualNetworks", vnetName, "2023-09-01");
+
+    // 6. Deployment record
+    const deployResult = await deleteResource("Microsoft.Resources/deployments", deploymentName, "2021-04-01");
+
+    return new Response(JSON.stringify({
+      deleted: true,
+      results: [vmResult, ...diskResults, nicResult, pipResult, nsgResult, vnetResult, deployResult],
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
