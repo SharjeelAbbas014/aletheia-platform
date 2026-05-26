@@ -360,6 +360,8 @@ export default component$(() => {
   useVisibleTask$(({ cleanup }) => {
     const tab = loc.url.searchParams.get("tab") || "";
     if (tab && tab !== "clusters") return;
+    const hasTransient = clusters.some(c => c.status !== "active" && c.status !== "deleted");
+    if (!hasTransient) return;
     const interval = setInterval(() => nav(loc.url.pathname), 5000);
     cleanup(() => clearInterval(interval));
   });

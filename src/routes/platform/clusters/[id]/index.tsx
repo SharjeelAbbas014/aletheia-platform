@@ -318,10 +318,12 @@ export default component$(() => {
   const nav = useNavigate();
 
   useVisibleTask$(({ cleanup }) => {
-    const interval = setInterval(() => {
-      nav(loc.url.pathname);
-    }, 5000);
-    cleanup(() => clearInterval(interval));
+    if (cluster.status !== "active") {
+      const interval = setInterval(() => {
+        nav(loc.url.pathname);
+      }, 5000);
+      cleanup(() => clearInterval(interval));
+    }
   });
 
   const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
