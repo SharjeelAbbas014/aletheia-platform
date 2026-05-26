@@ -284,25 +284,40 @@ export default component$(() => {
   const newApiKeyName = useSignal("");
   const showApiKeyCreate = useSignal(false);
   const hardwareStats = useSignal<HardwareStats | null>(null);
+  const clusterStatus = useSignal(cluster.status);
 
   useVisibleTask$(({ cleanup }) => {
-    if (cluster.status !== "active" || cluster.tier === "fractional") return;
-    
-    const fetchStats = async () => {
-      try {
-        const res = await fetch(`/api/clusters/${cluster.id}/hardware`);
-        if (res.ok) {
-          hardwareStats.value = await res.json();
-        }
-      } catch (e) {
-        console.error("Failed to fetch hardware stats", e);
-      }
-    };
+    if (clusterStatus.value === "provisioning" || clusterStatus.value === "failed") {
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/clusters/${cluster.id}/status`);
+          if (res.ok) {
+            const data = await res.json();
+            clusterStatus.value = data.status;
+            if (data.status === "active") {
+              clearInterval(interval);
+              nav(loc.url.pathname);
+            }
+          }
+        } catch {}
+      }, 5000);
+      cleanup(() => clearInterval(interval));
+    }
 
-    fetchStats();
-    const interval = setInterval(fetchStats, 5000);
-    cleanup(() => clearInterval(interval));
+    if (clusterStatus.value === "active" && cluster.tier !== "fractional") {
+      const fetchHardware = async () => {
+        try {
+          const res = await fetch(`/api/clusters/${cluster.id}/hardware`);
+          if (res.ok) hardwareStats.value = await res.json();
+        } catch {}
+      };
+      fetchHardware();
+      const interval = setInterval(fetchHardware, 30000);
+      cleanup(() => clearInterval(interval));
+    }
   });
+
+  
 
 
 
@@ -317,14 +332,7 @@ export default component$(() => {
   const loc = useLocation();
   const nav = useNavigate();
 
-  useVisibleTask$(({ cleanup }) => {
-    if (cluster.status !== "active") {
-      const interval = setInterval(() => {
-        nav(loc.url.pathname);
-      }, 5000);
-      cleanup(() => clearInterval(interval));
-    }
-  });
+  
 
   const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
   const formatBytes = (b: number) => {
@@ -335,7 +343,7 @@ export default component$(() => {
     return `${(b / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
   };
 
-  if (cluster.status === "provisioning") {
+  if (clusterStatus.value === "provisioning") {
     const createdMs = new Date(cluster.created_at).getTime();
     const elapsedMin = Math.floor((Date.now() - createdMs) / 60000);
     const stuck = elapsedMin > 3;
@@ -447,7 +455,7 @@ export default component$(() => {
     );
   }
 
-  if (cluster.status === "failed") {
+  if (clusterStatus.value === "failed") {
     return (
       <div class="flex min-h-screen bg-background text-on-surface font-body antialiased">
         <main class="flex-grow flex items-center justify-center p-8 lg:p-12 mb-20 max-w-2xl mx-auto w-full pt-[104px]">
@@ -605,10 +613,10 @@ export default component$(() => {
           <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 mb-8">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-bold flex items-center gap-2">
-                <ActivityIcon class="w-5 h-5 text-primary animate-pulse" /> Live Server Performance
+                <ActivityIcon class="w-5 h-5 text-primary" /> Live Server Performance
               </h2>
-              <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest animate-pulse">
-                Real-time (5s poll)
+              <span class="rounded bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold uppercase tracking-widest">
+                Live
               </span>
             </div>
 

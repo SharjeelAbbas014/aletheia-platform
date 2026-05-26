@@ -14,7 +14,7 @@ export const onGet: RequestHandler = async (event) => {
   const supabase = getAdminSupabaseClient(event.env);
   const { data: cluster } = await supabase
     .from("clusters")
-    .select("user_id, endpoint_url, engine_key")
+    .select("user_id, endpoint_url")
     .eq("id", clusterId)
     .single();
 

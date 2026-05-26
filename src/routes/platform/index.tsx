@@ -358,13 +358,36 @@ export default component$(() => {
   });
 
   useVisibleTask$(({ cleanup }) => {
-    const tab = loc.url.searchParams.get("tab") || "";
-    if (tab && tab !== "clusters") return;
-    const hasTransient = clusters.some(c => c.status !== "active" && c.status !== "deleted");
+    const hasTransient = clusters.some(c => c.status === "provisioning" || c.status === "failed");
     if (!hasTransient) return;
-    const interval = setInterval(() => nav(loc.url.pathname), 5000);
+
+    const knownStatuses = Object.fromEntries(clusters.map(c => [c.id, c.status]));
+    let transitioning = false;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/clusters/status");
+        if (!res.ok) return;
+        const latest: { id: string; status: string }[] = await res.json();
+        for (const c of latest) {
+          if (knownStatuses[c.id] && knownStatuses[c.id] !== c.status) {
+            if (!transitioning) {
+              transitioning = true;
+              nav(loc.url.pathname);
+            }
+          }
+        }
+        const stillTransient = latest.some(c => c.status === "provisioning" || c.status === "failed");
+        if (!stillTransient && !transitioning) {
+          clearInterval(interval);
+          nav(loc.url.pathname);
+        }
+      } catch {}
+    }, 5000);
     cleanup(() => clearInterval(interval));
   });
+
+  
 
   // Use the newly created key if available
   const activeKey = createKeyAction.value?.key?.token || keys[0]?.token || "YOUR_API_KEY";

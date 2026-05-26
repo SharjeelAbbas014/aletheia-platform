@@ -78,7 +78,7 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
     if (clusterId) {
       const { data: cluster } = await supabase
           .from("clusters")
-          .select("endpoint_url, engine_key")
+          .select("endpoint_url")
           .eq("id", clusterId)
           .maybeSingle();
 
@@ -147,7 +147,7 @@ export async function revokeApiKey(event: RequestEventCommon, keyId: string): Pr
     if (keyInfo && keyInfo.cluster_id) {
       const { data: cluster } = await supabase
           .from("clusters")
-          .select("endpoint_url, engine_key")
+          .select("endpoint_url")
           .eq("id", keyInfo.cluster_id)
           .maybeSingle();
 
