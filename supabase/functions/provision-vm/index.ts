@@ -87,7 +87,7 @@ serve(async (req) => {
     const deployUrl = `https://management.azure.com/subscriptions/${subscriptionId}/resourcegroups/${rgName}/providers/Microsoft.Resources/deployments/${deploymentName}?api-version=2021-04-01`;
 
     const platformUrl = "https://aletheiadb.com";
-    const armTemplate = buildARMTemplate(clusterId, vmName, vmSize, storageGb, region, adminKey, platformUrl);
+    const armTemplate = buildARMTemplate(clusterId, vmName, vmSize, storageGb, region, adminKey, platformUrl, tier);
 
     console.log(`[provision-vm] Submitting ARM deployment to ${rgName} (size ${vmSize})...`);
 
@@ -158,6 +158,7 @@ function buildARMTemplate(
   region: string,
   adminKey: string,
   platformUrl: string,
+  tier: string,
 ): Record<string, unknown> {
   const nicName = `${vmName}-nic`;
   const publicIpName = `${vmName}-pip`;
@@ -165,6 +166,9 @@ function buildARMTemplate(
   const vnetName = `${vmName}-vnet`;
   const osDiskName = `${vmName}-osdisk`;
   const dataDiskName = `${vmName}-datadisk`;
+
+  const isGpu = tier === "azure_gpu";
+  const binaryName = isGpu ? "aletheia-cuda-latest" : "aletheia-latest";
 
   const bootstrapCmd = `set -e
 LOG=/var/log/aletheia-bootstrap.log
@@ -190,15 +194,20 @@ sudo chown -R aletheia:aletheia /var/lib/aletheia 2>/dev/null || true
 echo "[3/6] Installing dependencies..."
 sudo apt-get update -qq
 sudo apt-get install -y -qq libgomp1 curl
+${isGpu ? `
+echo "[3.5/6] Installing NVIDIA drivers..."
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ubuntu-drivers-common
+sudo DEBIAN_FRONTEND=noninteractive ubuntu-drivers autoinstall || true
+` : ""}
 
 # Download engine binary
-BINARY_URL="${platformUrl}/api/storage/aletheia-latest"
+BINARY_URL="\${platformUrl}/api/storage/${binaryName}"
 echo "[4/6] Downloading engine binary..."
 sudo mkdir -p /usr/local/lib/aletheia
 cd /tmp
 # Try Supabase Storage first, then fallback URL
 curl -sSfL -o aletheia-engine \\
-  "https://fnovrnadrvimlvqwecgs.supabase.co/storage/v1/object/public/aletheia-binaries/aletheia-latest" \\
+  "https://fnovrnadrvimlvqwecgs.supabase.co/storage/v1/object/public/aletheia-binaries/${binaryName}" \\
   -H "User-Agent: aletheia-bootstrap" || \\
 curl -sSfL -o aletheia-engine "$BINARY_URL" || \\
 { echo "[4/6] Binary download failed - will build from source" | tee -a $LOG; BUILD_FROM_SOURCE=1; }
