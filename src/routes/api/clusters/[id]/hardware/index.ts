@@ -18,8 +18,12 @@ export const onGet: RequestHandler = async (event) => {
     .eq("id", clusterId)
     .single();
 
-  if (!cluster || cluster.user_id !== user.user_id) {
-    throw event.error(403, "Forbidden");
+  if (!cluster) {
+    throw event.error(403, `Forbidden - Cluster ${clusterId} not found`);
+  }
+
+  if (cluster.user_id !== user.user_id) {
+    throw event.error(403, `Forbidden - Owner mismatch (owner: ${cluster.user_id}, user: ${user.user_id})`);
   }
 
   const hardware = await getHardwareStats(cluster.endpoint_url, cluster.engine_key);

@@ -26,6 +26,7 @@ import {
   routeAction$,
   routeLoader$,
   useLocation,
+  useNavigate,
   type RequestHandler,
   type DocumentHead
 } from "@builder.io/qwik-city";
@@ -332,6 +333,19 @@ export default component$(() => {
     const i = Math.floor(Math.log(b) / Math.log(k));
     return `${(b / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
   };
+
+  const nav = useNavigate();
+  const loc = useLocation();
+
+  useVisibleTask$(({ cleanup }) => {
+    // Skip polling on static pages like settings, billing, etc.
+    const tab = loc.url.searchParams.get("tab") || "";
+    if (tab && tab !== "clusters" && tab !== "") return;
+    const interval = setInterval(() => {
+      nav(loc.url.pathname);
+    }, 5000);
+    cleanup(() => clearInterval(interval));
+  });
 
   const loc = useLocation();
   const initialTab = (loc.url.searchParams.get("tab") as any) || "overview";

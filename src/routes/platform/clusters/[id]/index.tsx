@@ -19,6 +19,7 @@ import {
   RefreshCwIcon,
   EyeIcon,
   EyeOffIcon,
+  Loader2Icon,
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
@@ -317,12 +318,10 @@ export default component$(() => {
   const nav = useNavigate();
 
   useVisibleTask$(({ cleanup }) => {
-    if (cluster.status === "provisioning") {
-      const interval = setInterval(() => {
-        nav(loc.url.pathname);
-      }, 3000);
-      cleanup(() => clearInterval(interval));
-    }
+    const interval = setInterval(() => {
+      nav(loc.url.pathname);
+    }, 5000);
+    cleanup(() => clearInterval(interval));
   });
 
   const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
@@ -346,8 +345,8 @@ export default component$(() => {
         <main class="flex-grow flex items-center justify-center p-8 lg:p-12 mb-20 max-w-2xl mx-auto w-full pt-[104px]">
           <div class="w-full">
             <header class="mb-8 text-center">
-              <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 mb-4 animate-pulse">
-                <ActivityIcon class="w-6 h-6" />
+              <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 mb-4 animate-spin">
+                <Loader2Icon class="w-6 h-6" />
               </div>
               <h1 class="font-headline text-3xl font-extrabold tracking-tighter text-on-surface">Provisioning Dedicated VM</h1>
               <p class="text-tertiary mt-2 text-sm">Cluster Name: <span class="text-on-surface font-semibold">{cluster.name}</span></p>
