@@ -26,7 +26,7 @@ export const onRequest: RequestHandler = async (event) => {
   }
   const { data, error } = await supabase
     .from("api_keys")
-    .select("user_id, is_active, cluster_id, clusters(tier, endpoint_url, engine_key)")
+    .select("user_id, is_active, cluster_id, clusters(tier, endpoint_url)")
     .eq("key_value", apiKey)
     .maybeSingle();
 
@@ -165,7 +165,8 @@ export const onRequest: RequestHandler = async (event) => {
       statusText: proxyResponse.statusText,
       headers: newResponseHeaders,
     }));
-  } catch {
+  } catch (err) {
+    console.error("Proxy Error:", err);
     throw event.error(502, "Bad Gateway - Rust Engine is offline");
   }
 };
