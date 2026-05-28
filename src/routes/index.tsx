@@ -130,7 +130,7 @@ const topTenFeatures = [
   },
   {
     title: "Hybrid Retrieval Kernel",
-    i: "Fuses semantic, lexical, and neural reranking signals.",
+    body: "Fuses semantic, lexical, and neural reranking signals.",
   },
   {
     title: "OpenAI-Compatible Proxy",
