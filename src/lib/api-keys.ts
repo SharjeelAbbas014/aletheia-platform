@@ -74,7 +74,7 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
         return null;
     }
 
-    // Push the key to the cluster if it's a dedicated / user-deployed server
+    // Push the key to the engine for direct access
     if (clusterId) {
       const { data: cluster } = await supabase
           .from("clusters")
@@ -103,6 +103,33 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
           }
         } catch (injectErr: any) {
           console.error(`Failed to connect to cluster ${clusterId} for key injection:`, injectErr.message);
+        }
+      }
+    } else {
+      const engineUrl = (event.env.get("ALETHEIADB_URL") || process.env.ALETHEIADB_URL || "").replace(/\/+$/, "");
+      const engineKey = event.env.get("ALETHEIADB_ADMIN_KEY") || event.env.get("ALETHEIADB_API_KEY") || process.env.ALETHEIADB_ADMIN_KEY || "";
+
+      if (engineUrl && engineKey) {
+        try {
+          const res = await fetch(`${engineUrl}/admin/api_keys`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": engineKey,
+            },
+            body: JSON.stringify({
+              key_id: data.id,
+              user_id: user.user_id,
+              name,
+              token: rawKey,
+              cluster_id: null,
+            }),
+          });
+          if (!res.ok) {
+            console.error(`Failed to inject key to shared engine: ${res.status} ${await res.text()}`);
+          }
+        } catch (injectErr: any) {
+          console.error(`Failed to connect to shared engine for key injection:`, injectErr.message);
         }
       }
     }
@@ -164,6 +191,25 @@ export async function revokeApiKey(event: RequestEventCommon, keyId: string): Pr
           }
         } catch (revokeErr: any) {
           console.error(`Failed to connect to cluster ${keyInfo.cluster_id} for key revocation:`, revokeErr.message);
+        }
+      }
+    } else if (keyInfo && !keyInfo.cluster_id) {
+      const engineUrl = (event.env.get("ALETHEIADB_URL") || process.env.ALETHEIADB_URL || "").replace(/\/+$/, "");
+      const engineKey = event.env.get("ALETHEIADB_ADMIN_KEY") || event.env.get("ALETHEIADB_API_KEY") || process.env.ALETHEIADB_ADMIN_KEY || "";
+
+      if (engineUrl && engineKey) {
+        try {
+          const res = await fetch(`${engineUrl}/admin/api_keys/${encodeURIComponent(keyId)}`, {
+            method: "DELETE",
+            headers: {
+              "x-api-key": engineKey,
+            },
+          });
+          if (!res.ok) {
+            console.error(`Failed to revoke key from shared engine: ${res.status}`);
+          }
+        } catch (revokeErr: any) {
+          console.error(`Failed to connect to shared engine for key revocation:`, revokeErr.message);
         }
       }
     }
