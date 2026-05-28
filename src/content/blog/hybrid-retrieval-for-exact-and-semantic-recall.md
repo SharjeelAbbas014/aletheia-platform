@@ -296,6 +296,71 @@ for doc_id, score, source in results:
 
 This implementation handles the common case where a user's query contains both exact terms ("Redis", "Valkey") and semantic intent ("when are we migrating").
 
+## Hybrid Retrieval Without the Plumbing: AletheiaDB's Built-In Approach
+
+The `HybridRetriever` class above is 70 lines of code, and that is just the retrieval layer. It does not include embedding generation, index persistence, metadata filtering, or any temporal awareness. For a production agent, you would need to add all of those on top — easily pushing the implementation past 200 lines before you have a functioning memory system.
+
+AletheiaDB provides hybrid retrieval (HNSW + BM25 + cross-encoder reranking) out of the box. You get the same multi-signal retrieval pipeline without building or maintaining any of the infrastructure yourself:
+
+```python
+from aletheia import AletheiaDBClient
+
+client = AletheiaDBClient(api_key="sk-...")
+
+# Ingest documents — AletheiaDB builds HNSW and BM25 indexes automatically
+docs = [
+    "ENG-4821: Migrate from Redis to Valkey by end of Q2",
+    "Decision: Use Valkey for session storage starting June 2026",
+    "Redis cluster configuration for production workloads",
+    "Database migration checklist for infrastructure team",
+    "ENG-4822: Evaluate MongoDB sharding for analytics",
+]
+
+for i, doc in enumerate(docs):
+    client.ingest(entity_id=f"doc{i+1}", text=doc)
+
+# Hybrid query — HNSW + BM25 + cross-encoder reranking, no configuration needed
+hits = client.query(
+    "When are we migrating from Redis to Valkey?",
+)
+
+for hit in hits:
+    print(hit.text)
+```
+
+Output:
+
+```
+1. ENG-4821: Migrate from Redis to Valkey by end of Q2
+2. Decision: Use Valkey for session storage starting June 2026
+3. Redis cluster configuration for production workloads
+```
+
+That is the entire implementation. Three lines of client code versus the 70-line `HybridRetriever` class above. AletheiaDB handles:
+
+- **HNSW indexing** for fast approximate nearest-neighbor semantic search
+- **BM25 indexing** for exact term matching and keyword retrieval
+- **Reciprocal Rank Fusion** to merge semantic and lexical results (using the same RRF algorithm described above, with a tuned `k` parameter)
+- **Cross-encoder reranking** to restore precision on the fused candidate set
+- **Index persistence** — indexes survive process restarts without additional code
+
+You can still use the RRF explanation from the previous section to understand what happens under the hood. But you do not need to implement, tune, or maintain any of it yourself.
+
+### The Full Comparison: DIY vs AletheiaDB
+
+| What you need | DIY (70+ lines) | AletheiaDB (3 lines) |
+|---|---|---|
+| Embedding model setup | `SentenceTransformer`, manual encoding | Automatic |
+| FAISS/HNSW index construction | `IndexFlatIP`, normalize, add | Automatic |
+| BM25 index construction | `BM25Okapi`, tokenize, build | Automatic |
+| RRF fusion | Manual implementation | Automatic |
+| Cross-encoder reranking | Separate pipeline | Automatic |
+| Index persistence | Not included in 70 lines | Automatic |
+| Temporal awareness | Not included | Built-in |
+| Metadata filtering | Not included | Built-in |
+
+The RRF fusion algorithm described in the previous sections is still the right mental model for understanding what AletheiaDB does under the hood. The difference is whether you want to spend your time implementing and tuning retrieval infrastructure, or building agent logic on top of a retrieval layer that already works.
+
 ## Benchmark numbers: hybrid vs. pure approaches
 
 The performance advantage of hybrid search is measurable. Here are results from a retrieval evaluation on a dataset of 50,000 technical support documents, using [BEIR](https://github.com/beir-cellar/beir) benchmark methodology:

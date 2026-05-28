@@ -196,17 +196,17 @@ pip install aletheia
 Initialize the client:
 
 ```python
-from aletheia import AletheiaClient
+from aletheia import AletheiaDBClient
 
-client = AletheiaClient(
+client = AletheiaDBClient(
     host="127.0.0.1",
     port=8420,
 )
 
 # Verify the connection
 info = client.server_info()
-print(f"Connected to AletheiaDB v{info.version}")
-# Connected to AletheiaDB v0.14.2
+print(f"Connected to the memory engine, version {info.version}")
+# Connected to the memory engine, version 0.14.2
 ```
 
 The client communicates over HTTP. If your engine is on a different host or port, update the `host` and `port` parameters. For remote connections, the SDK handles reconnection automatically.
@@ -215,10 +215,10 @@ For agents that need async support, use the async client:
 
 ```python
 import asyncio
-from aletheia import AsyncAletheiaClient
+from aletheia import AsyncAletheiaDBClient
 
 async def main():
-    client = AsyncAletheiaClient(host="127.0.0.1", port=8420)
+    client = AsyncAletheiaDBClient(host="127.0.0.1", port=8420)
     info = await client.server_info()
     print(f"Connected: {info.version}")
     await client.close()
@@ -237,9 +237,9 @@ The core operations are store, search, and delete. Here is how each works.
 A memory consists of content, a namespace (to separate users or contexts), and optional metadata:
 
 ```python
-from aletheia import AletheiaClient
+from aletheia import AletheiaDBClient
 
-client = AletheiaClient(host="127.0.0.1", port=8420)
+client = AletheiaDBClient(host="127.0.0.1", port=8420)
 
 # Store a memory for a specific user
 memory = client.store(
@@ -322,9 +322,9 @@ client.delete_namespace(namespace="user:sarah")
 In a typical agent setup, you store memories after each interaction and retrieve relevant context before each response:
 
 ```python
-from aletheia import AletheiaClient
+from aletheia import AletheiaDBClient
 
-client = AletheiaClient(host="127.0.0.1", port=8420)
+client = AletheiaDBClient(host="127.0.0.1", port=8420)
 
 def agent_respond(user_id: str, user_message: str) -> str:
     # 1. Retrieve relevant memories
@@ -442,10 +442,10 @@ The `ports` binding uses `127.0.0.1:8420:8420` so the engine is only accessible 
 No changes needed. The Python SDK connects to the same host and port:
 
 ```python
-from aletheia import AletheiaClient
+from aletheia import AletheiaDBClient
 
 # Works identically whether the engine runs locally or in Docker
-client = AletheiaClient(host="127.0.0.1", port=8420)
+client = AletheiaDBClient(host="127.0.0.1", port=8420)
 ```
 
 ## Production Hardening
@@ -560,7 +560,7 @@ ufw deny 8420
 
 ## Self-Hosted vs. Cloud: A Comparison
 
-| Factor | Self-Hosted AletheiaDB | Cloud Memory Service |
+| Factor | Self-Hosted Memory Engine | Cloud Memory Service |
 |--------|------------------------|---------------------|
 | **Data location** | Your servers, your jurisdiction | Third-party data centers |
 | **Cost model** | Fixed (server + bandwidth) | Per-request, per-GB |
@@ -585,4 +585,4 @@ This guide covered the complete path from building the engine to deploying it in
 
 The memory engine you built today scales horizontally — run multiple instances behind a load balancer, each with its own SQLite database, and route users to specific instances by namespace. Or run a single instance on a Raspberry Pi for a personal AI assistant that lives in your home network.
 
-For more details, check the [AletheiaDB documentation](https://github.com/aletheia-platform/AletheiaDB) and the [Python SDK reference](https://pypi.org/project/aletheia/). The source code is open — read it, modify it, contribute back.
+For more details, check the [documentation](https://github.com/aletheia-platform/AletheiaDB) and the [Python SDK reference](https://pypi.org/project/aletheia/). The source code is open — read it, modify it, contribute back.

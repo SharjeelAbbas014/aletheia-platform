@@ -211,6 +211,117 @@ The most integrated approach is to build temporal awareness into the retrieval e
 
 This is the approach taken by [AletheiaDB](/docs/concepts), which implements configurable decay curves per memory type and automatic fact supersession at the storage layer. The [hybrid retrieval kernel](/blog/hybrid-retrieval-for-exact-and-semantic-recall) combines semantic and temporal signals in a single query pass rather than requiring a multi-step retrieval pipeline.
 
+## AletheiaDB: All Three Approaches, One API
+
+While the three approaches above represent a progression — from simple timestamp filtering to a fully integrated temporal engine — they also represent three different codebases, three different maintenance burdens, and three different failure modes. AletheiaDB was designed so you do not have to build any of them yourself.
+
+AletheiaDB implements all three approaches natively through a single, consistent API. Here is what that looks like in practice:
+
+```python
+from aletheia import AletheiaDBClient
+
+client = AletheiaDBClient(api_key="sk-...")
+
+# Store facts with automatic temporal indexing
+client.ingest(
+    entity_id="user-123",
+    text="I prefer dark mode for my IDE.",
+)
+client.ingest(
+    entity_id="user-123",
+    text="I switched to light mode for my IDE.",
+)
+
+# Query with built-in temporal ranking — the newest fact ranks first automatically
+hits = client.query(
+    "What is the user's display mode preference?",
+    entity_id="user-123",
+)
+
+for hit in hits:
+    print(hit.text)  # "I switched to light mode for my IDE." ranks first
+```
+
+Every call to `ingest` automatically attaches a timestamp, indexes the fact for semantic and lexical retrieval, and checks for fact supersession — a newer statement about the same attribute automatically downranks the old one. Every call to `query` combines semantic similarity, lexical matching, and temporal freshness into a single ranking score. There is no manual metadata filtering, no separate structured store, and no custom ranking function to maintain.
+
+### DIY Temporal Memory vs AletheiaDB
+
+To make the difference concrete, here is a side-by-side comparison of what it takes to implement temporal memory manually versus using AletheiaDB:
+
+**DIY approach — what you build yourself:**
+
+```python
+# Step 1: Set up vector store with timestamp metadata
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
+
+embeddings = OpenAIEmbeddings()
+
+documents = [
+    Document(
+        page_content="User prefers dark mode.",
+        metadata={"timestamp": "2026-01-15", "type": "display_preference"}
+    ),
+    Document(
+        page_content="User prefers light mode.",
+        metadata={"timestamp": "2026-03-20", "type": "display_preference"}
+    ),
+]
+
+vectorstore = FAISS.from_documents(documents, embeddings)
+
+# Step 2: Retrieve, then filter and sort manually
+query = "What display mode does the user prefer?"
+raw_results = vectorstore.similarity_search(query, k=5)
+
+# Step 3: Manually detect conflicting facts about the same attribute
+display_results = [
+    doc for doc in raw_results
+    if doc.metadata.get("type") == "display_preference"
+]
+display_results.sort(
+    key=lambda d: d.metadata["timestamp"], reverse=True
+)
+
+# Step 4: Use only the most recent
+current = display_results[0].page_content
+# "User prefers light mode."
+
+# But what if the query is "What did the user prefer in February?"
+# You need a completely different retrieval path for historical queries.
+# And what if there are 30 preference types? The metadata taxonomy
+# becomes unmanageable.
+```
+
+**AletheiaDB approach — what you write:**
+
+```python
+from aletheia import AletheiaDBClient
+
+client = AletheiaDBClient(api_key="sk-...")
+
+client.ingest(entity_id="user-123", text="User prefers dark mode.")
+client.ingest(entity_id="user-123", text="User prefers light mode.")
+
+# Current preference — supersession handled automatically
+hits = client.query(
+    "What display mode does the user prefer?",
+    entity_id="user-123",
+)
+print(hits[0].text)  # "User prefers light mode."
+
+# Historical query — same API, different time range
+historical = client.query(
+    "What display mode did the user prefer?",
+    entity_id="user-123",
+    as_of="2026-02-01",
+)
+print(historical[0].text)  # "User prefers dark mode."
+```
+
+The DIY approach requires you to build and maintain a metadata taxonomy, a filtering pipeline, a recency sorting mechanism, and separate retrieval paths for current vs. historical queries. AletheiaDB provides all of this through a single `ingest`/`query` interface where temporal ranking, fact supersession, and historical retrieval are built into the retrieval kernel — no plumbing required.
+
 ## External Resources
 
 If you want to go deeper on the topics covered here, these resources are worth reading:

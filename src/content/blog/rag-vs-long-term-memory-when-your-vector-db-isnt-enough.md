@@ -217,6 +217,134 @@ The differences between RAG and long-term memory are not just conceptual. They s
 
 The hybrid approach is the most practical path for most teams. You keep your RAG pipeline for document retrieval and add a long-term memory layer for user and entity facts. The two systems are queried in parallel, and results are combined based on the query type.
 
+## How AletheiaDB Solves This
+
+The comparison above makes the case for a hybrid architecture. But building that hybrid means operating two separate systems — a vector database for RAG and a structured store for memory — with two sets of queries, two ranking functions, and reconciliation logic in your application code.
+
+[AletheiaDB](https://github.com/aletheia-foundation/aletheia-db) is an open-source memory engine written in Rust that combines RAG and long-term memory into a single system. It provides hybrid retrieval (vector + BM25), temporal ranking, and fact supersession in one binary — so you don't need to maintain separate pipelines.
+
+### Hybrid Retrieval Built In
+
+AletheiaDB combines semantic vector search with BM25 lexical search by default. This means queries match on both meaning (like RAG) and exact keywords (like traditional search), with the engine fusing results:
+
+```python
+from aletheia import AletheiaDBClient
+
+client = AletheiaDBClient.from_local(auto_start=True)
+
+# Ingest both documents and user facts — same API
+client.ingest(
+    entity_id="docs/pro-plan",
+    text="The Pro plan costs $49/month and includes 10GB of storage.",
+)
+client.ingest(
+    entity_id="docs/enterprise-plan",
+    text="The Enterprise plan costs $199/month and includes unlimited storage.",
+)
+client.ingest(
+    entity_id="user-alice",
+    text="I'm on the Pro plan but considering upgrading.",
+)
+
+# Hybrid retrieval finds the right document AND the user's current context
+hits = client.query(
+    "What plan am I on and what does it include?",
+    entity_id="docs/pro-plan",
+)
+# → Semantic match on "plan" + BM25 keyword match on "Pro"
+
+hits = client.query("Should I upgrade?", entity_id="user-alice")
+# → Retrieves user memory: "I'm on the Pro plan but considering upgrading"
+```
+
+### Temporal Ranking for Evolving Facts
+
+When facts change, AletheiaDB's temporal ranking ensures the current version surfaces first. No manual supersession logic needed:
+
+```python
+from datetime import datetime
+
+# User's plan evolves over time
+client.ingest(
+    entity_id="user-alice",
+    text="User is on the Free plan",
+    timestamp=datetime(2026, 1, 1),
+)
+client.ingest(
+    entity_id="user-alice",
+    text="User upgraded to the Pro plan",
+    timestamp=datetime(2026, 3, 1),
+)
+client.ingest(
+    entity_id="user-alice",
+    text="User upgraded to the Enterprise plan",
+    timestamp=datetime(2026, 5, 1),
+)
+
+# Current-state query returns the latest fact
+hits = client.query(
+    "What plan is the user on?",
+    entity_id="user-alice",
+)
+# → "User upgraded to the Enterprise plan"
+
+# Historical query — what was true at a specific time?
+hits = client.query(
+    "What plan was the user on?",
+    entity_id="user-alice",
+    before=datetime(2026, 2, 1),
+)
+# → "User is on the Free plan"
+```
+
+### Fact Supersession Without LLM Calls
+
+The contradiction problem — where both old and new facts appear in retrieval results — is solved at the engine level. When a newer fact addresses the same topic for the same entity, the old fact is automatically superseded in current-state queries:
+
+```python
+# Old preference
+client.ingest(
+    entity_id="user-alice",
+    text="User prefers tabs over spaces",
+    timestamp=datetime(2026, 1, 1),
+)
+
+# New preference contradicts the old one
+client.ingest(
+    entity_id="user-alice",
+    text="User switched to spaces for all projects",
+    timestamp=datetime(2026, 4, 1),
+)
+
+# Query returns only the current preference — no LLM contradiction detection needed
+hits = client.query(
+    "What indentation does the user prefer?",
+    entity_id="user-alice",
+)
+# → "User switched to spaces for all projects"
+```
+
+### One Binary, Local or Cloud
+
+AletheiaDB runs locally for development with zero configuration. When you're ready for production, switch to cloud with the same API:
+
+```python
+# Local development
+client = AletheiaDBClient.from_local(auto_start=True)
+
+# Cloud production
+client = AletheiaDBClient.from_cloud(
+    "https://api.aletheia.com",
+    api_key="YOUR_KEY",
+)
+
+# Same calls, same results — no migration
+client.ingest(entity_id="user-alice", text="New memory")
+hits = client.query("Query", entity_id="user-alice")
+```
+
+AletheiaDB gives you RAG and long-term memory in one system — hybrid retrieval, temporal ranking, and fact supersession without wiring together separate pipelines or managing contradiction detection yourself.
+
 ## When to Use Which Approach
 
 Choosing between RAG, long-term memory, or a hybrid depends on what your agent needs to do. Here is a decision framework:
@@ -249,115 +377,76 @@ The hybrid pattern is increasingly common in production systems. [LangChain's me
 The most practical architecture keeps RAG and long-term memory as separate concerns that work together. Here is a concrete implementation:
 
 ```python
-from dataclasses import dataclass, field
+from aletheia import AletheiaDBClient
 from datetime import datetime
-from typing import Optional
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.vectorstores import FAISS
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 
+# --- Initialize AletheiaDB (handles both RAG and memory in one system) ---
+client = AletheiaDBClient.from_local(auto_start=True)
 
-# --- Long-term memory layer (structured facts) ---
-@dataclass
-class MemoryFact:
-    content: str
-    attribute: str
-    entity: str
-    timestamp: datetime
-    status: str = "active"
-    superseded_by: Optional[str] = None
-
-
-class LongTermMemory:
-    def __init__(self):
-        self.facts: dict[str, MemoryFact] = {}
-        self._counter = 0
-
-    def store(self, content: str, attribute: str, entity: str, timestamp: datetime) -> str:
-        self._counter += 1
-        fact_id = f"mem_{self._counter}"
-        new_fact = MemoryFact(content=content, attribute=attribute, entity=entity, timestamp=timestamp)
-
-        # Supersede older facts on the same attribute for the same entity
-        for existing_id, existing in self.facts.items():
-            if (
-                existing.entity == entity
-                and existing.attribute == attribute
-                and existing.status == "active"
-                and timestamp > existing.timestamp
-                and existing.content.lower() != content.lower()
-            ):
-                existing.status = "superseded"
-                existing.superseded_by = fact_id
-
-        self.facts[fact_id] = new_fact
-        return fact_id
-
-    def recall(self, entity: str, attribute: Optional[str] = None) -> list[MemoryFact]:
-        return [
-            f for f in self.facts.values()
-            if f.entity == entity
-            and f.status == "active"
-            and (attribute is None or f.attribute == attribute)
-        ]
-
-
-# --- RAG layer (document retrieval) ---
-embeddings = OpenAIEmbeddings()
-rag_docs = [
-    "Product documentation: Pro plan includes 10GB storage, $49/month.",
-    "Product documentation: Enterprise plan includes unlimited storage, $199/month.",
-    "API docs: Rate limits are 100 req/min for Pro, 1000 req/min for Enterprise.",
-]
-rag_store = FAISS.from_texts(rag_docs, embeddings)
-rag_retriever = rag_store.as_retriever(search_kwargs={"k": 2})
-
-# --- Hybrid query handler ---
-llm = ChatOpenAI(model="gpt-4o")
-prompt = ChatPromptTemplate.from_template(
-    "Answer based on the context and user memory below.\n\n"
-    "User Memory: {memory}\n\n"
-    "Documentation: {docs}\n\n"
-    "Question: {question}"
+# --- Ingest RAG documents ---
+client.ingest(
+    entity_id="docs/product",
+    text="Product documentation: Pro plan includes 10GB storage, $49/month.",
+)
+client.ingest(
+    entity_id="docs/product",
+    text="Product documentation: Enterprise plan includes unlimited storage, $199/month.",
+)
+client.ingest(
+    entity_id="docs/product",
+    text="API docs: Rate limits are 100 req/min for Pro, 1000 req/min for Enterprise.",
 )
 
-memory = LongTermMemory()
+# --- Ingest user memories with temporal tracking ---
+client.ingest(
+    entity_id="alice",
+    text="User prefers dark mode",
+    timestamp=datetime(2026, 1, 15),
+)
+client.ingest(
+    entity_id="alice",
+    text="User switched to light mode",
+    timestamp=datetime(2026, 4, 20),
+)
+client.ingest(
+    entity_id="alice",
+    text="User is on the Pro plan",
+    timestamp=datetime(2026, 2, 1),
+)
+client.ingest(
+    entity_id="alice",
+    text="User upgraded to Enterprise",
+    timestamp=datetime(2026, 5, 10),
+)
 
-# Simulate user interactions over time
-memory.store("User prefers dark mode", "display_preference", "alice", datetime(2026, 1, 15))
-memory.store("User switched to light mode", "display_preference", "alice", datetime(2026, 4, 20))
-memory.store("User is on the Pro plan", "plan", "alice", datetime(2026, 2, 1))
-memory.store("User upgraded to Enterprise", "plan", "alice", datetime(2026, 5, 10))
+# --- Query with entity scoping ---
 
+# RAG-style query: retrieve from document knowledge base
+docs = client.query(
+    "What are the Pro plan rate limits?",
+    entity_id="docs/product",
+)
+for d in docs:
+    print(f"[doc] {d.text} (score: {d.score})")
 
-def hybrid_query(question: str, entity: str) -> str:
-    # Retrieve from both systems in parallel
-    user_facts = memory.recall(entity)
-    memory_context = "; ".join(f"{f.attribute}: {f.content}" for f in user_facts)
+# Memory query: retrieve user's current facts with temporal ranking
+memories = client.query(
+    "What is my current plan?",
+    entity_id="alice",
+)
+for m in memories:
+    print(f"[{m.timestamp}] {m.text} (score: {m.score})")
+# → "User upgraded to Enterprise" (most recent plan fact surfaces first)
 
-    docs = rag_retriever.invoke(question)
-    doc_context = "\n".join(d.page_content for d in docs)
-
-    # Generate with combined context
-    chain = prompt | llm | StrOutputParser()
-    return chain.invoke({
-        "memory": memory_context,
-        "docs": doc_context,
-        "question": question,
-    })
-
-
-# Example queries
-print(hybrid_query("What is my current plan?", "alice"))
-# Memory provides: plan: User upgraded to Enterprise
-# RAG provides: Pro plan docs (for comparison context)
-# Model answers: Enterprise plan with details
-
-print(hybrid_query("What display mode should I use?", "alice"))
-# Memory provides: display_preference: User switched to light mode
-# No RAG docs relevant
-# Model answers: Light mode (current preference, not the old dark mode)
+# Historical query: what was the user's preference in February?
+past = client.query(
+    "What display mode did I prefer?",
+    entity_id="alice",
+    before=datetime(2026, 3, 1),
+)
+for m in past:
+    print(f"[{m.timestamp}] {m.text}")
+# → "User prefers dark mode" (superseded fact, correct for the time window)
 ```
 
 This architecture keeps concerns separated. The RAG layer handles document retrieval. The memory layer handles user facts with temporal awareness and supersession. The query handler combines both contexts so the model has access to both external knowledge and personal state.

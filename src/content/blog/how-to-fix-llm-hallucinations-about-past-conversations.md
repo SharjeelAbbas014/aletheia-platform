@@ -599,6 +599,94 @@ This three-layer defense works as follows:
 
 The duplicate detection step is particularly valuable. Without it, your fact store accumulates redundant entries that dilute retrieval quality. "I prefer dark mode," "I like dark mode," and "Dark mode is my preference" all compete in results, wasting context window space on repetition.
 
+## Fix 4: Use a Purpose-Built Memory Engine (No More DIY)
+
+The three fixes above work. They solve fabricated facts, wrong timelines, and merged users. But they also require you to build and maintain a significant amount of infrastructure: ChromaDB for vector storage, OpenAI for embeddings and contradiction detection, timestamp management, supersession logic, user isolation filters, and periodic consolidation scripts. Each piece is individually simple. Together, they are a distributed system you need to operate.
+
+[AletheiaDB](https://github.com/aletheia-foundation/aletheia-db) is an open-source memory engine that provides all three fixes in a single binary. Instead of stitching together ChromaDB, OpenAI, and custom supersession logic, you get fact supersession, temporal ranking, and user isolation through one API.
+
+### Fact Supersession Prevents Timeline Hallucinations
+
+The most common hallucination — "you said X, but actually you said Y" — happens because the retrieval layer returns both old and new facts with no mechanism to suppress the outdated one. AletheiaDB handles this at the engine level:
+
+```python
+from aletheia import AletheiaDBClient
+from datetime import datetime
+
+client = AletheiaDBClient.from_local(auto_start=True)
+
+# User sets a preference
+client.ingest(
+    entity_id="user-1",
+    text="I prefer dark mode for my IDE",
+    timestamp=datetime(2026, 1, 15),
+)
+
+# User changes their mind two months later
+client.ingest(
+    entity_id="user-1",
+    text="I switched to light mode for my IDE",
+    timestamp=datetime(2026, 3, 20),
+)
+
+# Query returns the current preference — old fact is automatically suppressed
+hits = client.query(
+    "What is my display preference?",
+    entity_id="user-1",
+)
+# → "I switched to light mode for my IDE"
+```
+
+Compare this to the DIY approach. With ChromaDB and manual supersession (Fix 2), you need ~100 lines of Python to detect topics, search for existing facts, compare content, mark old entries as superseded, and store new ones. With AletheiaDB, the engine handles temporal ordering automatically: newer facts on the same topic supersede older ones. No LLM-based contradiction detection needed for the common case.
+
+### Temporal Ranking Prevents Merged-User Hallucinations
+
+Merged-user hallucinations happen when details from one user's conversation leak into another's. The defense is user-scoped retrieval. In the DIY approach (Fix 1), you apply `where={"user_id": user_id}` filters manually and hope the database enforces them:
+
+```python
+# DIY approach: ChromaDB with manual user filter
+results = collection.query(
+    query_embeddings=[query_embedding],
+    n_results=top_k,
+    where={"user_id": user_id},  # ← easy to forget, hard to verify
+)
+```
+
+With AletheiaDB, entity isolation is enforced by the engine, not by your query:
+
+```python
+# AletheiaDB: entity isolation is built into the query API
+hits = client.query("What editor do I use?", entity_id="user-1")
+hits = client.query("What editor do I use?", entity_id="user-2")
+# Each returns only their own data — no filter to write, no filter to forget
+```
+
+And because the engine ranks results by temporal recency in addition to semantic relevance, the most recent facts always surface first:
+
+```python
+# AletheiaDB returns results with temporal + semantic ranking
+hits = client.query("What project am I working on?", entity_id="user-1")
+for hit in hits:
+    print(f"[{hit.timestamp}] {hit.text} (score: {hit.score})")
+# Results are ordered by recency-weighted relevance, not just embedding similarity
+```
+
+### DIY vs. AletheiaDB: Side-by-Side
+
+Here is what you need to build yourself versus what you get with one SDK call:
+
+| Capability | DIY (ChromaDB + OpenAI) | AletheiaDB |
+|---|---|---|
+| Semantic retrieval | ~20 lines of embedding + query code | `client.query(query, entity_id=user_id)` |
+| User isolation | Manual `where={"user_id": ...}` filter per query | `entity_id` parameter, enforced by engine |
+| Fact supersession | ~100 lines of LLM-based contradiction detection | Automatic — newer facts supersede older ones |
+| Temporal ranking | Manual sort by timestamp after retrieval | Built into query ranking function |
+| Contradiction handling | LLM call per new fact (~500ms, costs tokens) | Engine-level — no extra LLM calls |
+| Cloud deployment | Docker + managed ChromaDB + embedding service | `from_cloud()` — same API, managed infra |
+| Total implementation | ~400+ lines of Python, 3 dependencies, ongoing maintenance | ~10 lines of Python, 1 dependency |
+
+Building this yourself works for demos, but production needs engine-level guarantees.
+
 ## Testing Your Fixes
 
 Building a memory system is not enough. You need to verify it actually prevents hallucinations. Here is a testing framework that measures memory accuracy:

@@ -643,6 +643,115 @@ print(result)
 
 This pattern — detect, supersede, explain — gives you a complete contradiction handling pipeline. The LLM handles the nuanced judgment of what counts as a contradiction, while the structured storage preserves the full history.
 
+## Approach 4: Production Memory with AletheiaDB (Open Source, Rust)
+
+The three approaches above give you the conceptual foundation. You now understand file-based storage, vector search, and structured metadata with supersession. But each approach requires you to build and maintain a significant amount of infrastructure. You're wiring together ChromaDB for vector storage, OpenAI for embeddings and fact extraction, and your own logic for temporal ranking, fact supersession, and deterministic aggregation. That is a lot of moving parts to build, test, and keep running in production.
+
+[AletheiaDB](https://github.com/aletheia-foundation/aletheia-db) is an open-source memory engine written in Rust that bundles all three approaches into a single binary. It handles embeddings, vector search, temporal ranking, fact supersession, and deterministic aggregation — so you don't need to wire together five different systems.
+
+### One API, All Three Approaches
+
+Instead of building a file store, a vector database, and a metadata layer separately, you get them all through one client:
+
+```python
+from aletheia import AletheiaDBClient
+
+# Start locally — no API keys, no servers, no Docker
+client = AletheiaDBClient.from_local(auto_start=True)
+```
+
+**Approach 1 (file-based persistence) is handled automatically.** All data persists to disk. The local binary manages storage, indexing, and retrieval without configuration.
+
+**Approach 2 (vector search) is built in.** You don't need a separate embedding model or vector store:
+
+```python
+# Ingest a memory — AletheiaDB handles embedding and indexing internally
+client.ingest(entity_id="user-123", text="I prefer pourover coffee.")
+
+# Semantic retrieval without managing embeddings yourself
+hits = client.query("What coffee do I prefer?", entity_id="user-123")
+for hit in hits:
+    print(f"{hit.text} (score: {hit.score})")
+```
+
+**Approach 3 (structured metadata, supersession, temporal ranking) is core to the engine.** AletheiaDB treats every ingested fact as part of a temporal stream. It tracks recency, handles contradictions through fact supersession, and provides deterministic aggregation:
+
+```python
+from datetime import datetime
+
+# User's preferences evolve over time
+client.ingest(
+    entity_id="user-123",
+    text="Sarah works as a software engineer at Acme Corp",
+    timestamp=datetime(2025, 6, 1),
+)
+client.ingest(
+    entity_id="user-123",
+    text="Sarah now works as a staff engineer at TechStart",
+    timestamp=datetime(2026, 1, 15),
+)
+
+# Temporal query — automatically surfaces the most recent fact
+hits = client.query("Where does Sarah work?", entity_id="user-123")
+# → "Sarah now works as a staff engineer at TechStart"
+
+# Historical query — ask what was true at a specific point in time
+hits = client.query(
+    "Where does Sarah work?",
+    entity_id="user-123",
+    before=datetime(2025, 12, 1),
+)
+# → "Sarah works as a software engineer at Acme Corp"
+```
+
+### Entity Scoping
+
+The `entity_id` parameter scopes all memories to a specific user, organization, or arbitrary entity. This eliminates the multi-tenancy problem entirely — you don't need to build collection-per-user patterns or metadata filters. The engine handles isolation natively:
+
+```python
+client.ingest(entity_id="user-123", text="I use Vim as my editor")
+client.ingest(entity_id="user-456", text="I use VS Code as my editor")
+
+# Each user gets only their own results
+hits_a = client.query("What editor do I use?", entity_id="user-123")
+hits_b = client.query("What editor do I use?", entity_id="user-456")
+# → No cross-user leakage
+```
+
+### Deterministic Aggregation
+
+When multiple facts exist for the same entity, AletheiaDB can aggregate them deterministically — you control whether the query returns the latest fact, all facts with recency scores, or a consolidated summary. This replaces the manual consolidation script you'd otherwise need to build:
+
+```python
+# Aggregate all facts for a user into a structured profile
+hits = client.query("summarize", entity_id="user-123", aggregate="latest")
+for hit in hits:
+    print(f"[{hit.timestamp}] {hit.text}")
+```
+
+### From Local to Cloud — Same API
+
+The local binary is zero-config for development. When you're ready for production, switch to cloud mode with one line changed:
+
+```python
+# Development
+client = AletheiaDBClient.from_local(auto_start=True)
+
+# Production — same API, managed infrastructure
+client = AletheiaDBClient.from_cloud(
+    "https://api.aletheia.com",
+    api_key="YOUR_KEY",
+)
+
+# All ingest/query calls remain identical
+client.ingest(entity_id="user-123", text="Hello, world.")
+hits = client.query("Hello", entity_id="user-123")
+```
+
+No schema changes. No migration. No Docker compose files. The same `ingest()` and `query()` calls work locally and in production.
+
+AletheiaDB gives you all three approaches in one binary — local for development, cloud for production, same API.
+
 ## Production Considerations
 
 Moving from tutorial to production requires addressing several concerns:

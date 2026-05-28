@@ -4,7 +4,7 @@ description: A practical guide to building agent memory systems that run locally
 excerpt: Most agent memory debugging happens against remote services. This post explains why running the same engine locally changes everything, and walks through a complete setup from zero to a working local memory stack.
 publishedAt: 2026-05-28T00:00:00.000Z
 updatedAt: 2026-05-28T00:00:00.000Z
-author: AletheiaDB Team
+author: Sharjeel
 tags:
   - Local Development
   - Agent Infrastructure
@@ -127,7 +127,7 @@ Now let us write some code. The following Python example demonstrates the core w
 ### Install the SDK
 
 ```bash
-pip install aletheia-client
+pip install aletheia
 ```
 
 ### Write the Script
@@ -135,11 +135,11 @@ pip install aletheia-client
 Create a file called `memory_demo.py`:
 
 ```python
-from aletheia_client import AletheiaClient
+from aletheia import AletheiaDBClient
 import json
 
 # Connect to your local engine
-client = AletheiaClient(base_url="http://127.0.0.1:3000")
+client = AletheiaDBClient(base_url="http://127.0.0.1:3000")
 
 # Store a conversation
 conversation = [
@@ -217,12 +217,12 @@ Create a file called `test_memory.py`:
 
 ```python
 import pytest
-from aletheia_client import AletheiaClient
+from aletheia import AletheiaDBClient
 
 @pytest.fixture
 def client():
     """Each test gets a fresh engine instance."""
-    client = AletheiaClient(base_url="http://127.0.0.1:3000")
+    client = AletheiaDBClient(base_url="http://127.0.0.1:3000")
     yield client
     # Clean up between tests
     client.memories.delete_all()
@@ -334,7 +334,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install aletheia-client pytest
+          pip install aletheia pytest
 
       - name: Run memory tests
         run: pytest test_memory.py -v
