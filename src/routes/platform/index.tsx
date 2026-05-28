@@ -18,7 +18,8 @@ import {
   UserIcon,
   UsersIcon,
   FileTextIcon,
-  MailIcon
+  MailIcon,
+  AlertCircleIcon
 } from "lucide-qwik";
 import {
   Form,
@@ -127,11 +128,13 @@ export const useCreateApiKeyAction = routeAction$(async (data, event) => {
   requireAuth(event);
   const name = String(data.name ?? "New API Key");
 
-  const newKey = await createApiKey(event, name);
+  const result = await createApiKey(event, name);
 
   return {
-    success: !!newKey,
-    key: newKey
+    success: !!result,
+    key: result?.key ?? null,
+    engineSynced: result?.engineSynced ?? false,
+    engineError: result?.engineError
   };
 });
 
@@ -743,6 +746,17 @@ export default component$(() => {
                         <CopyIcon class="w-3.5 h-3.5" />
                       </button>
                     </div>
+                    {createKeyAction.value.engineSynced ? (
+                      <p class="text-[10px] text-green-400 mt-3 flex items-center gap-1">
+                        <CheckCircle2Icon class="w-3 h-3" />
+                        Key synced to engine - ready for direct API access
+                      </p>
+                    ) : (
+                      <p class="text-[10px] text-amber-400 mt-3 flex items-center gap-1">
+                        <AlertCircleIcon class="w-3 h-3" />
+                        Key created but engine sync failed ({createKeyAction.value.engineError || "unknown error"}). Use the proxy endpoint or contact support.
+                      </p>
+                    )}
                   </div>
                 )}
 

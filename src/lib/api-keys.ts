@@ -49,13 +49,18 @@ export async function getApiKeys(event: RequestEventCommon): Promise<ApiKey[]> {
   }
 }
 
-export async function createApiKey(event: RequestEventCommon, name: string, clusterId?: string): Promise<ApiKey | null> {
+export interface ApiKeyCreateResult {
+  key: ApiKey;
+  engineSynced: boolean;
+  engineError?: string;
+}
+
+export async function createApiKey(event: RequestEventCommon, name: string, clusterId?: string): Promise<ApiKeyCreateResult | null> {
   try {
     const user = getCurrentUser(event.cookie);
     if (!user) return null;
 
     const supabase = getAdminSupabaseClient(event.env);
-    // Generate a secure API Key prefix
     const rawKey = `aletheia-sk-${crypto.randomUUID().replace(/-/g, '')}${crypto.randomUUID().replace(/-/g, '').substring(0, 16)}`;
 
     const { data, error } = await supabase
@@ -74,7 +79,9 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
         return null;
     }
 
-    // Push the key to the engine for direct access
+    let engineSynced = false;
+    let engineError: string | undefined;
+
     if (clusterId) {
       const { data: cluster } = await supabase
           .from("clusters")
@@ -98,18 +105,27 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
               cluster_id: clusterId,
             }),
           });
-          if (!res.ok) {
+          if (res.ok) {
+            engineSynced = true;
+          } else {
+            engineError = `Engine returned ${res.status}`;
             console.error(`Failed to inject key to custom cluster ${clusterId}: ${res.status} ${await res.text()}`);
           }
         } catch (injectErr: any) {
+          engineError = `Connection failed: ${injectErr.message}`;
           console.error(`Failed to connect to cluster ${clusterId} for key injection:`, injectErr.message);
         }
+      } else {
+        engineError = "Cluster engine_key not found";
       }
     } else {
       const engineUrl = (event.env.get("ALETHEIADB_URL") || process.env.ALETHEIADB_URL || "").replace(/\/+$/, "");
       const engineKey = event.env.get("ALETHEIADB_ADMIN_KEY") || event.env.get("ALETHEIADB_API_KEY") || process.env.ALETHEIADB_ADMIN_KEY || "";
 
-      if (engineUrl && engineKey) {
+      if (!engineUrl || !engineKey) {
+        engineError = "ALETHEIADB_URL or ALETHEIADB_ADMIN_KEY not configured";
+        console.error("Engine injection skipped: missing env vars", { hasUrl: !!engineUrl, hasKey: !!engineKey });
+      } else {
         try {
           const res = await fetch(`${engineUrl}/admin/api_keys`, {
             method: "POST",
@@ -125,23 +141,31 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
               cluster_id: null,
             }),
           });
-          if (!res.ok) {
+          if (res.ok) {
+            engineSynced = true;
+          } else {
+            engineError = `Engine returned ${res.status}`;
             console.error(`Failed to inject key to shared engine: ${res.status} ${await res.text()}`);
           }
         } catch (injectErr: any) {
+          engineError = `Connection failed: ${injectErr.message}`;
           console.error(`Failed to connect to shared engine for key injection:`, injectErr.message);
         }
       }
     }
 
     return {
+      key: {
         key_id: data.id,
         name: data.name,
         key_prefix: data.key_value.substring(0, 8),
         created_at_ms: new Date(data.created_at).getTime(),
         last_used_ms: null,
         disabled: !data.is_active,
-        token: rawKey // Intentionally return the full raw token only upon creation
+        token: rawKey
+      },
+      engineSynced,
+      engineError
     };
   } catch (e) {
     return null;

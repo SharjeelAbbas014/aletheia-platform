@@ -20,6 +20,8 @@ import {
   EyeIcon,
   EyeOffIcon,
   Loader2Icon,
+  CheckCircle2Icon,
+  AlertCircleIcon,
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
@@ -69,11 +71,13 @@ export const useCreateClusterApiKey = routeAction$(async (data, event) => {
   const clusterId = event.params.id;
   const name = String(data.name ?? "New API Key");
 
-  const newKey = await createApiKey(event, name, clusterId);
+  const result = await createApiKey(event, name, clusterId);
 
   return {
-    success: !!newKey,
-    key: newKey
+    success: !!result,
+    key: result?.key ?? null,
+    engineSynced: result?.engineSynced ?? false,
+    engineError: result?.engineError
   };
 });
 
@@ -822,6 +826,17 @@ export default component$(() => {
                   <CopyIcon class="w-4 h-4" />
                 </button>
               </div>
+              {createApiKeyAction.value.engineSynced ? (
+                <p class="text-[10px] text-green-400 mt-3 flex items-center gap-1">
+                  <CheckCircle2Icon class="w-3 h-3" />
+                  Key synced to engine - ready for direct API access
+                </p>
+              ) : (
+                <p class="text-[10px] text-amber-400 mt-3 flex items-center gap-1">
+                  <AlertCircleIcon class="w-3 h-3" />
+                  Key created but engine sync failed ({createApiKeyAction.value.engineError || "unknown error"}). Contact support.
+                </p>
+              )}
             </div>
           )}
 
