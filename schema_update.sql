@@ -154,11 +154,16 @@ create trigger on_auth_user_created after insert on auth.users for each row exec
 
 -- 7. RPC Function for decrementing token/truth balances
 create or replace function public.decrement_token_balance(uid uuid, amount bigint)
-returns void as $$
+returns bigint as $$
+declare
+  new_balance bigint;
 begin
   update public.subscriptions
-  set token_balance = greatest(0, token_balance - amount)
-  where user_id = uid;
+  set token_balance = greatest(0, token_balance - amount),
+      updated_at = now()
+  where user_id = uid
+  returning token_balance into new_balance;
+  return coalesce(new_balance, -1);
 end;
 $$ language plpgsql security definer;
 

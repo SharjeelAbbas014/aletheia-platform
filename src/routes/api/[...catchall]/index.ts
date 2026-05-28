@@ -53,19 +53,27 @@ export const onRequest: RequestHandler = async (event) => {
       .eq("user_id", userId)
       .maybeSingle();
 
-    let tokenBalance = sub?.token_balance ?? 10000;
-    let lastGranted = sub?.free_tokens_granted_at ? new Date(sub.free_tokens_granted_at).getTime() : 0;
+    const now = Date.now();
     const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
+    const lastGranted = sub?.free_tokens_granted_at ? new Date(sub.free_tokens_granted_at).getTime() : 0;
+    const needsRenewal = !sub || (now - lastGranted > oneMonthMs);
 
-    if (Date.now() - lastGranted > oneMonthMs) {
+    let tokenBalance = sub?.token_balance ?? 10000;
+
+    if (needsRenewal) {
       tokenBalance = 10000;
-      lastGranted = Date.now();
-      await supabase.from("subscriptions").upsert({
-        user_id: userId,
-        token_balance: tokenBalance,
-        free_tokens_granted_at: new Date(lastGranted).toISOString(),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "user_id" });
+      try {
+        await supabase.from("subscriptions").upsert({
+          user_id: userId,
+          token_balance: 10000,
+          free_tokens_granted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          tier: "fractional",
+          status: "active",
+        }, { onConflict: "user_id" });
+      } catch (e: any) {
+        console.error("Failed to upsert subscription:", e?.message);
+      }
     }
 
     if (tokenBalance <= 0) {
@@ -154,12 +162,18 @@ export const onRequest: RequestHandler = async (event) => {
         }
 
         if (isFractional) {
-          await supabase.rpc("decrement_token_balance", {
+          const { error: rpcError } = await supabase.rpc("decrement_token_balance", {
             uid: userId,
             amount: 1,
           });
+
+          if (rpcError) {
+            console.error("Token deduction failed:", rpcError.message);
+          }
         }
-      } catch {}
+      } catch (err: any) {
+        console.error("Usage/billing update failed:", err?.message || err);
+      }
     }
 
     event.send(new Response(responseBody, {
