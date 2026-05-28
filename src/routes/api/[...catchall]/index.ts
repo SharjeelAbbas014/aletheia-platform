@@ -76,8 +76,9 @@ export const onRequest: RequestHandler = async (event) => {
   }
 
   // 4. Rate limiting — check tier limits (skip for self_hosted VM)
-  if (clusterId && clusterTier !== "self_hosted") {
-    const rateResult = await checkRateLimit(env, clusterId, clusterTier);
+  const rateLimitKey = clusterId || userId;
+  if (clusterTier !== "self_hosted") {
+    const rateResult = await checkRateLimit(env, rateLimitKey, clusterTier);
 
     if (!rateResult.allowed) {
       throw event.json(429, {
@@ -142,16 +143,17 @@ export const onRequest: RequestHandler = async (event) => {
     newResponseHeaders.delete("transfer-encoding");
 
     // 7. Record usage and decrement token balance
-    if (clusterId && proxyResponse.ok) {
+    if (proxyResponse.ok) {
       try {
-        await recordUsage(env, clusterId, {
-          requests: 1,
-          queries: isQuery ? 1 : 0,
-          ingests: isIngest ? 1 : 0,
-        });
-        
+        if (clusterId) {
+          await recordUsage(env, clusterId, {
+            requests: 1,
+            queries: isQuery ? 1 : 0,
+            ingests: isIngest ? 1 : 0,
+          });
+        }
+
         if (isFractional) {
-          // Deduct 1 credit per truth/operation
           await supabase.rpc("decrement_token_balance", {
             uid: userId,
             amount: 1,
