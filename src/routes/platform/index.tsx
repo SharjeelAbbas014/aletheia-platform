@@ -746,6 +746,20 @@ export default component$(() => {
                         <CopyIcon class="w-3.5 h-3.5" />
                       </button>
                     </div>
+                    <div class="mt-4 rounded-lg bg-black/20 border border-outline-variant/10 p-4">
+                      <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-2">Usage Example</p>
+                      <pre class="overflow-x-auto font-mono text-[10px] leading-relaxed text-primary/70 whitespace-pre-wrap">{`curl -X POST https://aletheiadb.com/api/ingest \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: ${createKeyAction.value.key.token.substring(0, 20)}..." \\
+  -d '{
+    "entity_id": "user-1",
+    "textual_content": "Hello, AletheiaDB!"
+  }'`}</pre>
+                    </div>
+                    <a href="/docs/quickstart" class="mt-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:opacity-80 transition-opacity">
+                      <ExternalLinkIcon class="w-3 h-3" />
+                      Read the Quickstart Guide →
+                    </a>
                     {createKeyAction.value.engineSynced ? (
                       <p class="text-[10px] text-green-400 mt-3 flex items-center gap-1">
                         <CheckCircle2Icon class="w-3 h-3" />

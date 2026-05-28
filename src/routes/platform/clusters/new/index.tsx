@@ -91,7 +91,7 @@ export default component$(() => {
                   />
                 </div>
                 <p class="text-sm text-tertiary mb-6 leading-relaxed">
-                  Connect your cognitive agents instantly to our pre-deployed, public AletheiaDB substrate at <code class="text-amber-400 font-mono text-xs">engine.aletheiadb.com</code>. No servers to boot, no cloud accounts to manage.
+                  Connect your cognitive agents instantly to our shared engine at <code class="text-amber-400 font-mono text-xs">aletheiadb.com/api</code>. No servers to boot, no cloud accounts to manage.
                 </p>
                 <ul class="text-xs text-tertiary space-y-2 mb-6 border-t border-outline-variant/10 pt-4">
                   <li class="flex items-center gap-2">
