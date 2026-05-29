@@ -34,7 +34,25 @@ export default component$(() => {
       >
         Test Sentry (Direct Call)
       </button>
-      <p class="text-gray-500 text-sm">Click the button to send a test error directly to /api/sentry</p>
+      <button
+        class="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+        onClick$={() => {
+          throw new Error("Uncaught button error");
+        }}
+      >
+        Test Sentry (Uncaught Error)
+      </button>
+      <button
+        class="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+        onClick$={() => {
+          setTimeout(() => {
+            throw new Error("setTimeout error");
+          }, 0);
+        }}
+      >
+        Test Sentry (setTimeout)
+      </button>
+      <p class="text-gray-500 text-sm">Click buttons to test different error capture methods</p>
     </div>
   );
 });
