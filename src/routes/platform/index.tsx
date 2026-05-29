@@ -47,7 +47,6 @@ import { CONTACT_MAILTO } from "~/constants/contact";
 import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
 import { getAdminSupabaseClient } from "~/lib/supabase";
-import { getCoreClusterStats } from "~/lib/aletheia-core";
 import { captureError } from "~/lib/sentry";
 import { capture } from "~/lib/posthog";
 import { identify } from "~/lib/posthog";
@@ -410,7 +409,15 @@ export default component$(() => {
     const active = clusters.filter(c => c.status === "active");
     if (!active.length) return;
     const results = await Promise.all(
-      active.map(c => getCoreClusterStats(c.id, c.endpoint_url, c.engine_key))
+      active.map(async (c) => {
+        try {
+          const res = await fetch(`/api/clusters/${c.id}/stats`);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch {
+          return null;
+        }
+      })
     );
     const merged = results.reduce((acc, s) => {
       if (s) {

@@ -28,4 +28,3 @@ export const onRequest: RequestHandler = async ({ request, params, url, send }) 
     headers: { "Content-Type": res.headers.get("Content-Type") || "text/plain" }
   }));
 };
-

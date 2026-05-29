@@ -278,7 +278,7 @@ export async function getUsageStats(event: RequestEventCommon): Promise<UsageSta
     // 2. Fetch daily usage for all these clusters
     const { data: usageData, error: usageErr } = await supabase
       .from("usage_daily")
-      .select("request_count, ingest_count, query_count, graph_ops")
+      .select("request_count, ingest_count, query_count, graph_ops, date")
       .in("cluster_id", clusterIds);
 
     if (usageErr || !usageData) {
@@ -291,20 +291,29 @@ export async function getUsageStats(event: RequestEventCommon): Promise<UsageSta
       };
     }
 
-    // 3. Aggregate usage
+    // 3. Aggregate usage and determine last active request date
+    let latestActiveDateMs: number | null = null;
     const totals = usageData.reduce(
-      (acc, d) => ({
-        request_count: acc.request_count + (d.request_count || 0),
-        ingest_count: acc.ingest_count + (d.ingest_count || 0),
-        query_count: acc.query_count + (d.query_count || 0),
-        temporal_query_count: acc.temporal_query_count + (d.graph_ops || 0),
-      }),
+      (acc, d) => {
+        if (d.request_count > 0 && d.date) {
+          const t = new Date(d.date).getTime();
+          if (latestActiveDateMs === null || t > latestActiveDateMs) {
+            latestActiveDateMs = t;
+          }
+        }
+        return {
+          request_count: acc.request_count + (d.request_count || 0),
+          ingest_count: acc.ingest_count + (d.ingest_count || 0),
+          query_count: acc.query_count + (d.query_count || 0),
+          temporal_query_count: acc.temporal_query_count + (d.graph_ops || 0),
+        };
+      },
       { request_count: 0, ingest_count: 0, query_count: 0, temporal_query_count: 0 }
     );
 
     return {
       ...totals,
-      last_request_ms: null
+      last_request_ms: latestActiveDateMs
     };
   } catch (e) {
     captureError(e, { action: "getUsageStats" });

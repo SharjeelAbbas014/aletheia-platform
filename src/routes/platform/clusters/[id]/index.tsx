@@ -25,7 +25,7 @@ import {
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
-import { getCoreClusterStats, type HardwareStats } from "~/lib/aletheia-core";
+import { type HardwareStats } from "~/lib/aletheia-core";
 import { createApiKey, revokeApiKey } from "~/lib/api-keys";
 import { captureError } from "~/lib/sentry";
 import { capture } from "~/lib/posthog";
@@ -352,9 +352,12 @@ export default component$(() => {
     }
 
     if (clusterStatus.value === "active") {
-      getCoreClusterStats(cluster.id, cluster.endpoint_url, cluster.engine_key).then(s => {
-        if (s) stats.value = s;
-      });
+      fetch(`/api/clusters/${cluster.id}/stats`)
+        .then(res => res.ok ? res.json() : null)
+        .then(s => {
+          if (s) stats.value = s;
+        })
+        .catch(() => {});
     }
 
     if (clusterStatus.value === "active" && cluster.tier !== "fractional") {
