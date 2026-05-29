@@ -9,7 +9,7 @@ export function initPostHog(): typeof posthog | null {
   if (!POSTHOG_KEY || initialized) return null;
   try {
     posthog.init(POSTHOG_KEY, {
-      api_host: "/api/posthog",
+      api_host: "/api/ingest",
       persistence: "localStorage",
       autocapture: false,
       disable_session_recording: false,
