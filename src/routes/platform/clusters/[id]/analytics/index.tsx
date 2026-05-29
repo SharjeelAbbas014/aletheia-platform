@@ -7,46 +7,52 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { getCoreClusterStats } from "~/lib/aletheia-core";
+import { captureError } from "~/lib/sentry";
 
 export const onRequest: RequestHandler = (event) => {
   setPrivateNoStore(event);
 };
 
 export const useClusterData = routeLoader$(async (event) => {
-  const user = requireAuth(event);
-  const clusterId = event.params.id;
-  const supabase = getAdminSupabaseClient(event.env);
-  if (!supabase) throw event.error(500, "Database connection offline");
+  try {
+    const user = requireAuth(event);
+    const clusterId = event.params.id;
+    const supabase = getAdminSupabaseClient(event.env);
+    if (!supabase) throw event.error(500, "Database connection offline");
 
-  const { data: cluster } = await supabase.from("clusters").select("*").eq("id", clusterId).single();
-  if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
+    const { data: cluster } = await supabase.from("clusters").select("*").eq("id", clusterId).single();
+    if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
 
-  const { data: usage } = await supabase
-    .from("usage_daily")
-    .select("*")
-    .eq("cluster_id", clusterId)
-    .order("date", { ascending: false })
-    .limit(30);
+    const { data: usage } = await supabase
+      .from("usage_daily")
+      .select("*")
+      .eq("cluster_id", clusterId)
+      .order("date", { ascending: false })
+      .limit(30);
 
-  // Fetch real-time total usage from the cluster directly
-  const coreStats = await getCoreClusterStats(cluster.id, cluster.endpoint_url, cluster.engine_key);
+    // Fetch real-time total usage from the cluster directly
+    const coreStats = await getCoreClusterStats(cluster.id, cluster.endpoint_url, cluster.engine_key);
 
-  const totals = coreStats && typeof coreStats.request_count !== "undefined"
-    ? {
-        request_count: coreStats.request_count || 0,
-        ingest_count: coreStats.ingest_count || 0,
-        query_count: coreStats.query_count || 0,
-      }
-    : (usage || []).reduce(
-        (acc: any, d: any) => ({
-          request_count: acc.request_count + (d.request_count || 0),
-          ingest_count: acc.ingest_count + (d.ingest_count || 0),
-          query_count: acc.query_count + (d.query_count || 0),
-        }),
-        { request_count: 0, ingest_count: 0, query_count: 0 }
-      );
+    const totals = coreStats && typeof coreStats.request_count !== "undefined"
+      ? {
+          request_count: coreStats.request_count || 0,
+          ingest_count: coreStats.ingest_count || 0,
+          query_count: coreStats.query_count || 0,
+        }
+      : (usage || []).reduce(
+          (acc: any, d: any) => ({
+            request_count: acc.request_count + (d.request_count || 0),
+            ingest_count: acc.ingest_count + (d.ingest_count || 0),
+            query_count: acc.query_count + (d.query_count || 0),
+          }),
+          { request_count: 0, ingest_count: 0, query_count: 0 }
+        );
 
-  return { cluster, usage: (usage || []).reverse(), totals, user };
+    return { cluster, usage: (usage || []).reverse(), totals, user };
+  } catch (e) {
+    captureError(e, { page: "cluster_analytics" });
+    throw e;
+  }
 });
 
 export default component$(() => {

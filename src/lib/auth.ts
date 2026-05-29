@@ -1,5 +1,6 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
 import { getSupabaseClient } from "./supabase";
+import { captureError } from "./sentry";
 
 type CookieStore = RequestEventCommon["cookie"];
 
@@ -51,6 +52,7 @@ export async function loginUser(
     event.cookie.set(USERNAME_COOKIE, displayName, cookieBase);
     return { ok: true };
   } catch (e: any) {
+    captureError(e, { action: "loginUser", email });
     console.error("loginUser error:", e);
     return { ok: false, message: e?.message || "Could not connect to authentication server. Check your network or Supabase project URL." };
   }
@@ -95,6 +97,7 @@ export async function signupUser(
         + " To disable this, go to Supabase Dashboard → Authentication → Settings → disable 'Enable email confirmations'."
     };
   } catch (e: any) {
+    captureError(e, { action: "signupUser", email });
     console.error("signupUser error:", e);
     return { ok: false, message: e?.message || "Could not connect to authentication server. Check your network or Supabase project URL." };
   }

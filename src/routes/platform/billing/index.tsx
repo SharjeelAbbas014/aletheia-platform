@@ -6,6 +6,8 @@ import { setPrivateNoStore } from "~/lib/cache";
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { getSubscription } from "~/lib/subscriptions";
 import { requireAuth } from "~/lib/auth";
+import { captureError } from "~/lib/sentry";
+import { capture } from "~/lib/posthog";
 
 export const onRequest: RequestHandler = (event) => {
   const search = event.url.search;
@@ -13,9 +15,14 @@ export const onRequest: RequestHandler = (event) => {
 };
 
 export const useBillingData = routeLoader$(async (event) => {
-  const user = requireAuth(event);
-  const sub = await getSubscription(event);
-  return { user, sub };
+  try {
+    const user = requireAuth(event);
+    const sub = await getSubscription(event);
+    return { user, sub };
+  } catch (e) {
+    captureError(e, { page: "billing" });
+    throw e;
+  }
 });
 
 const plans = [
@@ -189,7 +196,7 @@ export default component$(() => {
                     <p class="text-sm font-bold">{pack.name}</p>
                     <p class="text-[10px] text-tertiary">{pack.desc}</p>
                   </div>
-                  <button type="submit" class="rounded-lg bg-primary px-4 py-2 font-bold text-xs text-on-primary hover:opacity-90 transition-opacity">
+                  <button type="submit" onClick$={() => capture("token_purchase_clicked")} class="rounded-lg bg-primary px-4 py-2 font-bold text-xs text-on-primary hover:opacity-90 transition-opacity">
                     Buy
                   </button>
                 </form>

@@ -1,6 +1,7 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "./supabase";
 import { getCurrentUser } from "./auth";
+import { captureError } from "./sentry";
 
 export interface ContextTemplate {
   id: string;
@@ -15,23 +16,38 @@ export async function getContextTemplates(event: RequestEventCommon, clusterId: 
   const user = getCurrentUser(event.cookie);
   if (!user) return [];
   const supabase = getAdminSupabaseClient(event.env);
-  const { data } = await supabase.from("context_templates").select("*").eq("cluster_id", clusterId).order("created_at", { ascending: true });
-  return (data || []) as any;
+  try {
+    const { data } = await supabase.from("context_templates").select("*").eq("cluster_id", clusterId).order("created_at", { ascending: true });
+    return (data || []) as any;
+  } catch (e) {
+    captureError(e, { action: "getContextTemplates", clusterId });
+    return [];
+  }
 }
 
 export async function createContextTemplate(event: RequestEventCommon, clusterId: string, name: string, template: string): Promise<ContextTemplate | null> {
   const user = getCurrentUser(event.cookie);
   if (!user) return null;
   const supabase = getAdminSupabaseClient(event.env);
-  const { data, error } = await supabase.from("context_templates").insert({ cluster_id: clusterId, user_id: user.user_id, name, template }).select().single();
-  if (error) return null;
-  return data as any;
+  try {
+    const { data, error } = await supabase.from("context_templates").insert({ cluster_id: clusterId, user_id: user.user_id, name, template }).select().single();
+    if (error) return null;
+    return data as any;
+  } catch (e) {
+    captureError(e, { action: "createContextTemplate", clusterId, name });
+    return null;
+  }
 }
 
 export async function deleteContextTemplate(event: RequestEventCommon, templateId: string): Promise<boolean> {
   const supabase = getAdminSupabaseClient(event.env);
-  const { error } = await supabase.from("context_templates").delete().eq("id", templateId);
-  return !error;
+  try {
+    const { error } = await supabase.from("context_templates").delete().eq("id", templateId);
+    return !error;
+  } catch (e) {
+    captureError(e, { action: "deleteContextTemplate", templateId });
+    return false;
+  }
 }
 
 const MARKER_REGEX = /%\{(\w+)(?:\s+([^}]*))?\}/g;

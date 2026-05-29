@@ -1,5 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+async function reportError(error: Error | unknown, context: Record<string, unknown> = {}) {
+  const dsn = Deno.env.get("SENTRY_DSN") || "";
+  if (!dsn) { console.error("[sentry]", error, context); return; }
+  const projectId = dsn.split("/").pop();
+  const host = new URL(dsn).host;
+  try {
+    const err = error instanceof Error ? error : new Error(String(error));
+    const eventId = crypto.randomUUID().replace(/-/g, "");
+    const payload = { event_id: eventId, timestamp: Date.now() / 1000, level: "error", platform: "deno", exception: { values: [{ type: err.name, value: err.message }] }, extra: context, tags: { environment: "edge" } };
+    const envelope = JSON.stringify({ event_id: eventId, sent_at: new Date().toISOString() }) + "\n" + JSON.stringify({ type: "event", content_type: "application/json", length: JSON.stringify(payload).length }) + "\n" + JSON.stringify(payload);
+    await fetch(`https://${host}/api/${projectId}/envelope/`, { method: "POST", body: envelope, signal: AbortSignal.timeout(3000) });
+  } catch {}
+}
+
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 serve(async (req) => {
@@ -7,9 +21,12 @@ serve(async (req) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  let clusterId = "";
+  let region = "";
   try {
     const body = await req.json();
-    const { clusterId, region } = body;
+    clusterId = body.clusterId;
+    region = body.region;
 
     if (!clusterId || !region) {
       return new Response(JSON.stringify({ error: "Missing clusterId or region" }), {
@@ -41,7 +58,11 @@ serve(async (req) => {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
-    if (!authRes.ok) throw new Error(`Azure OAuth failed: ${await authRes.text()}`);
+    if (!authRes.ok) {
+      const oauthError = new Error(`Azure OAuth failed: ${await authRes.text()}`);
+      reportError(oauthError, { step: "azure_oauth", clusterId, region });
+      throw oauthError;
+    }
     const { access_token: token } = await authRes.json();
 
     const vmName = `aletheia-vm-${clusterId.slice(0, 8)}`;
@@ -102,6 +123,7 @@ serve(async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err: any) {
+    reportError(err, { step: "top_level", clusterId, region });
     console.error(`[cleanup-vm] Error: ${err.message}`);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,

@@ -7,23 +7,36 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { getConnectors, deleteConnector, getConnectorMeta } from "~/lib/connectors";
+import { captureError } from "~/lib/sentry";
+import { capture, captureServer } from "~/lib/posthog";
 
 export const onRequest: RequestHandler = (event) => { setPrivateNoStore(event); };
 
 export const useConnectorData = routeLoader$(async (event) => {
-  const user = requireAuth(event);
-  const clusterId = event.params.id;
-  const supabase = getAdminSupabaseClient(event.env);
-  const { data: cluster } = await supabase.from("clusters").select("*").eq("id", clusterId).single();
-  if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
-  const connectors = await getConnectors(event, clusterId);
-  return { cluster: cluster as any, connectors };
+  try {
+    const user = requireAuth(event);
+    const clusterId = event.params.id;
+    const supabase = getAdminSupabaseClient(event.env);
+    const { data: cluster } = await supabase.from("clusters").select("*").eq("id", clusterId).single();
+    if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
+    const connectors = await getConnectors(event, clusterId);
+    return { cluster: cluster as any, connectors };
+  } catch (e) {
+    captureError(e, { page: "connectors" });
+    throw e;
+  }
 });
 
 export const useDeleteConnector = routeAction$(async (data, event) => {
-  requireAuth(event);
-  await deleteConnector(event, String(data.id || ""));
-  return { success: true };
+  try {
+    const user = requireAuth(event);
+    await deleteConnector(event, String(data.id || ""));
+    await captureServer("connector_deleted", user.user_id);
+    return { success: true };
+  } catch (e) {
+    captureError(e, { page: "connectors", action: "deleteConnector" });
+    return { success: false };
+  }
 });
 
 const AVAILABLE = ["slack", "github", "notion"];

@@ -8,11 +8,13 @@ import { FlowbiteProvider, FlowbiteProviderHeader } from "flowbite-qwik";
 
 import { RouterHead } from "./components/router-head/router-head";
 import { commonHeadLinks, commonHeadScripts } from "./constants/theme";
+import { initPostHog } from "./lib/posthog";
 import "./global.css";
 
 export default component$(() => {
   useVisibleTask$(() => {
     inject({ framework: "qwik" });
+    initPostHog();
   });
 
   return (

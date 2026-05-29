@@ -1,4 +1,5 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
+import { captureError } from "./sentry";
 
 export interface AzureProvisioningStep {
   step: number;
@@ -389,6 +390,7 @@ export async function triggerAzureVMProvisioning(
       endpointUrl,
     };
   } catch (err: any) {
+    captureError(err, { action: "azureVMProvisioning", clusterId, region, size });
     console.error(`[Azure Provisioning] Deployment failed for cluster ${clusterId}:`, err.message);
     return {
       success: false,

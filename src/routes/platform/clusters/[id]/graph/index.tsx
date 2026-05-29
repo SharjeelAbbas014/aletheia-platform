@@ -6,17 +6,24 @@ import { setPrivateNoStore } from "~/lib/cache";
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
+import { captureError } from "~/lib/sentry";
+import { capture } from "~/lib/posthog";
 
 export const onRequest: RequestHandler = (event) => {
   setPrivateNoStore(event);
 };
 
 export const useClusterData = routeLoader$(async (event) => {
-  const user = requireAuth(event);
-  const clusterId = event.params.id;
-  const supabase = getAdminSupabaseClient(event.env);
-  const { data } = await supabase.from("clusters").select("*").eq("id", clusterId).single();
-  return { cluster: data, user };
+  try {
+    const user = requireAuth(event);
+    const clusterId = event.params.id;
+    const supabase = getAdminSupabaseClient(event.env);
+    const { data } = await supabase.from("clusters").select("*").eq("id", clusterId).single();
+    return { cluster: data, user };
+  } catch (e) {
+    captureError(e, { page: "graph_explorer" });
+    throw e;
+  }
 });
 
 export const useSearchGraphAction = routeAction$(async (data, event) => {
@@ -68,6 +75,7 @@ export const useSearchGraphAction = routeAction$(async (data, event) => {
     const result = await res.json();
     return { success: true, nodes: result.nodes || [], edges: result.edges || [] };
   } catch (err: any) {
+    captureError(err, { page: "graph_explorer", action: "searchGraph" });
     console.error("Search graph error:", err);
     return { success: false, error: "Failed to connect to the graph engine." };
   }
@@ -86,6 +94,7 @@ export default component$(() => {
     if (!searchEntity.value.trim()) return;
     loading.value = true;
     error.value = "";
+    capture("graph_search_performed", { entity: searchEntity.value });
     
     const result = await searchAction.submit({ entity: searchEntity.value });
     

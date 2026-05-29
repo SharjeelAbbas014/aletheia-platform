@@ -1,6 +1,7 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { requireAuth } from "~/lib/auth";
+import { captureError } from "~/lib/sentry";
 
 export const onPost: RequestHandler = async (event) => {
   const user = requireAuth(event);
@@ -34,7 +35,9 @@ export const onPost: RequestHandler = async (event) => {
   let body: { region?: string; vmSize?: string } = {};
   try {
     body = (await event.parseBody()) as { region?: string; vmSize?: string } | null || {};
-  } catch {}
+  } catch (e: any) {
+    captureError(e, { action: "provisionCluster", context: "parseBody" });
+  }
 
   const finalRegion = body.region || region;
   const finalVmSize = body.vmSize || vmSize;
@@ -81,6 +84,7 @@ export const onPost: RequestHandler = async (event) => {
       event.json(200, { success: false, error: fnResult.error || "Provisioning failed" });
     }
   } catch (fnErr: any) {
+    captureError(fnErr, { action: "provisionCluster", context: "edgeFunction" });
     await supabase.from("clusters").update({
       status: "failed",
     }).eq("id", clusterId);

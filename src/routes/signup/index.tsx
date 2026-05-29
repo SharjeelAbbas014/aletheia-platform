@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useTask$ } from "@builder.io/qwik";
 import {
   Form,
   routeAction$,
@@ -15,6 +15,8 @@ import {
 } from "~/lib/auth";
 import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
+import { captureError } from "~/lib/sentry";
+import { capture, captureServer } from "~/lib/posthog";
 
 export const useSignupAction = routeAction$(async (data, event) => {
   const email = String(data.email ?? "").trim();
@@ -33,11 +35,25 @@ export const useSignupAction = routeAction$(async (data, event) => {
     });
   }
 
-  const result = await signupUser(event, email, password, displayName || undefined);
+  let result;
+  try {
+    result = await signupUser(event, email, password, displayName || undefined);
+  } catch (e) {
+    captureError(e, { page: "signup" });
+    return event.fail(500, {
+      message: "An unexpected error occurred. Please try again."
+    });
+  }
+
   if (!result.ok) {
     return event.fail(400, {
       message: result.message || "Failed to create account."
     });
+  }
+
+  const userId = event.cookie.get("aletheia_user_id")?.value;
+  if (userId) {
+    await captureServer("user_signup_completed", userId);
   }
 
   throw event.redirect(302, "/platform");
@@ -57,6 +73,13 @@ export const onRequest: RequestHandler = (event) => {
 export default component$(() => {
   useAuthGuard();
   const signupAction = useSignupAction();
+
+  useTask$(({ track }) => {
+    const result = track(() => signupAction.value);
+    if (result?.message) {
+      capture("user_signup_failed", { reason: result.message });
+    }
+  });
 
   return (
     <main class="flex min-h-[calc(100vh-104px)] w-full flex-col md:flex-row bg-background text-on-surface font-body antialiased overflow-x-hidden">

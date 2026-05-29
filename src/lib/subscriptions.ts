@@ -1,6 +1,7 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "./supabase";
 import { getCurrentUser } from "./auth";
+import { captureError } from "./sentry";
 
 export interface SubscriptionInfo {
   id: string;
@@ -20,12 +21,17 @@ export async function getSubscription(event: RequestEventCommon): Promise<Subscr
   if (!user) return null;
   const supabase = getAdminSupabaseClient(event.env);
   if (!supabase) return null;
-  const { data } = await supabase
-    .from("subscriptions")
-    .select("*")
-    .eq("user_id", user.user_id)
-    .single();
-  return data as any;
+  try {
+    const { data } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", user.user_id)
+      .single();
+    return data as any;
+  } catch (e) {
+    captureError(e, { action: "getSubscription" });
+    return null;
+  }
 }
 
 export async function upsertSubscription(
@@ -46,14 +52,19 @@ export async function upsertSubscription(
 ) {
   const supabase = getAdminSupabaseClient(env);
   if (!supabase) throw new Error("Database connection offline");
-  const { data: existing } = await supabase
-    .from("subscriptions")
-    .select("id")
-    .eq("user_id", userId)
-    .single();
-  if (existing) {
-    await supabase.from("subscriptions").update({ ...info, updated_at: new Date().toISOString() }).eq("id", existing.id);
-  } else {
-    await supabase.from("subscriptions").insert({ user_id: userId, ...info });
+  try {
+    const { data: existing } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", userId)
+      .single();
+    if (existing) {
+      await supabase.from("subscriptions").update({ ...info, updated_at: new Date().toISOString() }).eq("id", existing.id);
+    } else {
+      await supabase.from("subscriptions").insert({ user_id: userId, ...info });
+    }
+  } catch (e) {
+    captureError(e, { action: "upsertSubscription", userId });
+    throw e;
   }
 }

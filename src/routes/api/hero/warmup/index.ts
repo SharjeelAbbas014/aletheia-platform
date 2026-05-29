@@ -9,6 +9,7 @@ import {
   type HeroWarmupResult
 } from "~/lib/hero-demo";
 import { setPrivateNoStore } from "~/lib/cache";
+import { captureError } from "~/lib/sentry";
 
 export const onPost: RequestHandler = async (event) => {
   setPrivateNoStore(event);
@@ -24,6 +25,7 @@ export const onPost: RequestHandler = async (event) => {
       signal: AbortSignal.timeout(60_000)
     });
   } catch (error) {
+    captureError(error, { action: "heroWarmup", context: "healthCheck" });
     const body: HeroWarmupResult = {
       ok: false,
       message:

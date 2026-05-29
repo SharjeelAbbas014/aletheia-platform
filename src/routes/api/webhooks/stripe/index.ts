@@ -2,6 +2,7 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { upsertSubscription } from "~/lib/subscriptions";
 import { constructWebhookEvent, retrieveStripeSubscription } from "~/lib/stripe";
+import { captureError } from "~/lib/sentry";
 
 export const onPost: RequestHandler = async (event) => {
   const rawBody = await event.request.clone().text();
@@ -16,6 +17,7 @@ export const onPost: RequestHandler = async (event) => {
   try {
     stripeEvent = await constructWebhookEvent(event.env, rawBody, signature, webhookSecret);
   } catch (err: any) {
+    captureError(err, { action: "stripeWebhook", type: "webhookVerification" });
     console.error("[Stripe Webhook] Verification failed", {
       bodyLength: rawBody.length,
       signaturePrefix: signature.slice(0, 20),
@@ -63,7 +65,8 @@ export const onPost: RequestHandler = async (event) => {
               amount: (session.amount_total || 500) / 100,
               description: `Prepaid Credits - Refill ${tokenCount.toLocaleString()} truths`,
             });
-          } catch (err) {
+          } catch (err: any) {
+            captureError(err, { action: "stripeWebhook", type: "prepaidCreditFail" });
             console.error("Failed to credit prepaid tokens:", err);
           }
         }
@@ -149,6 +152,7 @@ export const onPost: RequestHandler = async (event) => {
                   console.error(`[Webhook] Cluster ${clusterId} provisioning failed: ${fnResult.error}`);
                 }
               } catch (fnErr: any) {
+                captureError(fnErr, { action: "stripeWebhook", type: "provisionVm" });
                 await supabase.from("clusters").update({
                   tier, storage_gb: storageGb, status: "failed",
                 }).eq("id", clusterId);
@@ -157,6 +161,7 @@ export const onPost: RequestHandler = async (event) => {
             }
           }
         } catch (err: any) {
+          captureError(err, { action: "stripeWebhook", type: "checkoutCompleted" });
           console.error("[Stripe Webhook] checkout.session.completed subscription processing failed", {
             userId,
             clusterId,
@@ -189,6 +194,7 @@ export const onPost: RequestHandler = async (event) => {
           })
           .eq("stripe_subscription_id", subId);
       } catch (err: any) {
+        captureError(err, { action: "stripeWebhook", type: "subscriptionUpdated" });
         console.error("[Stripe Webhook] customer.subscription.updated failed", err);
       }
       break;

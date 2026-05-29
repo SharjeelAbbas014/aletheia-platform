@@ -1,6 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+async function reportError(error: Error | unknown, context: Record<string, unknown> = {}) {
+  const dsn = Deno.env.get("SENTRY_DSN") || "";
+  if (!dsn) { console.error("[sentry]", error, context); return; }
+  const projectId = dsn.split("/").pop();
+  const host = new URL(dsn).host;
+  try {
+    const err = error instanceof Error ? error : new Error(String(error));
+    const eventId = crypto.randomUUID().replace(/-/g, "");
+    const payload = { event_id: eventId, timestamp: Date.now() / 1000, level: "error", platform: "deno", exception: { values: [{ type: err.name, value: err.message }] }, extra: context, tags: { environment: "edge" } };
+    const envelope = JSON.stringify({ event_id: eventId, sent_at: new Date().toISOString() }) + "\n" + JSON.stringify({ type: "event", content_type: "application/json", length: JSON.stringify(payload).length }) + "\n" + JSON.stringify(payload);
+    await fetch(`https://${host}/api/${projectId}/envelope/`, { method: "POST", body: envelope, signal: AbortSignal.timeout(3000) });
+  } catch {}
+}
+
 interface ProvisionRequest {
   clusterId: string;
   tier: string;
@@ -14,9 +28,13 @@ serve(async (req) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  let clusterId = "";
+  let region = "";
   try {
     const body: ProvisionRequest = await req.json();
-    const { clusterId, tier, region, vmSize, storageGb } = body;
+    const { tier, vmSize, storageGb } = body;
+    clusterId = body.clusterId;
+    region = body.region;
     console.log(`[provision-vm] start: clusterId=${clusterId} region=${region} vmSize=${vmSize}`);
 
     if (!clusterId || !tier || !region || !vmSize) {
@@ -59,7 +77,9 @@ serve(async (req) => {
 
     if (!authRes.ok) {
       const text = await authRes.text();
-      throw new Error(`Azure OAuth failed (${authRes.status}): ${text}`);
+      const oauthError = new Error(`Azure OAuth failed (${authRes.status}): ${text}`);
+      reportError(oauthError, { step: "azure_oauth", clusterId, region });
+      throw oauthError;
     }
 
     const { access_token: token } = await authRes.json();
@@ -78,7 +98,9 @@ serve(async (req) => {
     });
 
     if (!rgRes.ok) {
-      throw new Error(`Resource group creation failed: ${await rgRes.text()}`);
+      const rgError = new Error(`Resource group creation failed: ${await rgRes.text()}`);
+      reportError(rgError, { step: "rg_creation", clusterId, region });
+      throw rgError;
     }
     console.log("[provision-vm] Resource group ready");
 
@@ -118,6 +140,7 @@ serve(async (req) => {
         ? `Azure quota exceeded for ${vmSize} in ${region}.`
         : `ARM deployment failed (${deployRes.status}): ${text.slice(0, 400)}`;
 
+      reportError(new Error(errorMsg), { step: "arm_deployment", clusterId, region });
       console.error(`[provision-vm] Deployment rejected: ${errorMsg}`);
       await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
 
@@ -136,12 +159,14 @@ serve(async (req) => {
     });
   } catch (err: any) {
     if (err.name === "AbortError") {
+      reportError(err, { step: "timeout", clusterId, region });
       console.error("[provision-vm] ARM deployment timed out (55s)");
       return new Response(JSON.stringify({ error: "ARM deployment timed out after 55s. Azure may be slow in this region." }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
+    reportError(err, { step: "top_level", clusterId, region });
     console.error(`[provision-vm] Exception: ${err.message.slice(0, 300)}`);
     return new Response(JSON.stringify({ error: err.message.slice(0, 500) }), {
       status: 500,

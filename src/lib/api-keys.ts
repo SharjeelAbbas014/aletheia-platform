@@ -1,6 +1,7 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "./supabase";
 import { getCurrentUser } from "./auth";
+import { captureError } from "./sentry";
 
 export const DEFAULT_TEST_API_KEY = "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
 
@@ -45,6 +46,7 @@ export async function getApiKeys(event: RequestEventCommon): Promise<ApiKey[]> {
         disabled: !d.is_active
     }));
   } catch (e) {
+    captureError(e, { action: "getApiKeys" });
     return [];
   }
 }
@@ -168,6 +170,7 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
       engineError
     };
   } catch (e) {
+    captureError(e, { action: "createApiKey", name });
     return null;
   }
 }
@@ -240,6 +243,7 @@ export async function revokeApiKey(event: RequestEventCommon, keyId: string): Pr
 
     return true;
   } catch (e) {
+    captureError(e, { action: "revokeApiKey", keyId });
     return false;
   }
 }
@@ -303,6 +307,7 @@ export async function getUsageStats(event: RequestEventCommon): Promise<UsageSta
       last_request_ms: null
     };
   } catch (e) {
+    captureError(e, { action: "getUsageStats" });
     console.error("Error fetching usage stats:", e);
     return null;
   }

@@ -1,6 +1,7 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "./supabase";
 import { getCurrentUser } from "./auth";
+import { captureError } from "./sentry";
 
 export interface Cluster {
   id: string;
@@ -66,6 +67,7 @@ export async function createCluster(
     .single();
 
   if (error || !data) {
+    captureError(error || new Error("Cluster operation failed"), { action: "createCluster", name, tier });
     console.error("Create cluster error:", error);
     return null;
   }
@@ -108,6 +110,7 @@ export async function connectCluster(
     .single();
 
   if (error || !data) {
+    captureError(error || new Error("Cluster operation failed"), { action: "connectCluster", name });
     console.error("Connect cluster error:", error);
     return null;
   }

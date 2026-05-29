@@ -19,6 +19,8 @@ import { setPublicEdgeCache } from "~/lib/cache";
 import type { HeroDemoResult, HeroWarmupResult } from "~/lib/hero-demo";
 import { buildSeoHead } from "~/lib/seo";
 import { MemoryLattice } from "~/components/MemoryLattice";
+import { captureError } from "~/lib/sentry";
+import { capture } from "~/lib/posthog";
 
 import {
   LayersIcon,
@@ -698,6 +700,7 @@ export default component$(() => {
         "Warm-up failed.",
       )) as HeroWarmupResult;
     } catch (error) {
+      captureError(error, { page: "landing", action: "heroWarmup" });
       heroWarmupResult.value = {
         ok: false,
         message:
@@ -726,6 +729,7 @@ export default component$(() => {
 
     heroDemoRunning.value = true;
     heroDemoMode.value = action;
+    capture("hero_demo_action", { action });
 
     try {
       const response = await fetch("/api/hero/demo", {
@@ -754,6 +758,7 @@ export default component$(() => {
           ...nextResult,
         };
     } catch (error) {
+      captureError(error, { page: "landing", action: "heroDemo" });
       heroDemoResult.value = {
         ok: false,
         action,
@@ -954,14 +959,14 @@ export default component$(() => {
               </p>
 
               <div class="flex flex-wrap gap-4">
-                <Link href="/signup" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10">
+                <Link href="/signup" onClick$={() => capture("cta_signup_clicked")} class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10">
                   Get Started Free
                   <ArrowRightIcon class="w-4 h-4" />
                 </Link>
-                <Link href="/login" class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-on-surface font-bold rounded-xl hover:bg-white/5 transition-colors">
+                <Link href="/login" onClick$={() => capture("cta_login_clicked")} class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-on-surface font-bold rounded-xl hover:bg-white/5 transition-colors">
                   Sign In
                 </Link>
-                <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-tertiary font-bold rounded-xl hover:bg-white/5 transition-colors text-sm">
+                <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" onClick$={() => capture("cta_demo_clicked")} class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-tertiary font-bold rounded-xl hover:bg-white/5 transition-colors text-sm">
                   Book a Demo
                   <ExternalLinkIcon class="w-3 h-3" />
                 </a>
@@ -2031,6 +2036,7 @@ export default component$(() => {
                 <div class="flex flex-col justify-center gap-4 sm:flex-row">
                   <Link
                     href="/signup"
+                    onClick$={() => capture("cta_signup_clicked")}
                     class="px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/15 text-sm"
                   >
                     Get Started Free
@@ -2039,6 +2045,7 @@ export default component$(() => {
                     href={CALENDLY_30_MIN_URL}
                     target="_blank"
                     rel="noreferrer"
+                    onClick$={() => capture("cta_demo_clicked")}
                     class="px-6 py-3 border border-white/10 text-on-surface font-bold rounded-xl hover:bg-white/5 transition-colors text-sm"
                   >
                     Book a Demo
@@ -2121,7 +2128,7 @@ export default component$(() => {
                   ))}
                 </ul>
                 <div class="flex gap-3">
-                  <Link href="/signup" class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-background transition-colors hover:opacity-90 shadow-md">
+                  <Link href="/signup" onClick$={() => capture("cta_signup_clicked")} class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-background transition-colors hover:opacity-90 shadow-md">
                     Get Started Free
                   </Link>
                   <Link href="/docs/platform" class="glass-panel border border-white/5 rounded-xl px-5 py-2.5 text-xs font-bold text-tertiary transition-colors hover:text-on-surface">

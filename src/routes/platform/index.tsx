@@ -48,6 +48,9 @@ import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { getCoreClusterStats } from "~/lib/aletheia-core";
+import { captureError } from "~/lib/sentry";
+import { capture } from "~/lib/posthog";
+import { identify } from "~/lib/posthog";
 
 function formatDate(value: number, locale?: string) {
   return new Intl.DateTimeFormat(locale, {
@@ -75,49 +78,64 @@ const LocalDateTime = component$((props: { value: number | null }) => {
 });
 
 export const usePlatformData = routeLoader$(async (event) => {
-  const user = requireAuth(event);
-  const supabase = getAdminSupabaseClient(event.env);
-  if (!supabase) throw event.error(500, "Database connection offline");
+  try {
+    const user = requireAuth(event);
+    const supabase = getAdminSupabaseClient(event.env);
+    if (!supabase) throw event.error(500, "Database connection offline");
 
-  const [keys, usage, clusters, sub, purchases, members] = await Promise.all([
-    getApiKeys(event),
-    getUsageStats(event),
-    getClusters(event),
-    supabase.from("subscriptions").select("*").eq("user_id", user.user_id).maybeSingle().then(res => res.data),
-    supabase.from("purchases").select("*").eq("user_id", user.user_id).order("created_at", { ascending: false }).then(res => res.data || []),
-    getTeamMembers(event),
-  ]);
+    const [keys, usage, clusters, sub, purchases, members] = await Promise.all([
+      getApiKeys(event),
+      getUsageStats(event),
+      getClusters(event),
+      supabase.from("subscriptions").select("*").eq("user_id", user.user_id).maybeSingle().then(res => res.data),
+      supabase.from("purchases").select("*").eq("user_id", user.user_id).order("created_at", { ascending: false }).then(res => res.data || []),
+      getTeamMembers(event),
+    ]);
 
-  const clusterId = clusters[0]?.id || "";
-  const templates = clusterId ? await getContextTemplates(event, clusterId) : [];
+    const clusterId = clusters[0]?.id || "";
+    const templates = clusterId ? await getContextTemplates(event, clusterId) : [];
 
-  return {
-    user,
-    keys,
-    usage,
-    clusters,
-    sub,
-    purchases,
-    members,
-    templates,
-    clusterId,
-  };
+    return {
+      user,
+      keys,
+      usage,
+      clusters,
+      sub,
+      purchases,
+      members,
+      templates,
+      clusterId,
+    };
+  } catch (e) {
+    captureError(e, { page: "platform" });
+    throw e;
+  }
 });
 
 export const useCreateTemplate = routeAction$(async (data, event) => {
-  requireAuth(event);
-  const name = String(data.name || "");
-  const tmpl = String(data.template || "");
-  const clusterId = String(data.cluster_id || "");
-  if (!name || !tmpl || !clusterId) return event.fail(400, { message: "All fields required" });
-  await createContextTemplate(event, clusterId, name, tmpl);
-  return { success: true };
+  try {
+    requireAuth(event);
+    const name = String(data.name || "");
+    const tmpl = String(data.template || "");
+    const clusterId = String(data.cluster_id || "");
+    if (!name || !tmpl || !clusterId) return event.fail(400, { message: "All fields required" });
+    await createContextTemplate(event, clusterId, name, tmpl);
+    return { success: true };
+  } catch (e) {
+    captureError(e, { page: "platform", action: "createTemplate" });
+    return event.fail(500, { message: "Failed to create template." });
+  }
 });
 
 export const useDeleteTemplate = routeAction$(async (data, event) => {
-  requireAuth(event);
-  await deleteContextTemplate(event, String(data.id || ""));
-  return { success: true };
+  try {
+    requireAuth(event);
+    await deleteContextTemplate(event, String(data.id || ""));
+    return { success: true };
+  } catch (e) {
+    captureError(e, { page: "platform", action: "deleteTemplate" });
+    return event.fail(500, { message: "Failed to delete template." });
+  }
 });
 
 export const onRequest: RequestHandler = (event) => {
@@ -125,30 +143,40 @@ export const onRequest: RequestHandler = (event) => {
 };
 
 export const useCreateApiKeyAction = routeAction$(async (data, event) => {
-  requireAuth(event);
-  const name = String(data.name ?? "New API Key");
+  try {
+    requireAuth(event);
+    const name = String(data.name ?? "New API Key");
 
-  const result = await createApiKey(event, name);
+    const result = await createApiKey(event, name);
 
-  return {
-    success: !!result,
-    key: result?.key ?? null,
-    engineSynced: result?.engineSynced ?? false,
-    engineError: result?.engineError
-  };
+    return {
+      success: !!result,
+      key: result?.key ?? null,
+      engineSynced: result?.engineSynced ?? false,
+      engineError: result?.engineError
+    };
+  } catch (e) {
+    captureError(e, { page: "platform", action: "createApiKey" });
+    return { success: false };
+  }
 });
 
 export const useRevokeApiKeyAction = routeAction$(async (data, event) => {
-  requireAuth(event);
-  const id = String(data.id ?? "");
+  try {
+    requireAuth(event);
+    const id = String(data.id ?? "");
 
-  if (id) {
-    await revokeApiKey(event, id);
+    if (id) {
+      await revokeApiKey(event, id);
+    }
+
+    return {
+      revoked: true
+    };
+  } catch (e) {
+    captureError(e, { page: "platform", action: "revokeApiKey" });
+    return { revoked: false };
   }
-
-  return {
-    revoked: true
-  };
 });
 
 const plans = [
@@ -282,6 +310,41 @@ export default component$(() => {
   const combinedStats = useStore({ memory_count: 0, entity_count: 0, fact_count: 0, storage_bytes: 0 });
 
   const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
+
+  useTask$(({ track }) => {
+    const user = track(() => platformData.value.user);
+    if (user?.user_id) {
+      identify(user.user_id);
+    }
+  });
+
+  useTask$(({ track }) => {
+    const created = track(() => createKeyAction.value?.success);
+    if (created) {
+      capture("api_key_created", { name: newApiKeyName.value || "New API Key" });
+    }
+  });
+
+  useTask$(({ track }) => {
+    const revoked = track(() => revokeKeyAction.value?.revoked);
+    if (revoked) {
+      capture("api_key_revoked");
+    }
+  });
+
+  useTask$(({ track }) => {
+    const created = track(() => createTemplateAction.value?.success);
+    if (created) {
+      capture("template_created", { name: settingsNewName.value });
+    }
+  });
+
+  useTask$(({ track }) => {
+    const deleted = track(() => deleteTemplateAction.value?.success);
+    if (deleted) {
+      capture("template_deleted");
+    }
+  });
   const formatBytes = (b: number) => {
     if (!b) return "0 B";
     const k = 1024;
@@ -338,7 +401,7 @@ export default component$(() => {
           clearInterval(interval);
           nav(loc.url.pathname);
         }
-      } catch {}
+      } catch { /* cluster status polling skipped */ }
     }, 5000);
     cleanup(() => clearInterval(interval));
   });
@@ -978,7 +1041,7 @@ client.ingest(
                         <p class="text-sm font-bold text-on-surface">{pack.name}</p>
                         <p class="text-[10px] text-tertiary">{pack.desc}</p>
                       </div>
-                      <button type="submit" class="shrink-0 rounded-lg bg-primary px-3.5 py-1.5 font-bold text-[11px] text-on-primary hover:opacity-90 transition-opacity shadow-sm">
+                      <button type="submit" onClick$={() => capture("token_purchase_clicked", { package: pack.id })} class="shrink-0 rounded-lg bg-primary px-3.5 py-1.5 font-bold text-[11px] text-on-primary hover:opacity-90 transition-opacity shadow-sm">
                         Buy
                       </button>
                     </form>
@@ -1002,6 +1065,7 @@ client.ingest(
                     <form method="post" action="/api/billing/portal">
                       <button
                         type="submit"
+                        onClick$={() => capture("billing_portal_opened")}
                         class="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 border border-primary/20 px-4 py-2.5 font-bold text-xs text-primary transition-all hover:bg-primary hover:text-white"
                       >
                         <CreditCardIcon class="w-3.5 h-3.5" />

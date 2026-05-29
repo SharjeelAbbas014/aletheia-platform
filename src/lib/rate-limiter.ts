@@ -1,5 +1,6 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "./supabase";
+import { captureError } from "./sentry";
 
 export const PLAN_RATE_LIMITS: Record<string, { rpm: number; daily: number }> = {
   free: { rpm: 60, daily: 10_000 },
@@ -50,7 +51,9 @@ export async function checkRateLimit(env: RequestEventCommon["env"], clusterId: 
         daily_used: entry.daily,
         daily_reset_at: new Date(entry.dailyResetAt).toISOString(),
       });
-    } catch { /* ignore persistence errors */ }
+    } catch (e) {
+      captureError(e, { action: "rateLimitPersist", clusterId });
+    }
   }
 
   return {

@@ -16,6 +16,7 @@
   "dependencies": {
     "@builder.io/qwik": "^1.19.2",
     "@builder.io/qwik-city": "^1.19.2",
+    "@sentry/browser": "^10.55.0",
     "@supabase/supabase-js": "^2.101.1",
     "@types/node": "^25.5.0",
     "@vercel/analytics": "^2.0.1",
@@ -25,6 +26,7 @@
     "ignore": "^7.0.5",
     "lucide-qwik": "^1.0.0",
     "marked": "^17.0.5",
+    "posthog-js": "^1.376.4",
     "stripe": "^16.0.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",

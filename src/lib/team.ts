@@ -1,6 +1,7 @@
 import type { RequestEventCommon } from "@builder.io/qwik-city";
 import { getAdminSupabaseClient } from "./supabase";
 import { getCurrentUser } from "./auth";
+import { captureError } from "./sentry";
 
 export interface TeamInfo {
   id: string;
@@ -62,12 +63,17 @@ export async function inviteMember(
     .single();
   if (!membership || membership.role === "member") return false;
   const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
-  const { error } = await supabase.from("invitations").insert({
-    team_id: membership.team_id,
-    email,
-    role,
-    token,
-    expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
-  });
-  return !error;
+  try {
+    const { error } = await supabase.from("invitations").insert({
+      team_id: membership.team_id,
+      email,
+      role,
+      token,
+      expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+    });
+    return !error;
+  } catch (e) {
+    captureError(e, { action: "inviteMember", email });
+    return false;
+  }
 }

@@ -1,3 +1,5 @@
+import { captureError } from "./sentry";
+
 export function getAletheiaDBCoreUrl(): string {
   return (import.meta.env.ALETHEIADB_URL || "http://localhost:3000").replace(/\/+$/, "");
 }
@@ -24,7 +26,8 @@ export async function provisionCluster(clusterId: string, userId: string): Promi
       body: JSON.stringify({ cluster_id: clusterId, user_id: userId }),
     });
     return res.ok;
-  } catch {
+  } catch (e) {
+    captureError(e, { action: "provisionCluster", clusterId });
     return false;
   }
 }
@@ -36,7 +39,8 @@ export async function deprovisionCluster(clusterId: string): Promise<boolean> {
       headers: { "x-api-key": getAdminKey() },
     });
     return res.ok;
-  } catch {
+  } catch (e) {
+    captureError(e, { action: "deprovisionCluster", clusterId });
     return false;
   }
 }
@@ -56,7 +60,8 @@ export async function getCoreClusterStats(
     );
     if (!res.ok) return null;
     return await res.json();
-  } catch {
+  } catch (e) {
+    captureError(e, { action: "getCoreClusterStats", clusterId });
     return null;
   }
 }
@@ -86,7 +91,8 @@ export async function getHardwareStats(
     );
     if (!res.ok) return null;
     return await res.json();
-  } catch {
+  } catch (e) {
+    captureError(e, { action: "getHardwareStats" });
     return null;
   }
 }

@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useTask$ } from "@builder.io/qwik";
 import {
   Form,
   routeAction$,
@@ -15,6 +15,8 @@ import {
 } from "~/lib/auth";
 import { setPrivateNoStore } from "~/lib/cache";
 import { buildSeoHead } from "~/lib/seo";
+import { captureError } from "~/lib/sentry";
+import { capture, captureServer } from "~/lib/posthog";
 
 export const useLoginAction = routeAction$(async (data, event) => {
   const email = String(data.email ?? "").trim();
@@ -26,11 +28,25 @@ export const useLoginAction = routeAction$(async (data, event) => {
     });
   }
 
-  const result = await loginUser(event, email, password);
+  let result;
+  try {
+    result = await loginUser(event, email, password);
+  } catch (e) {
+    captureError(e, { page: "login" });
+    return event.fail(500, {
+      message: "An unexpected error occurred. Please try again."
+    });
+  }
+
   if (!result.ok) {
     return event.fail(401, {
       message: result.message || "Invalid credentials."
     });
+  }
+
+  const userId = event.cookie.get("aletheia_user_id")?.value;
+  if (userId) {
+    await captureServer("user_login", userId, { method: "password" });
   }
 
   throw event.redirect(302, "/platform");
@@ -50,6 +66,13 @@ export const onRequest: RequestHandler = (event) => {
 export default component$(() => {
   useAuthGuard();
   const loginAction = useLoginAction();
+
+  useTask$(({ track }) => {
+    const result = track(() => loginAction.value);
+    if (result?.message) {
+      capture("user_login_failed", { reason: result.message });
+    }
+  });
 
   return (
     <main class="flex min-h-[calc(100vh-104px)] w-full flex-col md:flex-row bg-background text-on-surface font-body antialiased overflow-x-hidden">

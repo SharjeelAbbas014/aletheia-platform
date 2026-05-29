@@ -1,4 +1,4 @@
-import { component$, useVisibleTask$, useSignal } from "@builder.io/qwik";
+import { component$, useVisibleTask$, useSignal, useTask$ } from "@builder.io/qwik";
 import { routeLoader$, routeAction$, Form, Link, type DocumentHead, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { buildSeoHead } from "~/lib/seo";
 import { setPrivateNoStore } from "~/lib/cache";
@@ -27,94 +27,226 @@ import { requireAuth } from "~/lib/auth";
 import { getAdminSupabaseClient } from "~/lib/supabase";
 import { getCoreClusterStats, type HardwareStats } from "~/lib/aletheia-core";
 import { createApiKey, revokeApiKey } from "~/lib/api-keys";
+import { captureError } from "~/lib/sentry";
+import { capture } from "~/lib/posthog";
+import { captureServer } from "~/lib/posthog";
 
 export const onRequest: RequestHandler = (event) => {
   setPrivateNoStore(event);
 };
 
 export const useClusterDetail = routeLoader$(async (event) => {
-  const user = requireAuth(event);
-  const clusterId = event.params.id;
-  const supabase = getAdminSupabaseClient(event.env);
-  if (!supabase) throw event.error(500, "Database connection offline");
+  try {
+    const user = requireAuth(event);
+    const clusterId = event.params.id;
+    const supabase = getAdminSupabaseClient(event.env);
+    if (!supabase) throw event.error(500, "Database connection offline");
 
-  const { data: cluster } = await supabase
-    .from("clusters")
-    .select("*")
-    .eq("id", clusterId)
-    .single();
-  if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
-
-  const apiKey = cluster.engine_key || event.env.get("ALETHEIADB_ADMIN_KEY") || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
-
-  const { data: apiKeys } = await supabase
-      .from("api_keys")
+    const { data: cluster } = await supabase
+      .from("clusters")
       .select("*")
-      .eq("user_id", user.user_id)
-      .eq("cluster_id", clusterId)
-      .order("created_at", { ascending: false });
+      .eq("id", clusterId)
+      .single();
+    if (!cluster || cluster.user_id !== user.user_id) throw event.error(404, "Not found");
 
-  const mappedKeys = apiKeys ? apiKeys.map((k: any) => ({
-      key_id: k.id,
-      name: k.name,
-      key_prefix: k.key_value.substring(0, 8),
-      created_at_ms: new Date(k.created_at).getTime(),
-      last_used_ms: k.last_used_at ? new Date(k.last_used_at).getTime() : null,
-      disabled: !k.is_active
-  })) : [];
+    const apiKey = cluster.engine_key || event.env.get("ALETHEIADB_ADMIN_KEY") || "82a2cd542b86763b5941fba04db9802928c53a27256fcccb64e12f414f69826a";
 
-  return { cluster, user, apiKey, apiKeys: mappedKeys };
+    const { data: apiKeys } = await supabase
+        .from("api_keys")
+        .select("*")
+        .eq("user_id", user.user_id)
+        .eq("cluster_id", clusterId)
+        .order("created_at", { ascending: false });
+
+    const mappedKeys = apiKeys ? apiKeys.map((k: any) => ({
+        key_id: k.id,
+        name: k.name,
+        key_prefix: k.key_value.substring(0, 8),
+        created_at_ms: new Date(k.created_at).getTime(),
+        last_used_ms: k.last_used_at ? new Date(k.last_used_at).getTime() : null,
+        disabled: !k.is_active
+    })) : [];
+
+    return { cluster, user, apiKey, apiKeys: mappedKeys };
+  } catch (e) {
+    captureError(e, { page: "cluster_detail" });
+    throw e;
+  }
 });
 
 export const useCreateClusterApiKey = routeAction$(async (data, event) => {
-  requireAuth(event);
-  const clusterId = event.params.id;
-  const name = String(data.name ?? "New API Key");
+  try {
+    requireAuth(event);
+    const clusterId = event.params.id;
+    const name = String(data.name ?? "New API Key");
 
-  const result = await createApiKey(event, name, clusterId);
+    const result = await createApiKey(event, name, clusterId);
 
-  return {
-    success: !!result,
-    key: result?.key ?? null,
-    engineSynced: result?.engineSynced ?? false,
-    engineError: result?.engineError
-  };
+    return {
+      success: !!result,
+      key: result?.key ?? null,
+      engineSynced: result?.engineSynced ?? false,
+      engineError: result?.engineError
+    };
+  } catch (e) {
+    captureError(e, { page: "cluster_detail", action: "createApiKey" });
+    return { success: false };
+  }
 });
 
 export const useRevokeClusterApiKey = routeAction$(async (data, event) => {
-  requireAuth(event);
-  const id = String(data.id ?? "");
+  try {
+    requireAuth(event);
+    const id = String(data.id ?? "");
 
-  if (id) {
-    await revokeApiKey(event, id);
+    if (id) {
+      await revokeApiKey(event, id);
+    }
+
+    return {
+      revoked: true
+    };
+  } catch (e) {
+    captureError(e, { page: "cluster_detail", action: "revokeApiKey" });
+    return { revoked: false };
   }
-
-  return {
-    revoked: true
-  };
 });
 
 export const useDeleteCluster = routeAction$(async (data, event) => {
-  const user = requireAuth(event);
-  const clusterId = String(data.cluster_id || "");
-  const supabase = getAdminSupabaseClient(event.env);
-  if (!supabase) throw event.error(500, "Database connection offline");
+  try {
+    const user = requireAuth(event);
+    const clusterId = String(data.cluster_id || "");
+    const supabase = getAdminSupabaseClient(event.env);
+    if (!supabase) throw event.error(500, "Database connection offline");
 
-  // 1. Get cluster detail to verify ownership
-  const { data: cluster } = await supabase
-    .from("clusters")
-    .select("user_id, tier, region, status")
-    .eq("id", clusterId)
-    .single();
+    // 1. Get cluster detail to verify ownership
+    const { data: cluster } = await supabase
+      .from("clusters")
+      .select("user_id, tier, region, status")
+      .eq("id", clusterId)
+      .single();
 
-  if (!cluster || cluster.user_id !== user.user_id) {
-    throw event.error(404, "Cluster not found");
+    if (!cluster || cluster.user_id !== user.user_id) {
+      throw event.error(404, "Cluster not found");
+    }
+
+    // 2. Delete Azure VM if dedicated tier
+    if (cluster.tier !== "fractional" && cluster.region && cluster.region !== "shared") {
+      const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
+      const functionUrl = `${supabaseUrl}/functions/v1/cleanup-vm`;
+
+      try {
+        const fnRes = await fetch(functionUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: event.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+          },
+          body: JSON.stringify({ clusterId, region: cluster.region }),
+        });
+        if (!fnRes.ok) {
+          const err = await fnRes.json();
+          console.error(`Azure cleanup failed for ${clusterId}: ${err.error}`);
+        }
+      } catch (fnErr: any) {
+        console.error(`Azure cleanup call failed for ${clusterId}:`, fnErr.message);
+      }
+    }
+
+    // 3. Cancel Stripe subscription if it's a dedicated VM and user has subscription
+    if (cluster.tier !== "fractional") {
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("stripe_subscription_id")
+        .eq("user_id", user.user_id)
+        .maybeSingle();
+
+      if (sub?.stripe_subscription_id) {
+        try {
+          const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
+          const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
+          if (!isMockStripe) {
+            const { getStripeClient } = await import("~/lib/stripe");
+            const stripe = getStripeClient(event.env);
+            await stripe.subscriptions.cancel(sub.stripe_subscription_id);
+          }
+        } catch (stripeErr) {
+          console.error("Failed to cancel Stripe subscription during cluster deletion:", stripeErr);
+        }
+      }
+
+      // Downgrade subscription record to fractional/canceled
+      await supabase
+        .from("subscriptions")
+        .update({
+          tier: "fractional",
+          status: "canceled",
+          vm_size: null,
+          vm_monthly_price: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.user_id);
+    }
+
+    // 4. Soft delete the cluster
+    const { error } = await supabase
+      .from("clusters")
+      .update({ status: "deleted" })
+      .eq("id", clusterId);
+
+    if (error) {
+      throw event.error(500, "Failed to delete cluster");
+    }
+
+    await captureServer("cluster_deleted", user.user_id, { clusterId, tier: cluster.tier });
+    throw event.redirect(302, "/platform");
+  } catch (e) {
+    captureError(e, { page: "cluster_detail", action: "deleteCluster" });
+    throw e;
   }
+});
 
-  // 2. Delete Azure VM if dedicated tier
-  if (cluster.tier !== "fractional" && cluster.region && cluster.region !== "shared") {
+export const useRetryProvision = routeAction$(async (data, event) => {
+  try {
+    const user = requireAuth(event);
+    const clusterId = String(data.cluster_id || "");
+    const region = String(data.region || "westus2");
+    const supabase = getAdminSupabaseClient(event.env);
+    if (!supabase) throw event.error(500, "Database connection offline");
+
+    const { data: cluster } = await supabase
+      .from("clusters")
+      .select("id, user_id, tier, status")
+      .eq("id", clusterId)
+      .maybeSingle();
+
+    if (!cluster || cluster.user_id !== user.user_id) {
+      throw event.error(404, "Cluster not found");
+    }
+
+    if (cluster.status === "active") {
+      throw event.error(400, "Cluster is already active");
+    }
+
+    const vmSizeMap: Record<string, string> = {
+      azure_micro: "Standard_B2als_v2",
+      azure_standard: "Standard_D2as_v5",
+      azure_pro: "Standard_D4as_v5",
+      azure_scale: "Standard_D8as_v5",
+      azure_gpu: "Standard_NC4as_T4",
+    };
+
+    const tier = cluster.tier || "azure_standard";
+    const vmSize = vmSizeMap[tier] || "Standard_D2s_v5";
+    const storageGb = parseInt(String(data.storage_gb || "50"), 10);
+
+    await supabase.from("clusters").update({
+      status: "provisioning",
+      region,
+    }).eq("id", clusterId);
+
     const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
-    const functionUrl = `${supabaseUrl}/functions/v1/cleanup-vm`;
+    const functionUrl = `${supabaseUrl}/functions/v1/provision-vm`;
 
     try {
       const fnRes = await fetch(functionUrl, {
@@ -123,127 +255,24 @@ export const useDeleteCluster = routeAction$(async (data, event) => {
           "Content-Type": "application/json",
           apikey: event.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
         },
-        body: JSON.stringify({ clusterId, region: cluster.region }),
+        body: JSON.stringify({ clusterId, tier, region, vmSize, storageGb }),
       });
-      if (!fnRes.ok) {
-        const err = await fnRes.json();
-        console.error(`Azure cleanup failed for ${clusterId}: ${err.error}`);
+
+      const fnResult = await fnRes.json();
+      if (fnResult.submitted) {
+        await supabase.from("clusters").update({ region }).eq("id", clusterId);
+        return { success: true, region, steps: fnResult.steps || [] };
+      } else {
+        await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
+        return { success: false, error: fnResult.error || "Provisioning failed", steps: fnResult.steps || [] };
       }
     } catch (fnErr: any) {
-      console.error(`Azure cleanup call failed for ${clusterId}:`, fnErr.message);
-    }
-  }
-
-  // 3. Cancel Stripe subscription if it's a dedicated VM and user has subscription
-  if (cluster.tier !== "fractional") {
-    const { data: sub } = await supabase
-      .from("subscriptions")
-      .select("stripe_subscription_id")
-      .eq("user_id", user.user_id)
-      .maybeSingle();
-
-    if (sub?.stripe_subscription_id) {
-      try {
-        const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
-        const isMockStripe = !stripeKey || stripeKey.trim().startsWith("sk_test_...");
-        if (!isMockStripe) {
-          const { getStripeClient } = await import("~/lib/stripe");
-          const stripe = getStripeClient(event.env);
-          await stripe.subscriptions.cancel(sub.stripe_subscription_id);
-        }
-      } catch (stripeErr) {
-        console.error("Failed to cancel Stripe subscription during cluster deletion:", stripeErr);
-      }
-    }
-
-    // Downgrade subscription record to fractional/canceled
-    await supabase
-      .from("subscriptions")
-      .update({
-        tier: "fractional",
-        status: "canceled",
-        vm_size: null,
-        vm_monthly_price: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", user.user_id);
-  }
-
-  // 4. Soft delete the cluster
-  const { error } = await supabase
-    .from("clusters")
-    .update({ status: "deleted" })
-    .eq("id", clusterId);
-
-  if (error) {
-    throw event.error(500, "Failed to delete cluster");
-  }
-
-  throw event.redirect(302, "/platform");
-});
-
-export const useRetryProvision = routeAction$(async (data, event) => {
-  const user = requireAuth(event);
-  const clusterId = String(data.cluster_id || "");
-  const region = String(data.region || "westus2");
-  const supabase = getAdminSupabaseClient(event.env);
-  if (!supabase) throw event.error(500, "Database connection offline");
-
-  const { data: cluster } = await supabase
-    .from("clusters")
-    .select("id, user_id, tier, status")
-    .eq("id", clusterId)
-    .maybeSingle();
-
-  if (!cluster || cluster.user_id !== user.user_id) {
-    throw event.error(404, "Cluster not found");
-  }
-
-  if (cluster.status === "active") {
-    throw event.error(400, "Cluster is already active");
-  }
-
-  const vmSizeMap: Record<string, string> = {
-    azure_micro: "Standard_B2als_v2",
-    azure_standard: "Standard_D2as_v5",
-    azure_pro: "Standard_D4as_v5",
-    azure_scale: "Standard_D8as_v5",
-    azure_gpu: "Standard_NC4as_T4",
-  };
-
-  const tier = cluster.tier || "azure_standard";
-  const vmSize = vmSizeMap[tier] || "Standard_D2s_v5";
-  const storageGb = parseInt(String(data.storage_gb || "50"), 10);
-
-  await supabase.from("clusters").update({
-    status: "provisioning",
-    region,
-  }).eq("id", clusterId);
-
-  const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || "").replace(/\/+$/, "");
-  const functionUrl = `${supabaseUrl}/functions/v1/provision-vm`;
-
-  try {
-    const fnRes = await fetch(functionUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: event.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
-      },
-      body: JSON.stringify({ clusterId, tier, region, vmSize, storageGb }),
-    });
-
-    const fnResult = await fnRes.json();
-    if (fnResult.submitted) {
-      await supabase.from("clusters").update({ region }).eq("id", clusterId);
-      return { success: true, region, steps: fnResult.steps || [] };
-    } else {
       await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
-      return { success: false, error: fnResult.error || "Provisioning failed", steps: fnResult.steps || [] };
+      return { success: false, error: fnErr.message || "Edge function call failed", steps: [] };
     }
-  } catch (fnErr: any) {
-    await supabase.from("clusters").update({ status: "failed" }).eq("id", clusterId);
-    return { success: false, error: fnErr.message || "Edge function call failed", steps: [] };
+  } catch (e) {
+    captureError(e, { page: "cluster_detail", action: "retryProvision" });
+    return { success: false, error: "An unexpected error occurred" };
   }
 });
 
@@ -289,6 +318,20 @@ export default component$(() => {
   const hardwareStats = useSignal<HardwareStats | null>(null);
   const clusterStatus = useSignal(cluster.status);
 
+  useTask$(({ track }) => {
+    const created = track(() => createApiKeyAction.value?.success);
+    if (created) {
+      capture("cluster_api_key_created", { clusterId: cluster.id });
+    }
+  });
+
+  useTask$(({ track }) => {
+    const retried = track(() => retryAction.value?.success);
+    if (retried) {
+      capture("cluster_provision_retried", { clusterId: cluster.id });
+    }
+  });
+
   useVisibleTask$(({ cleanup }) => {
     if (clusterStatus.value === "provisioning" || clusterStatus.value === "failed") {
       const interval = setInterval(async () => {
@@ -302,7 +345,7 @@ export default component$(() => {
               nav(loc.url.pathname);
             }
           }
-        } catch {}
+          } catch (e) { captureError(e, { page: "cluster_detail", action: "pollStatus" }); }
       }, 5000);
       cleanup(() => clearInterval(interval));
       return;
@@ -319,7 +362,7 @@ export default component$(() => {
         try {
           const res = await fetch(`/api/clusters/${cluster.id}/hardware`);
           if (res.ok) hardwareStats.value = await res.json();
-        } catch {}
+        } catch (e) { captureError(e, { page: "cluster_detail", action: "fetchHardware" }); }
       };
       fetchHardware();
       const interval = setInterval(fetchHardware, 30000);

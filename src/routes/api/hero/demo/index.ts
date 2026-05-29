@@ -1,6 +1,7 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 
 import { setPrivateNoStore } from "~/lib/cache";
+import { captureError } from "~/lib/sentry";
 import {
   buildHeroMemoryId,
   formatEngineMs,
@@ -88,6 +89,7 @@ export const onPost: RequestHandler = async (event) => {
           signal: AbortSignal.timeout(60_000)
         });
       } catch (error) {
+        captureError(error, { action: "heroDemo", context: "ingestFetch" });
         const failed: HeroDemoResult = {
           ok: false,
           action,
@@ -140,6 +142,7 @@ export const onPost: RequestHandler = async (event) => {
       signal: AbortSignal.timeout(60_000)
     });
   } catch (error) {
+    captureError(error, { action: "heroDemo", context: "queryFetch" });
     const failed: HeroDemoResult = {
       ok: false,
       action,
@@ -204,8 +207,8 @@ export const onPost: RequestHandler = async (event) => {
           const afterJson = lines.slice(1).join("\n");
           hit.textual_content = beforeJson + newJsonStr + "\n" + afterJson;
         }
-      } catch (e) {
-        // Ignore JSON parsing errors
+      } catch (e: any) {
+        captureError(e, { action: "heroDemo", context: "coreStateParse" });
       }
     }
   }
@@ -292,4 +295,3 @@ function inferFactKey(text: string): string | undefined {
   }
   return undefined;
 }
-

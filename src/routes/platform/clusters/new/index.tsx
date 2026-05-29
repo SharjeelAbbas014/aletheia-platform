@@ -11,6 +11,8 @@ import {
   ZapIcon
 } from "lucide-qwik";
 import { requireAuth } from "~/lib/auth";
+import { captureError } from "~/lib/sentry";
+import { capture } from "~/lib/posthog";
 
 export const onRequest: RequestHandler = (event) => {
   setPrivateNoStore(event);
@@ -289,7 +291,7 @@ export default component$(() => {
                     <label
                       key={tier.id}
                       class={`cursor-pointer rounded-2xl border-2 p-5 flex flex-col justify-between transition-all relative ${isSelected ? 'border-primary bg-primary/5' : 'border-outline-variant/10 bg-surface-container-low hover:border-primary/50'}`}
-                      onClick$={() => { selectedTier.value = tier.id; }}
+                      onClick$={() => { selectedTier.value = tier.id; capture("hardware_tier_selected", { tier: tier.id }); }}
                     >
                       <div>
                         <div class="flex justify-between items-start mb-3">
@@ -358,6 +360,7 @@ export default component$(() => {
               <button
                 type="submit"
                 disabled={!clusterName.value}
+                onClick$={() => capture("cluster_deploy_started", { tier: selectedTier.value, region: "selected", storageGb: storageGb.value })}
                 class="rounded-lg bg-primary px-8 py-3 font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {getButtonText()}
