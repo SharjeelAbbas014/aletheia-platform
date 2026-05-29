@@ -4,7 +4,6 @@ import {
   RouterOutlet
 } from "@builder.io/qwik-city";
 import { inject } from "@vercel/analytics";
-import * as Sentry from "@sentry/browser";
 import { FlowbiteProvider, FlowbiteProviderHeader } from "flowbite-qwik";
 
 import { RouterHead } from "./components/router-head/router-head";
@@ -12,16 +11,41 @@ import { commonHeadLinks, commonHeadScripts } from "./constants/theme";
 import { initPostHog } from "./lib/posthog";
 import "./global.css";
 
+const SENTRY_DSN = import.meta.env.PUBLIC_SENTRY_DSN || "";
+
+function sendToSentry(error: Error | string, extra?: Record<string, unknown>) {
+  if (!SENTRY_DSN) return;
+  const err = error instanceof Error ? error : new Error(String(error));
+  const projectId = SENTRY_DSN.split("/").pop() || "";
+  const host = new URL(SENTRY_DSN).host;
+  const payload = {
+    event_id: crypto.randomUUID().replace(/-/g, "").slice(0, 32),
+    timestamp: Date.now() / 1000,
+    level: "error",
+    platform: "javascript",
+    exception: { values: [{ type: err.name, value: err.message }] },
+    extra: extra || {},
+    tags: { environment: import.meta.env.PROD ? "production" : "development" },
+  };
+  const body =
+    JSON.stringify({ event_id: payload.event_id, sent_at: new Date().toISOString() }) +
+    "\n" +
+    JSON.stringify({ type: "event", content_type: "application/json", length: JSON.stringify(payload).length }) +
+    "\n" +
+    JSON.stringify(payload);
+  navigator.sendBeacon(`https://${host}/api/${projectId}/envelope/`, new Blob([body], { type: "text/plain" }));
+}
+
 export default component$(() => {
   useVisibleTask$(() => {
     inject({ framework: "qwik" });
     initPostHog();
-    Sentry.init({
-      dsn: import.meta.env.PUBLIC_SENTRY_DSN || "",
-      environment: import.meta.env.PROD ? "production" : "development",
-      tracesSampleRate: 0.2,
-      replaysSessionSampleRate: 0.0,
-      replaysOnErrorSampleRate: 0.0,
+
+    window.addEventListener("error", (e) => {
+      sendToSentry(e.error || e.message, { source: "onerror", filename: e.filename, lineno: e.lineno });
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      sendToSentry(e.reason, { source: "unhandledrejection" });
     });
   });
 
