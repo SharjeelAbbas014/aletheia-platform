@@ -41,12 +41,25 @@ export const onPost: RequestHandler = async (event) => {
 
     let customerId = existingSub?.stripe_customer_id;
     if (!customerId && !isMockStripe) {
-      const { data: authData, error: authError } = await supabase.auth.admin.getUserById(user.user_id);
-      if (authError || !authData?.user?.email) {
-        throw event.error(400, "Could not retrieve user email for billing");
+      try {
+        const { data: authData, error: authError } = await supabase.auth.admin.getUserById(user.user_id);
+        if (authError || !authData?.user?.email) {
+          throw event.error(400, "Could not retrieve user email for billing");
+        }
+        const customer = await createStripeCustomer(event.env, authData.user.email, { user_id: user.user_id });
+        customerId = customer.id;
+
+        await supabase.from("subscriptions").upsert({
+          user_id: user.user_id,
+          stripe_customer_id: customerId,
+          tier: "fractional",
+          status: "active",
+        }, { onConflict: "user_id" });
+      } catch (err: any) {
+        captureError(err, { action: "checkout_createCustomer" });
+        console.error("[Checkout] Stripe customer creation failed:", err);
+        throw event.error(500, "Failed to initialize payment gateway");
       }
-      const customer = await createStripeCustomer(event.env, authData.user.email, { user_id: user.user_id });
-      customerId = customer.id;
     } else if (isMockStripe && !customerId) {
       customerId = "cus_mock_123";
     }
@@ -117,40 +130,48 @@ export const onPost: RequestHandler = async (event) => {
       throw event.redirect(302, `/platform/clusters/${cluster.id}?success=true&mock=true`);
     }
 
-    const stripe = getStripeClient(event.env);
-    const origin = event.url.origin;
+    let session;
+    try {
+      const stripe = getStripeClient(event.env);
+      const origin = event.url.origin;
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: "subscription",
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `AletheiaDB - ${vmConfig.name} (${storageGb} GB Storage)`,
-              description: `${vmConfig.description} with ${storageGb} GB SSD storage included.`,
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: "subscription",
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `AletheiaDB - ${vmConfig.name} (${storageGb} GB Storage)`,
+                description: `${vmConfig.description} with ${storageGb} GB SSD storage included.`,
+              },
+              unit_amount: totalCents,
+              recurring: {
+                interval: "month",
+              },
             },
-            unit_amount: totalCents,
-            recurring: {
-              interval: "month",
-            },
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        subscription_data: {
+          metadata: { user_id: user.user_id, cluster_id: cluster.id, tier, storage_gb: String(storageGb) },
         },
-      ],
-      subscription_data: {
+        success_url: `${origin}/platform/clusters/${cluster.id}?success=true`,
+        cancel_url: `${origin}/platform/clusters/${cluster.id}?canceled=true`,
         metadata: { user_id: user.user_id, cluster_id: cluster.id, tier, storage_gb: String(storageGb) },
-      },
-      success_url: `${origin}/platform/clusters/${cluster.id}?success=true`,
-      cancel_url: `${origin}/platform/clusters/${cluster.id}?canceled=true`,
-      metadata: { user_id: user.user_id, cluster_id: cluster.id, tier, storage_gb: String(storageGb) },
-    });
+      });
+    } catch (stripeErr: any) {
+      captureError(stripeErr, { action: "billingCheckout_stripeSession", tier, customerId });
+      console.error("[Checkout] Stripe session creation failed:", stripeErr);
+      throw event.error(500, "Failed to initiate checkout session");
+    }
 
     throw event.redirect(302, session.url!);
   } catch (e: any) {
     if (e?.headers?.location) throw e;
     captureError(e, { action: "billingCheckout" });
-    throw event.error(500, "Internal Server Error");
+    console.error("[Checkout] Unexpected error:", e);
+    throw event.error(500, e?.message ? `Internal Server Error: ${e.message}` : "Internal Server Error");
   }
 };

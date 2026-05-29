@@ -167,6 +167,9 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Ensure subscriptions.user_id has a unique constraint (required for upsert onConflict)
+create unique index if not exists subscriptions_user_id_unique on public.subscriptions(user_id);
+
 -- 9. Dedicated / User-Deployed Server Updates
 alter table if exists public.clusters add column if not exists engine_key text;
 alter table if exists public.api_keys add column if not exists cluster_id uuid references public.clusters(id) on delete cascade;
