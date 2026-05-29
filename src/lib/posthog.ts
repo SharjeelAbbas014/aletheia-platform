@@ -12,7 +12,9 @@ export function initPostHog(): typeof posthog | null {
       api_host: "/api/ingest",
       persistence: "localStorage",
       autocapture: false,
-      disable_session_recording: false,
+      disable_session_recording: true,
+      disable_persistence: false,
+      advanced_disable_decide: true,
       loaded: () => {},
     });
     initialized = true;

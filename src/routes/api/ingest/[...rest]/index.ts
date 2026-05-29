@@ -5,20 +5,27 @@ const POSTHOG_HOST = "https://us.i.posthog.com";
 export const onRequest: RequestHandler = async ({ request, params, url, send }) => {
   const restPath = params.rest || "";
   const targetUrl = `${POSTHOG_HOST}/${restPath}${url.search}`;
-  const body = request.method !== "GET" && request.method !== "HEAD" ? await request.text() : null;
-  const contentType = request.headers.get("Content-Type") || "application/json";
+
+  const forwardedHeaders: Record<string, string> = {
+    "User-Agent": "aletheia-posthog-proxy",
+  };
+
+  const ct = request.headers.get("Content-Type");
+  if (ct) forwardedHeaders["Content-Type"] = ct;
+
+  const body = request.method !== "GET" && request.method !== "HEAD"
+    ? new Uint8Array(await request.arrayBuffer())
+    : undefined;
 
   const res = await fetch(targetUrl, {
     method: request.method,
-    headers: body
-      ? { "Content-Type": contentType, "User-Agent": "aletheia-posthog-proxy" }
-      : { "User-Agent": "aletheia-posthog-proxy" },
+    headers: forwardedHeaders,
     body,
   });
 
-  const resBody = await res.text();
-  send(new Response(resBody, {
+  send(new Response(res.body, {
     status: res.status,
     headers: { "Content-Type": res.headers.get("Content-Type") || "text/plain" }
   }));
 };
+
