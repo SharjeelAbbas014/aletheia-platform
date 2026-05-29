@@ -17,7 +17,7 @@ export default component$(() => {
             tags: { environment: "development" },
           });
           const envelope =
-            JSON.stringify({ event_id: JSON.parse(body).event_id, sent_at: new Date().toISOString() }) +
+            JSON.stringify({ event_id: JSON.parse(body).event_id, sent_at: new Date().toISOString(), dsn: import.meta.env.PUBLIC_SENTRY_DSN }) +
             "\n" +
             JSON.stringify({ type: "event", content_type: "application/json", length: body.length }) +
             "\n" +

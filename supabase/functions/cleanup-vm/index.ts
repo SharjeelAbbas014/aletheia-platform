@@ -9,7 +9,7 @@ async function reportError(error: Error | unknown, context: Record<string, unkno
     const err = error instanceof Error ? error : new Error(String(error));
     const eventId = crypto.randomUUID().replace(/-/g, "");
     const payload = { event_id: eventId, timestamp: Date.now() / 1000, level: "error", platform: "deno", exception: { values: [{ type: err.name, value: err.message }] }, extra: context, tags: { environment: "edge" } };
-    const envelope = JSON.stringify({ event_id: eventId, sent_at: new Date().toISOString() }) + "\n" + JSON.stringify({ type: "event", content_type: "application/json", length: JSON.stringify(payload).length }) + "\n" + JSON.stringify(payload);
+    const envelope = JSON.stringify({ event_id: eventId, sent_at: new Date().toISOString(), dsn }) + "\n" + JSON.stringify({ type: "event", content_type: "application/json", length: JSON.stringify(payload).length }) + "\n" + JSON.stringify(payload);
     await fetch(`https://${host}/api/${projectId}/envelope/`, { method: "POST", body: envelope, signal: AbortSignal.timeout(3000) });
   } catch {}
 }

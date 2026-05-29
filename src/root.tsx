@@ -26,7 +26,7 @@ function sendToSentry(error: Error | string, extra?: Record<string, unknown>) {
     tags: { environment: import.meta.env.PROD ? "production" : "development" },
   };
   const body =
-    JSON.stringify({ event_id: payload.event_id, sent_at: new Date().toISOString() }) +
+    JSON.stringify({ event_id: payload.event_id, sent_at: new Date().toISOString(), dsn: SENTRY_DSN }) +
     "\n" +
     JSON.stringify({ type: "event", content_type: "application/json", length: JSON.stringify(payload).length }) +
     "\n" +

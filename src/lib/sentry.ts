@@ -49,7 +49,7 @@ export function captureError(error: Error | unknown, extra?: Record<string, unkn
 
 function buildEnvelope(payload: Record<string, unknown>): string {
   const eventJson = JSON.stringify(payload);
-  const envelopeHeader = JSON.stringify({ event_id: payload.event_id, sent_at: new Date().toISOString() });
+  const envelopeHeader = JSON.stringify({ event_id: payload.event_id, sent_at: new Date().toISOString(), dsn: SENTRY_DSN });
   const itemHeader = JSON.stringify({ type: "event", content_type: "application/json", length: eventJson.length });
   return `${envelopeHeader}\n${itemHeader}\n${eventJson}`;
 }
