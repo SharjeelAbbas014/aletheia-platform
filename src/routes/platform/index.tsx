@@ -413,94 +413,109 @@ export default component$(() => {
   });
 
   useVisibleTask$(async () => {
-    const active = clusters.filter(c => c.status === "active");
-    if (!active.length) return;
-    const results = await Promise.all(
-      active.map(async (c) => {
+    try {
+      const active = clusters.filter(c => c.status === "active");
+      if (!active.length) {
+        graphData.loaded = true;
+        storageData.loaded = true;
+        usageData.loaded = true;
+        return;
+      }
+
+      const fetchWithTimeout = async (url: string, timeout = 5000) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
         try {
-          const res = await fetch(`/api/clusters/${c.id}/stats`);
-          if (!res.ok) return null;
-          return await res.json();
-        } catch {
-          return null;
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(id);
+          return res;
+        } catch (err) {
+          clearTimeout(id);
+          throw err;
         }
-      })
-    );
-    const merged = results.reduce((acc, s) => {
-      if (s) {
-        acc.memory_count += s.memory_count || 0;
-        acc.entity_count += s.entity_count || 0;
-        acc.fact_count += s.fact_count || 0;
-        acc.storage_bytes += s.storage_bytes || 0;
-      }
-      return acc;
-    }, { memory_count: 0, entity_count: 0, fact_count: 0, storage_bytes: 0 });
-    combinedStats.memory_count = merged.memory_count;
-    combinedStats.entity_count = merged.entity_count;
-    combinedStats.fact_count = merged.fact_count;
-    combinedStats.storage_bytes = merged.storage_bytes;
+      };
 
-    // Load graph edges
-    const edgesResults = await Promise.all(
-      active.map(async (c) => {
-        try {
-          const res = await fetch(`/api/clusters/${c.id}/graph-edges`);
-          if (!res.ok) return [];
-          return await res.json() as GraphEdge[];
-        } catch { return []; }
-      })
-    );
-    graphData.edges = edgesResults.flat().filter(Boolean);
-    graphData.loaded = true;
+      const [statsResults, edgesResults, storageResults, usageResults] = await Promise.all([
+        Promise.all(active.map(async (c) => {
+          try {
+            const res = await fetchWithTimeout(`/api/clusters/${c.id}/stats`);
+            if (!res.ok) return null;
+            return await res.json();
+          } catch { return null; }
+        })),
+        Promise.all(active.map(async (c) => {
+          try {
+            const res = await fetchWithTimeout(`/api/clusters/${c.id}/graph-edges`);
+            if (!res.ok) return [];
+            return await res.json() as GraphEdge[];
+          } catch { return []; }
+        })),
+        Promise.all(active.map(async (c) => {
+          try {
+            const res = await fetchWithTimeout(`/api/clusters/${c.id}/storage-stats`);
+            if (!res.ok) return null;
+            return await res.json() as StorageStats;
+          } catch { return null; }
+        })),
+        Promise.all(active.map(async (c) => {
+          try {
+            const res = await fetchWithTimeout(`/api/clusters/${c.id}/usage`);
+            if (!res.ok) return { daily: [] };
+            return await res.json();
+          } catch { return { daily: [] }; }
+        })),
+      ]);
 
-    // Load storage stats
-    const statsResults = await Promise.all(
-      active.map(async (c) => {
-        try {
-          const res = await fetch(`/api/clusters/${c.id}/storage-stats`);
-          if (!res.ok) return null;
-          return await res.json() as StorageStats;
-        } catch { return null; }
-      })
-    );
-    const mergedStats = statsResults.reduce((acc: any, s) => {
-      if (!s) return acc;
-      for (const [k, v] of Object.entries(s)) {
-        acc[k] = (acc[k] || 0) + (v as number);
-      }
-      return acc;
-    }, {}) as StorageStats;
-    storageData.stats = mergedStats;
-    storageData.loaded = true;
+      const merged = statsResults.reduce((acc, s) => {
+        if (s) {
+          acc.memory_count += s.memory_count || 0;
+          acc.entity_count += s.entity_count || 0;
+          acc.fact_count += s.fact_count || 0;
+          acc.storage_bytes += s.storage_bytes || 0;
+        }
+        return acc;
+      }, { memory_count: 0, entity_count: 0, fact_count: 0, storage_bytes: 0 });
+      combinedStats.memory_count = merged.memory_count;
+      combinedStats.entity_count = merged.entity_count;
+      combinedStats.fact_count = merged.fact_count;
+      combinedStats.storage_bytes = merged.storage_bytes;
 
-    // Load usage daily
-    const usageResults = await Promise.all(
-      active.map(async (c) => {
-        try {
-          const res = await fetch(`/api/clusters/${c.id}/usage`);
-          if (!res.ok) return { daily: [] };
-          return await res.json();
-        } catch { return { daily: [] }; }
-      })
-    );
-    const allDaily: any[] = [];
-    const dateMap = new Map<string, any>();
-    for (const r of usageResults) {
-      for (const d of r.daily || []) {
-        const key = d.date || "";
-        if (dateMap.has(key)) {
-          const e = dateMap.get(key)!;
-          e.request_count += d.request_count || 0;
-          e.ingest_count += d.ingest_count || 0;
-          e.query_count += d.query_count || 0;
-          e.graph_ops += d.graph_ops || 0;
-        } else {
-          dateMap.set(key, { ...d });
+      graphData.edges = edgesResults.flat().filter(Boolean);
+      graphData.loaded = true;
+
+      const mergedStats = storageResults.reduce((acc: any, s) => {
+        if (!s) return acc;
+        for (const [k, v] of Object.entries(s)) {
+          acc[k] = (acc[k] || 0) + (v as number);
+        }
+        return acc;
+      }, {}) as StorageStats;
+      storageData.stats = mergedStats;
+      storageData.loaded = true;
+
+      const dateMap = new Map<string, any>();
+      for (const r of usageResults) {
+        for (const d of r.daily || []) {
+          const key = d.date || "";
+          if (dateMap.has(key)) {
+            const e = dateMap.get(key)!;
+            e.request_count += d.request_count || 0;
+            e.ingest_count += d.ingest_count || 0;
+            e.query_count += d.query_count || 0;
+            e.graph_ops += d.graph_ops || 0;
+          } else {
+            dateMap.set(key, { ...d });
+          }
         }
       }
+      usageData.daily = Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+      usageData.loaded = true;
+    } catch (err) {
+      console.error('Failed to load cluster data:', err);
+      graphData.loaded = true;
+      storageData.loaded = true;
+      usageData.loaded = true;
     }
-    usageData.daily = Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
-    usageData.loaded = true;
   });
 
   
