@@ -1181,8 +1181,19 @@ client.ingest(
                       <div class="flex items-center justify-center h-10 w-10 rounded-lg bg-surface-container-high text-tertiary mb-3">
                         <GitBranchIcon class="w-5 h-5" />
                       </div>
-                      <p class="text-sm font-medium text-tertiary">{graphData.loaded ? "No graph edges found." : "Loading graph data..."}</p>
-                      <p class="text-xs text-tertiary/60 mt-1">Graph edges are created when facts connect entities in your knowledge base.</p>
+                      {graphData.loaded ? (
+                        <>
+                          <p class="text-sm font-medium text-tertiary">No knowledge graph data yet.</p>
+                          <p class="text-xs text-tertiary/60 mt-1 max-w-sm">Ingest some memories via the API and your knowledge graph will appear here automatically.</p>
+                          <pre class="mt-4 text-left rounded-lg bg-black/30 border border-outline-variant/10 p-3 font-mono text-[10px] text-primary/70 max-w-sm">
+{`curl -X POST https://aletheiadb.com/api/ingest \\
+  -H "x-api-key: YOUR_KEY" \\
+  -d '{"entity_id":"user-1","textual_content":"..."}'`}
+                          </pre>
+                        </>
+                      ) : (
+                        <p class="text-sm font-medium text-tertiary">Loading knowledge graph...</p>
+                      )}
                     </div>
                   ) : (
                     <div class="overflow-x-auto">
