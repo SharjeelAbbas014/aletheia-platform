@@ -16,13 +16,16 @@ export const onGet: RequestHandler = async (event) => {
     const supabase = getAdminSupabaseClient(event.env);
     if (!supabase) throw event.error(500, "Database offline");
 
-    const { data: cluster } = await supabase
+    const { data: cluster, error } = await supabase
       .from("clusters")
-      .select("user_id, tier, endpoint_url, engine_key")
+      .select("*")
       .eq("id", clusterId)
       .single();
 
-    if (!cluster) throw event.error(403, `Cluster ${clusterId} not found`);
+    if (error && error.code !== "PGRST116") {
+      throw event.error(500, `Database error: ${error.message}`);
+    }
+    if (!cluster) throw event.error(404, `Cluster ${clusterId} not found`);
     if (cluster.user_id !== user.user_id) throw event.error(403, "Forbidden - owner mismatch");
 
     const isShared = cluster.tier === "fractional";

@@ -14,14 +14,17 @@ export const onGet: RequestHandler = async (event) => {
 
     // Verify cluster ownership before returning stats
     const supabase = getAdminSupabaseClient(event.env);
-    const { data: cluster } = await supabase
+    const { data: cluster, error } = await supabase
       .from("clusters")
-      .select("user_id, endpoint_url, engine_key")
+      .select("*")
       .eq("id", clusterId)
       .single();
 
+    if (error && error.code !== "PGRST116") {
+      throw event.error(500, `Database error: ${error.message}`);
+    }
     if (!cluster) {
-      throw event.error(403, `Forbidden - Cluster ${clusterId} not found`);
+      throw event.error(404, `Forbidden - Cluster ${clusterId} not found`);
     }
 
     if (cluster.user_id !== user.user_id) {

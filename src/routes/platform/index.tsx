@@ -980,15 +980,17 @@ export default component$(() => {
                                 manualKeyCreating.value = true;
                                 try {
                                   const result = await createKeyAction.submit({ name: newApiKeyName.value }) as any;
-                                  if (result?.success && result?.key) {
-                                    localKeyList.value = [result.key as ApiKey, ...localKeyList.value];
+                                  const actionValue = result?.value || createKeyAction.value;
+                                  if (actionValue?.success && actionValue?.key) {
+                                    localKeyList.value = [actionValue.key as ApiKey, ...localKeyList.value];
                                     newApiKeyName.value = "";
                                     activeApiTab.value = "keys";
                                   }
                                 } catch (err) {
                                   console.error('Key creation error:', err);
+                                } finally {
+                                  manualKeyCreating.value = false;
                                 }
-                                manualKeyCreating.value = false;
                               }}
                               class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 shrink-0 shadow-sm">
                               {manualKeyCreating.value ? (<><Loader2Icon class="w-3.5 h-3.5 animate-spin" /> Generating...</>) : ("Generate New Key")}
