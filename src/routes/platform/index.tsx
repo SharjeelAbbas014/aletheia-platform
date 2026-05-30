@@ -828,7 +828,7 @@ export default component$(() => {
         {activeMissionTab.value === "api" && (
           <div class="space-y-6">
             {/* Key creation success banner (shows regardless of active sub-tab) */}
-            {createKeyAction.value?.success && createKeyAction.value.key?.token && (
+            {createKeyAction.value?.success && createKeyAction.value?.key?.token && (
               <div class="rounded-xl bg-primary/[0.06] border border-primary/25 p-5">
                 <div class="flex items-center gap-2.5 mb-3">
                   <div class="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10">
@@ -838,7 +838,7 @@ export default component$(() => {
                 </div>
                 <p class="text-xs text-tertiary mb-3">Make sure to copy your API key now. You won't be able to see it again.</p>
                 <div class="flex items-center gap-2 rounded-lg bg-black/40 p-3 font-mono text-xs text-primary border border-primary/15">
-                  <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
+                  <span class="flex-1 truncate">{createKeyAction.value?.key?.token}</span>
                   <button
                     class="p-1.5 hover:bg-primary/20 rounded transition-colors shrink-0"
                     onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
@@ -850,7 +850,7 @@ export default component$(() => {
                   <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-2">Usage Example</p>
                   <pre class="overflow-x-auto font-mono text-[10px] leading-relaxed text-primary/70 whitespace-pre-wrap">{`curl -X POST https://aletheiadb.com/api/ingest \\
   -H "Content-Type: application/json" \\
-  -H "x-api-key: ${createKeyAction.value.key.token.substring(0, 20)}..." \\
+  -H "x-api-key: ${createKeyAction.value?.key?.token?.substring(0, 20)}..." \\
   -d '{
     "entity_id": "user-1",
     "textual_content": "Hello, AletheiaDB!"
@@ -860,7 +860,7 @@ export default component$(() => {
                   <ExternalLinkIcon class="w-3 h-3" />
                   Read the Quickstart Guide →
                 </a>
-                {createKeyAction.value.engineSynced ? (
+                {createKeyAction.value?.engineSynced ? (
                   <p class="text-[10px] text-green-400 mt-3 flex items-center gap-1">
                     <CheckCircle2Icon class="w-3 h-3" />
                     Key synced to engine - ready for direct API access
@@ -868,13 +868,12 @@ export default component$(() => {
                 ) : (
                   <p class="text-[10px] text-amber-400 mt-3 flex items-center gap-1">
                     <AlertCircleIcon class="w-3 h-3" />
-                    Key created but engine sync failed ({createKeyAction.value.engineError || "unknown error"}). Use the proxy endpoint or contact support.
+                    Key created but engine sync failed ({createKeyAction.value?.engineError || "unknown error"}). Use the proxy endpoint or contact support.
                   </p>
                 )}
               </div>
             )}
 
-            {/* Sub-tab pill bar */}
             <div class="mb-2 inline-flex flex-wrap rounded-xl border border-outline-variant/10 bg-surface-container-low p-1 gap-1">
               <button type="button"
                 class={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-all ${activeApiTab.value === "keys" ? "bg-primary text-on-primary shadow-sm" : "text-tertiary hover:text-on-surface"}`}
