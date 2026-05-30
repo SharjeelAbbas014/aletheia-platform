@@ -107,8 +107,9 @@ export const onPost: RequestHandler = async (event) => {
     const stripe = getStripeClient(event.env);
     const origin = event.url.origin;
 
+    let session;
     try {
-      const session = await stripe.checkout.sessions.create({
+      session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: "payment",
         line_items: [
@@ -132,22 +133,18 @@ export const onPost: RequestHandler = async (event) => {
           token_count: String(pack.tokens),
         },
       });
-
-      throw event.redirect(302, session.url!);
     } catch (err: any) {
-      if (err.headers?.location) {
-        throw err;
-      }
       const msg = err instanceof Error ? err.message : String(err);
       captureError(err, { action: "buyTokens_createCheckout" });
       console.error("Stripe checkout error:", msg || err);
       throw new Error("Failed to initiate checkout");
     }
+    throw event.redirect(302, session.url!);
   } catch (e: any) {
-    if (e?.headers?.location) throw e;
-    const errMsg = e instanceof Error ? e.message : (typeof e === "string" ? e : JSON.stringify(e));
+    if (!(e instanceof Error)) throw e;
+    const errMsg = e.message || "(no message)";
     captureError(e, { action: "buyTokens" });
-    console.error("[BuyTokens] Error:", errMsg || "(no message)");
-    throw event.error(500, errMsg || "Internal Server Error");
+    console.error("[BuyTokens] Error:", errMsg);
+    throw event.error(500, errMsg);
   }
 };

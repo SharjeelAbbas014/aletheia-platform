@@ -171,10 +171,10 @@ export const onPost: RequestHandler = async (event) => {
 
     throw event.redirect(302, session.url!);
   } catch (e: any) {
-    if (e?.headers?.location) throw e;
-    const errMsg = e instanceof Error ? e.message : (typeof e === "string" ? e : JSON.stringify(e));
+    if (!(e instanceof Error)) throw e;
+    const errMsg = e.message || "(no message)";
     captureError(e, { action: "billingCheckout" });
-    console.error("[Checkout] Error:", errMsg || "(no message)");
-    throw event.error(500, errMsg || "Internal Server Error");
+    console.error("[Checkout] Error:", errMsg);
+    throw event.error(500, errMsg);
   }
 };
