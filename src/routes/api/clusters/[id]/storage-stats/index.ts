@@ -6,11 +6,13 @@ import { captureError } from "~/lib/sentry";
 
 export const onGet: RequestHandler = async (event) => {
   const user = getCurrentUser(event.cookie);
-  if (!user) throw event.error(401, "Unauthorized");
+  if (!user) {
+    throw event.json(401, { error: "Unauthorized - no session cookie" });
+  }
 
   try {
     const clusterId = event.params.id;
-    if (!clusterId) throw event.error(400, "Cluster ID required");
+    if (!clusterId) throw event.json(400, { error: "Cluster ID required" });
 
     const supabase = getAdminSupabaseClient(event.env);
     const { data: cluster } = await supabase
@@ -19,11 +21,15 @@ export const onGet: RequestHandler = async (event) => {
       .eq("id", clusterId)
       .single();
 
-    if (!cluster) throw event.error(403, "Forbidden");
-    if (cluster.user_id !== user.user_id) throw event.error(403, "Forbidden");
+    if (!cluster) {
+      throw event.json(403, { error: `Cluster ${clusterId} not found` });
+    }
+    if (cluster.user_id !== user.user_id) {
+      throw event.json(403, { error: `Owner mismatch`, cluster_owner: cluster.user_id, current_user: user.user_id });
+    }
 
     const stats = await getStorageStats(clusterId, cluster.endpoint_url, cluster.engine_key);
-    if (!stats) throw event.error(503, "Failed to contact engine");
+    if (!stats) throw event.json(503, { error: "Failed to contact engine" });
 
     event.json(200, stats);
   } catch (e: any) {
