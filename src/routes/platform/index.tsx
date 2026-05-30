@@ -319,6 +319,14 @@ export default component$(() => {
 
   const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
 
+  // Declare these BEFORE useTask$ so Qwik's optimizer can capture them in serialized closures
+  const newApiKeyName = useSignal("");
+  const isCreatingKey = useSignal(false);
+  const keyCreateError = useSignal("");
+  const newlyCreatedKey = useStore<{ token: string; engineSynced: boolean; engineError: string }>({ token: "", engineSynced: false, engineError: "" });
+  const localKeyList = useSignal<ApiKey[]>([]);
+  const settingsNewName = useSignal("");
+
   useTask$(({ track }) => {
     const user = track(() => platformData.value.user);
     if (user?.user_id) {
@@ -353,6 +361,7 @@ export default component$(() => {
       capture("template_deleted");
     }
   });
+
   const formatBytes = (b: number) => {
     if (!b) return "0 B";
     const k = 1024;
@@ -367,13 +376,7 @@ export default component$(() => {
   const activeMissionTab = useSignal<"overview" | "api" | "billing" | "settings">(initialTab);
   const activeApiTab = useSignal<"keys" | "create" | "usage" | "graph" | "storage">("keys");
   const activeSettingsTab = useSignal<"profile" | "team" | "templates">("profile");
-  const newApiKeyName = useSignal("");
-  const isCreatingKey = useSignal(false);
-  const keyCreateError = useSignal("");
-  const newlyCreatedKey = useStore<{ token: string; engineSynced: boolean; engineError: string }>({ token: "", engineSynced: false, engineError: "" });
-  const localKeyList = useSignal<ApiKey[]>([]);
   const showSettingsCreateForm = useSignal(false);
-  const settingsNewName = useSignal("");
   const settingsNewTemplate = useSignal("");
   const settingsCopiedId = useSignal("");
   const visibleKeys = useStore<Record<string, boolean>>({});
