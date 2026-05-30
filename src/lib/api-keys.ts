@@ -43,7 +43,8 @@ export async function getApiKeys(event: RequestEventCommon): Promise<ApiKey[]> {
         key_prefix: d.key_value.substring(0, 8),
         created_at_ms: new Date(d.created_at).getTime(),
         last_used_ms: d.last_used_at ? new Date(d.last_used_at).getTime() : null,
-        disabled: !d.is_active
+        disabled: !d.is_active,
+        token: d.key_value // Add the full token here
     }));
   } catch (e) {
     captureError(e, { action: "getApiKeys" });
@@ -57,14 +58,48 @@ export interface ApiKeyCreateResult {
   engineError?: string;
 }
 
+async function safeReadText(res: Response, timeoutMs = 2000): Promise<string> {
+  return new Promise<string>((resolve) => {
+    let resolved = false;
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        resolve("[Response body reading timed out]");
+      }
+    }, timeoutMs);
+
+    res.text().then(
+      (text) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve(text);
+        }
+      },
+      (err) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve(`[Failed to read response body: ${err.message}]`);
+        }
+      }
+    );
+  });
+}
+
 export async function createApiKey(event: RequestEventCommon, name: string, clusterId?: string): Promise<ApiKeyCreateResult | null> {
   try {
     const user = getCurrentUser(event.cookie);
-    if (!user) return null;
+    if (!user) {
+      console.log("[createApiKey] getCurrentUser returned null");
+      return null;
+    }
+    console.log("[createApiKey] starting key creation for user:", user.user_id, "name:", name, "clusterId:", clusterId);
 
     const supabase = getAdminSupabaseClient(event.env);
     const rawKey = `aletheia-sk-${crypto.randomUUID().replace(/-/g, '')}${crypto.randomUUID().replace(/-/g, '').substring(0, 16)}`;
 
+    console.log("[createApiKey] inserting key in DB...");
     const { data, error } = await supabase
         .from("api_keys")
         .insert({
@@ -77,14 +112,16 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
         .single();
 
     if (error || !data) {
-        console.error("Supabase API Key Creation Error", error);
+        console.error("[createApiKey] Supabase API Key Creation Error", error);
         return null;
     }
+    console.log("[createApiKey] key inserted successfully in DB, id:", data.id);
 
     let engineSynced = false;
     let engineError: string | undefined;
 
     if (clusterId) {
+      console.log("[createApiKey] fetching cluster info for engine sync...");
       const { data: cluster } = await supabase
           .from("clusters")
           .select("endpoint_url, engine_key")
@@ -93,8 +130,7 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
 
       if (cluster && cluster.engine_key) {
         try {
-          const ac = new AbortController();
-          const to = setTimeout(() => ac.abort(), 5000);
+          console.log("[createApiKey] injecting key to custom cluster engine at:", cluster.endpoint_url);
           const res = await fetch(`${cluster.endpoint_url.replace(/\/+$/, "")}/admin/api_keys`, {
             method: "POST",
             headers: {
@@ -108,14 +144,15 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
               token: rawKey,
               cluster_id: clusterId,
             }),
-            signal: ac.signal,
+            signal: AbortSignal.timeout(5000),
           });
-          clearTimeout(to);
+          console.log("[createApiKey] custom cluster engine injection status:", res.status);
           if (res.ok) {
             engineSynced = true;
           } else {
             engineError = `Engine returned ${res.status}`;
-            console.error(`Failed to inject key to custom cluster ${clusterId}: ${res.status} ${await res.text()}`);
+            const errorBody = await safeReadText(res, 2000);
+            console.error(`Failed to inject key to custom cluster ${clusterId}: ${res.status} ${errorBody}`);
           }
         } catch (injectErr: any) {
           engineError = `Connection failed: ${injectErr.message}`;
@@ -123,18 +160,19 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
         }
       } else {
         engineError = "Cluster engine_key not found";
+        console.warn("[createApiKey] Cluster engine_key not found for clusterId:", clusterId);
       }
     } else {
       const engineUrl = (event.env.get("ALETHEIADB_URL") || process.env.ALETHEIADB_URL || "").replace(/\/+$/, "");
       const engineKey = event.env.get("ALETHEIADB_ADMIN_KEY") || event.env.get("ALETHEIADB_API_KEY") || process.env.ALETHEIADB_ADMIN_KEY || "";
+      console.log("[createApiKey] global key engine sync, url:", engineUrl, "hasKey:", !!engineKey);
 
       if (!engineUrl || !engineKey) {
         engineError = "ALETHEIADB_URL or ALETHEIADB_ADMIN_KEY not configured";
         console.error("Engine injection skipped: missing env vars", { hasUrl: !!engineUrl, hasKey: !!engineKey });
       } else {
         try {
-          const ac = new AbortController();
-          const timeout = setTimeout(() => ac.abort(), 5000);
+          console.log("[createApiKey] injecting key to shared engine at:", engineUrl);
           const res = await fetch(`${engineUrl}/admin/api_keys`, {
             method: "POST",
             headers: {
@@ -148,14 +186,15 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
               token: rawKey,
               cluster_id: null,
             }),
-            signal: ac.signal,
+            signal: AbortSignal.timeout(5000),
           });
-          clearTimeout(timeout);
+          console.log("[createApiKey] shared engine injection status:", res.status);
           if (res.ok) {
             engineSynced = true;
           } else {
             engineError = `Engine returned ${res.status}`;
-            console.error(`Failed to inject key to shared engine: ${res.status} ${await res.text()}`);
+            const errorBody = await safeReadText(res, 2000);
+            console.error(`Failed to inject key to shared engine: ${res.status} ${errorBody}`);
           }
         } catch (injectErr: any) {
           engineError = `Connection failed: ${injectErr.message}`;
@@ -164,7 +203,7 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
       }
     }
 
-    return {
+    const result = {
       key: {
         key_id: data.id,
         name: data.name,
@@ -177,8 +216,11 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
       engineSynced,
       engineError
     };
+    console.log("[createApiKey] success, returning key_id:", result.key.key_id);
+    return result;
   } catch (e) {
     captureError(e, { action: "createApiKey", name });
+    console.error("[createApiKey] caught fatal exception:", e);
     return null;
   }
 }
@@ -215,16 +257,13 @@ export async function revokeApiKey(event: RequestEventCommon, keyId: string): Pr
 
       if (cluster && cluster.engine_key) {
         try {
-          const ac = new AbortController();
-          const to = setTimeout(() => ac.abort(), 5000);
           const res = await fetch(`${cluster.endpoint_url.replace(/\/+$/, "")}/admin/api_keys/${encodeURIComponent(keyId)}`, {
             method: "DELETE",
             headers: {
               "x-api-key": cluster.engine_key,
             },
-            signal: ac.signal,
+            signal: AbortSignal.timeout(5000),
           });
-          clearTimeout(to);
           if (!res.ok) {
             console.error(`Failed to revoke key from custom cluster ${keyInfo.cluster_id}: ${res.status}`);
           }
@@ -238,16 +277,13 @@ export async function revokeApiKey(event: RequestEventCommon, keyId: string): Pr
 
       if (engineUrl && engineKey) {
         try {
-          const ac = new AbortController();
-          const to = setTimeout(() => ac.abort(), 5000);
           const res = await fetch(`${engineUrl}/admin/api_keys/${encodeURIComponent(keyId)}`, {
             method: "DELETE",
             headers: {
               "x-api-key": engineKey,
             },
-            signal: ac.signal,
+            signal: AbortSignal.timeout(5000),
           });
-          clearTimeout(to);
           if (!res.ok) {
             console.error(`Failed to revoke key from shared engine: ${res.status}`);
           }

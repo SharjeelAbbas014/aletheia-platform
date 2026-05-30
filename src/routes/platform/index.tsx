@@ -22,7 +22,9 @@ import {
   AlertCircleIcon,
   TrendingUpIcon,
   GitBranchIcon,
-  DatabaseIcon
+  DatabaseIcon,
+  EyeIcon,
+  EyeOffIcon
 } from "lucide-qwik";
 import {
   Form,
@@ -372,6 +374,7 @@ export default component$(() => {
   const settingsNewName = useSignal("");
   const settingsNewTemplate = useSignal("");
   const settingsCopiedId = useSignal("");
+  const visibleKeys = useStore<Record<string, boolean>>({});
 
   useTask$(() => {
     localKeyList.value = [...platformData.value.keys];
@@ -938,31 +941,49 @@ export default component$(() => {
                             </button>
                           </div>
                         )}
-                        {localKeyList.value.map((key) => (
-                          <div key={key.key_id} class="group flex flex-col justify-between gap-4 rounded-xl border border-outline-variant/10 bg-surface-container-low p-4 transition-all hover:border-primary/20 hover:shadow-sm lg:flex-row lg:items-center">
-                            <div class="flex items-center gap-3.5">
-                              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
-                                <KeyIcon class="w-4 h-4" />
+                        {localKeyList.value.map((key) => {
+                          const isVisible = !!visibleKeys[key.key_id];
+                          const displayValue = isVisible ? (key.token || `${key.key_prefix}••••••••••••`) : `${key.key_prefix}••••••••••••`;
+                          return (
+                            <div key={key.key_id} class="group flex flex-col justify-between gap-4 rounded-xl border border-outline-variant/10 bg-surface-container-low p-4 transition-all hover:border-primary/20 hover:shadow-sm lg:flex-row lg:items-center">
+                              <div class="flex items-center gap-3.5">
+                                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                                  <KeyIcon class="w-4 h-4" />
+                                </div>
+                                <div>
+                                  <h4 class="text-sm font-bold text-on-surface">{key.name}</h4>
+                                  <div class="mt-0.5 flex items-center gap-2">
+                                    <p class="font-mono text-xs text-tertiary tracking-widest">{displayValue}</p>
+                                    <button type="button"
+                                      onClick$={() => { visibleKeys[key.key_id] = !visibleKeys[key.key_id]; }}
+                                      class="text-tertiary hover:text-on-surface p-0.5 rounded transition-colors"
+                                      title={isVisible ? "Hide API key" : "Show API key"}>
+                                      {isVisible ? <EyeOffIcon class="w-3.5 h-3.5" /> : <EyeIcon class="w-3.5 h-3.5" />}
+                                    </button>
+                                    <button type="button"
+                                      onClick$={() => { navigator.clipboard.writeText(key.token || ""); }}
+                                      class="text-tertiary hover:text-on-surface p-0.5 rounded transition-colors"
+                                      title="Copy API key">
+                                      <CopyIcon class="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <h4 class="text-sm font-bold text-on-surface">{key.name}</h4>
-                                <p class="mt-0.5 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
+                              <div class="flex items-center gap-5">
+                                <div class="text-right">
+                                  <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary">Created</p>
+                                  <p class="font-mono text-xs text-on-surface"><LocalDateTime value={key.created_at_ms} /></p>
+                                </div>
+                                <Form action={revokeKeyAction}>
+                                  <input type="hidden" name="id" value={key.key_id} />
+                                  <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white" title="Revoke key">
+                                    <Trash2Icon class="w-3.5 h-3.5" />
+                                  </button>
+                                </Form>
                               </div>
                             </div>
-                            <div class="flex items-center gap-5">
-                              <div class="text-right">
-                                <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary">Created</p>
-                                <p class="font-mono text-xs text-on-surface"><LocalDateTime value={key.created_at_ms} /></p>
-                              </div>
-                              <Form action={revokeKeyAction}>
-                                <input type="hidden" name="id" value={key.key_id} />
-                                <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white" title="Revoke key">
-                                  <Trash2Icon class="w-3.5 h-3.5" />
-                                </button>
-                              </Form>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
                       <section>
@@ -970,9 +991,10 @@ export default component$(() => {
                           <h3 class="text-sm font-bold text-on-surface mb-1">Provision Access</h3>
                           <p class="text-xs text-tertiary mb-4">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
                           <Form action={createKeyAction}
-                            onSubmitCompleted$={() => {
-                              if (createKeyAction.value?.success && createKeyAction.value?.key) {
-                                localKeyList.value = [createKeyAction.value.key as ApiKey, ...localKeyList.value];
+                            onSubmitCompleted$={(event) => {
+                              const res = event.detail.value;
+                              if (res?.success && res?.key) {
+                                localKeyList.value = [res.key as ApiKey, ...localKeyList.value];
                                 newApiKeyName.value = "";
                                 activeApiTab.value = "keys";
                               }
