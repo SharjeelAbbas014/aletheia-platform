@@ -327,8 +327,8 @@ export default component$(() => {
   });
 
   useTask$(({ track }) => {
-    const created = track(() => createKeyAction.value?.success);
-    if (created) {
+    const token = track(() => newlyCreatedKey.token);
+    if (token) {
       capture("api_key_created", { name: newApiKeyName.value || "New API Key" });
     }
   });
@@ -368,7 +368,9 @@ export default component$(() => {
   const activeApiTab = useSignal<"keys" | "create" | "usage" | "graph" | "storage">("keys");
   const activeSettingsTab = useSignal<"profile" | "team" | "templates">("profile");
   const newApiKeyName = useSignal("");
-  const manualKeyCreating = useSignal(false);
+  const isCreatingKey = useSignal(false);
+  const keyCreateError = useSignal("");
+  const newlyCreatedKey = useStore<{ token: string; engineSynced: boolean; engineError: string }>({ token: "", engineSynced: false, engineError: "" });
   const localKeyList = useSignal<ApiKey[]>([]);
   const showSettingsCreateForm = useSignal(false);
   const settingsNewName = useSignal("");
@@ -380,12 +382,7 @@ export default component$(() => {
     localKeyList.value = [...platformData.value.keys];
   });
 
-  useVisibleTask$(({ track }) => {
-    track(() => manualKeyCreating.value);
-    if (!manualKeyCreating.value) return;
-    const t = setTimeout(() => { manualKeyCreating.value = false; }, 25000);
-    return () => clearTimeout(t);
-  });
+
 
   useVisibleTask$(({ cleanup }) => {
     const hasTransient = clusters.some(c => c.status === "provisioning" || c.status === "failed");
@@ -503,7 +500,7 @@ export default component$(() => {
   
 
   // Use the newly created key if available
-  const activeKey = createKeyAction.value?.key?.token || localKeyList.value[0]?.token || keys[0]?.token || "YOUR_API_KEY";
+  const activeKey = newlyCreatedKey.token || localKeyList.value[0]?.token || keys[0]?.token || "YOUR_API_KEY";
   // Proxy base_url: users always hit the Qwik frontend which securely forwards to the Rust engine
   const proxyBaseUrl = typeof window !== "undefined" ? window.location.origin + "/api" : "https://aletheiadb.com/api";
 
@@ -828,7 +825,7 @@ export default component$(() => {
         {activeMissionTab.value === "api" && (
           <div class="space-y-6">
             {/* Key creation success banner (shows regardless of active sub-tab) */}
-            {createKeyAction.value?.success && createKeyAction.value?.key?.token && (
+            {newlyCreatedKey.token && (
               <div class="rounded-xl bg-primary/[0.06] border border-primary/25 p-5">
                 <div class="flex items-center gap-2.5 mb-3">
                   <div class="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10">
@@ -838,10 +835,10 @@ export default component$(() => {
                 </div>
                 <p class="text-xs text-tertiary mb-3">Make sure to copy your API key now. You won't be able to see it again.</p>
                 <div class="flex items-center gap-2 rounded-lg bg-black/40 p-3 font-mono text-xs text-primary border border-primary/15">
-                  <span class="flex-1 truncate">{createKeyAction.value?.key?.token}</span>
+                  <span class="flex-1 truncate">{newlyCreatedKey.token}</span>
                   <button
                     class="p-1.5 hover:bg-primary/20 rounded transition-colors shrink-0"
-                    onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
+                    onClick$={() => navigator.clipboard.writeText(newlyCreatedKey.token || "")}
                   >
                     <CopyIcon class="w-3.5 h-3.5" />
                   </button>
@@ -850,7 +847,7 @@ export default component$(() => {
                   <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-2">Usage Example</p>
                   <pre class="overflow-x-auto font-mono text-[10px] leading-relaxed text-primary/70 whitespace-pre-wrap">{`curl -X POST https://aletheiadb.com/api/ingest \\
   -H "Content-Type: application/json" \\
-  -H "x-api-key: ${createKeyAction.value?.key?.token?.substring(0, 20)}..." \\
+  -H "x-api-key: ${newlyCreatedKey.token?.substring(0, 20)}..." \\
   -d '{
     "entity_id": "user-1",
     "textual_content": "Hello, AletheiaDB!"
@@ -860,7 +857,7 @@ export default component$(() => {
                   <ExternalLinkIcon class="w-3 h-3" />
                   Read the Quickstart Guide →
                 </a>
-                {createKeyAction.value?.engineSynced ? (
+                {newlyCreatedKey.engineSynced ? (
                   <p class="text-[10px] text-green-400 mt-3 flex items-center gap-1">
                     <CheckCircle2Icon class="w-3 h-3" />
                     Key synced to engine - ready for direct API access
@@ -868,7 +865,7 @@ export default component$(() => {
                 ) : (
                   <p class="text-[10px] text-amber-400 mt-3 flex items-center gap-1">
                     <AlertCircleIcon class="w-3 h-3" />
-                    Key created but engine sync failed ({createKeyAction.value?.engineError || "unknown error"}). Use the proxy endpoint or contact support.
+                    Key created but engine sync failed ({newlyCreatedKey.engineError || "unknown error"}). Use the proxy endpoint or contact support.
                   </p>
                 )}
               </div>
@@ -927,7 +924,7 @@ export default component$(() => {
 
                     {activeApiTab.value === "keys" ? (
                       <div class="space-y-3">
-                        {localKeyList.value.length === 0 && !createKeyAction.value?.success && (
+                        {localKeyList.value.length === 0 && !newlyCreatedKey.token && (
                           <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant/15 py-12 px-6 text-center">
                             <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-surface-container-high text-tertiary mb-4">
                               <KeyIcon class="w-6 h-6" />
@@ -989,25 +986,53 @@ export default component$(() => {
                         <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
                           <h3 class="text-sm font-bold text-on-surface mb-1">Provision Access</h3>
                           <p class="text-xs text-tertiary mb-4">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
-                          <Form action={createKeyAction}
-                            onSubmitCompleted$={(event) => {
-                              const res = event.detail.value;
-                              if (res?.success && res?.key) {
-                                localKeyList.value = [res.key as ApiKey, ...localKeyList.value];
-                                newApiKeyName.value = "";
-                                activeApiTab.value = "keys";
-                              }
-                            }}
-                            class="flex flex-col gap-3 sm:flex-row">
-                            <input name="name" value={newApiKeyName.value}
+                          {keyCreateError.value && (
+                            <p class="text-xs text-red-400 mb-3 flex items-center gap-1.5">
+                              <AlertCircleIcon class="w-3.5 h-3.5 shrink-0" />
+                              {keyCreateError.value}
+                            </p>
+                          )}
+                          <div class="flex flex-col gap-3 sm:flex-row">
+                            <input
+                              value={newApiKeyName.value}
                               onInput$={(_, el) => { newApiKeyName.value = el.value; }}
                               class="flex-1 rounded-lg border border-outline-variant/15 bg-surface-container-highest px-3.5 py-2.5 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors placeholder:text-tertiary/50"
-                              placeholder="Key identifier (e.g. Production)" />
-                            <button type="submit" disabled={createKeyAction.isRunning || !newApiKeyName.value.trim()}
-                              class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 shrink-0 shadow-sm">
-                              {createKeyAction.isRunning ? (<><Loader2Icon class="w-3.5 h-3.5 animate-spin" /> Generating...</>) : ("Generate New Key")}
+                              placeholder="Key identifier (e.g. Production)"
+                              disabled={isCreatingKey.value}
+                            />
+                            <button
+                              type="button"
+                              disabled={isCreatingKey.value || !newApiKeyName.value.trim()}
+                              class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 shrink-0 shadow-sm"
+                              onClick$={async () => {
+                                const name = newApiKeyName.value.trim();
+                                if (!name || isCreatingKey.value) return;
+                                isCreatingKey.value = true;
+                                keyCreateError.value = "";
+                                try {
+                                  const result = await createKeyAction.submit({ name });
+                                  const res = result.value;
+                                  if (res?.success && res?.key) {
+                                    const key = res.key as ApiKey;
+                                    localKeyList.value = [key, ...localKeyList.value];
+                                    newlyCreatedKey.token = key.token || "";
+                                    newlyCreatedKey.engineSynced = res.engineSynced || false;
+                                    newlyCreatedKey.engineError = res.engineError || "";
+                                    newApiKeyName.value = "";
+                                    activeApiTab.value = "keys";
+                                  } else {
+                                    keyCreateError.value = "Failed to create key. Please try again.";
+                                  }
+                                } catch (err: any) {
+                                  keyCreateError.value = err?.message || "Network error. Please try again.";
+                                } finally {
+                                  isCreatingKey.value = false;
+                                }
+                              }}
+                            >
+                              {isCreatingKey.value ? (<><Loader2Icon class="w-3.5 h-3.5 animate-spin" /> Generating...</>) : ("Generate New Key")}
                             </button>
-                          </Form>
+                          </div>
                         </div>
                       </section>
                     )}
