@@ -93,6 +93,8 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
 
       if (cluster && cluster.engine_key) {
         try {
+          const ac = new AbortController();
+          const to = setTimeout(() => ac.abort(), 5000);
           const res = await fetch(`${cluster.endpoint_url.replace(/\/+$/, "")}/admin/api_keys`, {
             method: "POST",
             headers: {
@@ -106,7 +108,9 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
               token: rawKey,
               cluster_id: clusterId,
             }),
+            signal: ac.signal,
           });
+          clearTimeout(to);
           if (res.ok) {
             engineSynced = true;
           } else {
@@ -129,6 +133,8 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
         console.error("Engine injection skipped: missing env vars", { hasUrl: !!engineUrl, hasKey: !!engineKey });
       } else {
         try {
+          const ac = new AbortController();
+          const timeout = setTimeout(() => ac.abort(), 5000);
           const res = await fetch(`${engineUrl}/admin/api_keys`, {
             method: "POST",
             headers: {
@@ -142,7 +148,9 @@ export async function createApiKey(event: RequestEventCommon, name: string, clus
               token: rawKey,
               cluster_id: null,
             }),
+            signal: ac.signal,
           });
+          clearTimeout(timeout);
           if (res.ok) {
             engineSynced = true;
           } else {
@@ -207,12 +215,16 @@ export async function revokeApiKey(event: RequestEventCommon, keyId: string): Pr
 
       if (cluster && cluster.engine_key) {
         try {
+          const ac = new AbortController();
+          const to = setTimeout(() => ac.abort(), 5000);
           const res = await fetch(`${cluster.endpoint_url.replace(/\/+$/, "")}/admin/api_keys/${encodeURIComponent(keyId)}`, {
             method: "DELETE",
             headers: {
               "x-api-key": cluster.engine_key,
             },
+            signal: ac.signal,
           });
+          clearTimeout(to);
           if (!res.ok) {
             console.error(`Failed to revoke key from custom cluster ${keyInfo.cluster_id}: ${res.status}`);
           }
@@ -226,12 +238,16 @@ export async function revokeApiKey(event: RequestEventCommon, keyId: string): Pr
 
       if (engineUrl && engineKey) {
         try {
+          const ac = new AbortController();
+          const to = setTimeout(() => ac.abort(), 5000);
           const res = await fetch(`${engineUrl}/admin/api_keys/${encodeURIComponent(keyId)}`, {
             method: "DELETE",
             headers: {
               "x-api-key": engineKey,
             },
+            signal: ac.signal,
           });
+          clearTimeout(to);
           if (!res.ok) {
             console.error(`Failed to revoke key from shared engine: ${res.status}`);
           }
