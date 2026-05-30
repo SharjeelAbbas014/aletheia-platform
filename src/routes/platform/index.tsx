@@ -472,7 +472,15 @@ export default component$(() => {
       graphData.loaded = true;
       console.log('[graph/storage/usage] graph edges loaded:', graphData.edges.length);
 
-      const ms = results.reduce((acc: any, r) => { if (r.sstats) for (const [k, v] of Object.entries(r.sstats)) acc[k] = (acc[k] || 0) + (v as number); return acc; }, {}) as StorageStats;
+      const ms = results.reduce((acc: any, r) => {
+        const s = r.sstats as any;
+        if (s && !s.shared) {
+          for (const [k, v] of Object.entries(s)) {
+            if (k !== "shared") acc[k] = (acc[k] || 0) + (v as number);
+          }
+        }
+        return acc;
+      }, {}) as StorageStats;
       storageData.stats = ms;
       storageData.loaded = true;
 
@@ -492,7 +500,7 @@ export default component$(() => {
   
 
   // Use the newly created key if available
-  const activeKey = createKeyAction.value?.key?.token || keys[0]?.token || "YOUR_API_KEY";
+  const activeKey = createKeyAction.value?.key?.token || localKeyList.value[0]?.token || keys[0]?.token || "YOUR_API_KEY";
   // Proxy base_url: users always hit the Qwik frontend which securely forwards to the Rust engine
   const proxyBaseUrl = typeof window !== "undefined" ? window.location.origin + "/api" : "https://aletheiadb.com/api";
 
