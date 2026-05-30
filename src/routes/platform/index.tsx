@@ -366,20 +366,42 @@ export default component$(() => {
   const activeApiTab = useSignal<"keys" | "create" | "usage" | "graph" | "storage">("keys");
   const activeSettingsTab = useSignal<"profile" | "team" | "templates">("profile");
   const newApiKeyName = useSignal("");
+  const manualKeyCreating = useSignal(false);
+  const localKeyList = useSignal<ApiKey[]>([]);
   const showSettingsCreateForm = useSignal(false);
   const settingsNewName = useSignal("");
   const settingsNewTemplate = useSignal("");
   const settingsCopiedId = useSignal("");
 
+  useTask$(() => {
+    localKeyList.value = [...platformData.value.keys];
+  });
+
   useTask$(({ track }) => {
     const wasCreated = track(() => createKeyAction.value?.success);
     const createdToken = track(() => createKeyAction.value?.key?.token);
-
     if (wasCreated && createdToken) {
+      manualKeyCreating.value = false;
+      const k = createKeyAction.value?.key;
+      if (k) localKeyList.value = [k as ApiKey, ...localKeyList.value];
       newApiKeyName.value = "";
       activeMissionTab.value = "api";
       activeApiTab.value = "keys";
     }
+  });
+
+  useTask$(({ track }) => {
+    const failed = track(() => createKeyAction.value);
+    if (failed && failed.success === false) {
+      manualKeyCreating.value = false;
+    }
+  });
+
+  useVisibleTask$(({ track }) => {
+    track(() => manualKeyCreating.value);
+    if (!manualKeyCreating.value) return;
+    const t = setTimeout(() => { manualKeyCreating.value = false; }, 25000);
+    return () => clearTimeout(t);
   });
 
   useVisibleTask$(({ cleanup }) => {
@@ -915,7 +937,7 @@ export default component$(() => {
 
                     {activeApiTab.value === "keys" ? (
                       <div class="space-y-3">
-                        {keys.length === 0 && !createKeyAction.value?.success && (
+                        {localKeyList.value.length === 0 && !createKeyAction.value?.success && (
                           <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant/15 py-12 px-6 text-center">
                             <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-surface-container-high text-tertiary mb-4">
                               <KeyIcon class="w-6 h-6" />
@@ -928,7 +950,7 @@ export default component$(() => {
                             </button>
                           </div>
                         )}
-                        {keys.map((key) => (
+                        {localKeyList.value.map((key) => (
                           <div key={key.key_id} class="group flex flex-col justify-between gap-4 rounded-xl border border-outline-variant/10 bg-surface-container-low p-4 transition-all hover:border-primary/20 hover:shadow-sm lg:flex-row lg:items-center">
                             <div class="flex items-center gap-3.5">
                               <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
@@ -959,14 +981,16 @@ export default component$(() => {
                         <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
                           <h3 class="text-sm font-bold text-on-surface mb-1">Provision Access</h3>
                           <p class="text-xs text-tertiary mb-4">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
-                          <Form action={createKeyAction} class="flex flex-col gap-3 sm:flex-row">
+                          <Form action={createKeyAction}
+                            onSubmit$={() => { manualKeyCreating.value = true; }}
+                            class="flex flex-col gap-3 sm:flex-row">
                             <input name="name" value={newApiKeyName.value}
                               onInput$={(_, el) => { newApiKeyName.value = el.value; }}
                               class="flex-1 rounded-lg border border-outline-variant/15 bg-surface-container-highest px-3.5 py-2.5 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors placeholder:text-tertiary/50"
                               placeholder="Key identifier (e.g. Production)" required />
-                            <button type="submit" disabled={createKeyAction.isRunning}
+                            <button type="submit" disabled={manualKeyCreating.value}
                               class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 shrink-0 shadow-sm">
-                              {createKeyAction.isRunning ? (<><Loader2Icon class="w-3.5 h-3.5 animate-spin" /> Generating...</>) : ("Generate New Key")}
+                              {manualKeyCreating.value ? (<><Loader2Icon class="w-3.5 h-3.5 animate-spin" /> Generating...</>) : ("Generate New Key")}
                             </button>
                           </Form>
                         </div>
