@@ -448,18 +448,30 @@ export default component$(() => {
 
   useVisibleTask$(async () => {
     try {
-      console.log('[graph/storage/usage] starting fetch task, clusters:', clusters.length, 'active:', clusters.filter(c => c.status === 'active').length);
-      const active = clusters.filter(c => c.status === "active" || c.status === "provisioning");
-      if (!active.length) {
-        console.log('[graph/storage/usage] no clusters to fetch from');
+      // Only fetch from clusters that are actually running (not provisioning/failed)
+      const activeDedicated = clusters.filter(c => c.status === "active" && c.tier !== "fractional");
+      const activeFractional = clusters.filter(c => c.tier === "fractional" && c.status === "active");
+      const hasActiveClusters = activeDedicated.length > 0 || activeFractional.length > 0;
+
+      if (!hasActiveClusters) {
+        // No active dedicated clusters — fetch graph from the shared server directly
+        // using the user's API keys (Pay Per Usage path)
+        try {
+          const sharedRes = await fetch("/api/shared/graph-edges");
+          graphData.edges = sharedRes.ok ? await sharedRes.json() as GraphEdge[] : [];
+        } catch {
+          graphData.edges = [];
+        }
         graphData.loaded = true;
         storageData.loaded = true;
         usageData.loaded = true;
         return;
       }
+
+      // Active dedicated clusters exist — fetch per-cluster data
+      const allActive = [...activeDedicated, ...activeFractional];
       const results = await Promise.all(
-        active.map(async (c) => {
-          console.log(`[graph/storage/usage] fetching for cluster ${c.id}`);
+        allActive.map(async (c) => {
           const [edgesRes, sstatsRes, udataRes] = await Promise.all([
             fetch(`/api/clusters/${c.id}/graph-edges`).catch(() => null),
             fetch(`/api/clusters/${c.id}/storage-stats`).catch(() => null),
@@ -471,9 +483,20 @@ export default component$(() => {
           return { edges, sstats, udata };
         })
       );
+
       graphData.edges = results.flatMap(r => r.edges).filter(Boolean);
       graphData.loaded = true;
-      console.log('[graph/storage/usage] graph edges loaded:', graphData.edges.length);
+
+      // If dedicated clusters returned no graph data, also check shared server
+      if (graphData.edges.length === 0) {
+        try {
+          const sharedRes = await fetch("/api/shared/graph-edges");
+          if (sharedRes.ok) {
+            const sharedEdges = await sharedRes.json() as GraphEdge[];
+            graphData.edges = sharedEdges;
+          }
+        } catch { /* non-fatal */ }
+      }
 
       const ms = results.reduce((acc: any, r) => {
         const s = r.sstats as any;
@@ -491,7 +514,6 @@ export default component$(() => {
       for (const r of results) for (const d of r.udata.daily || []) { const k = d.date || ""; if (dm.has(k)) { const e = dm.get(k)!; e.request_count += d.request_count || 0; e.ingest_count += d.ingest_count || 0; e.query_count += d.query_count || 0; e.graph_ops += d.graph_ops || 0; } else dm.set(k, { ...d }); }
       usageData.daily = Array.from(dm.values()).sort((a, b) => a.date.localeCompare(b.date));
       usageData.loaded = true;
-      console.log('[graph/storage/usage] all done');
     } catch (err) {
       console.error('[graph/storage/usage] error:', err);
       graphData.loaded = true;
