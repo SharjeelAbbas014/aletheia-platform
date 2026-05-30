@@ -19,7 +19,10 @@ import {
   UsersIcon,
   FileTextIcon,
   MailIcon,
-  AlertCircleIcon
+  AlertCircleIcon,
+  TrendingUpIcon,
+  GitBranchIcon,
+  DatabaseIcon
 } from "lucide-qwik";
 import {
   Form,
@@ -42,6 +45,7 @@ import {
 import { getClusters, type Cluster } from "~/lib/clusters";
 import { getTeamMembers, type TeamMemberInfo } from "~/lib/team";
 import { getContextTemplates, createContextTemplate, deleteContextTemplate, type ContextTemplate } from "~/lib/context-templates";
+import { getCoreClusterStats, getStorageStats, getGraphEdges, type CoreClusterStats, type StorageStats, type GraphEdge } from "~/lib/aletheia-core";
 import { requireAuth } from "~/lib/auth";
 import { CONTACT_MAILTO } from "~/constants/contact";
 import { setPrivateNoStore } from "~/lib/cache";
@@ -307,6 +311,9 @@ export default component$(() => {
   const usage = platformData.value.usage;
   const clusters = platformData.value.clusters;
   const combinedStats = useStore({ memory_count: 0, entity_count: 0, fact_count: 0, storage_bytes: 0 });
+  const graphData = useStore<{ edges: GraphEdge[]; loaded: boolean }>({ edges: [], loaded: false });
+  const storageData = useStore<{ stats: StorageStats | null; loaded: boolean }>({ stats: null, loaded: false });
+  const usageData = useStore<{ daily: { date: string; request_count: number; ingest_count: number; query_count: number; graph_ops: number }[]; loaded: boolean }>({ daily: [], loaded: false });
 
   const formatNum = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
 
@@ -356,7 +363,7 @@ export default component$(() => {
   const nav = useNavigate();
   const initialTab = (loc.url.searchParams.get("tab") as any) || "overview";
   const activeMissionTab = useSignal<"overview" | "api" | "billing" | "settings">(initialTab);
-  const activeApiTab = useSignal<"keys" | "create">("keys");
+  const activeApiTab = useSignal<"keys" | "create" | "usage" | "graph" | "storage">("keys");
   const activeSettingsTab = useSignal<"profile" | "team" | "templates">("profile");
   const newApiKeyName = useSignal("");
   const showSettingsCreateForm = useSignal(false);
@@ -432,6 +439,68 @@ export default component$(() => {
     combinedStats.entity_count = merged.entity_count;
     combinedStats.fact_count = merged.fact_count;
     combinedStats.storage_bytes = merged.storage_bytes;
+
+    // Load graph edges
+    const edgesResults = await Promise.all(
+      active.map(async (c) => {
+        try {
+          const res = await fetch(`/api/clusters/${c.id}/graph-edges`);
+          if (!res.ok) return [];
+          return await res.json() as GraphEdge[];
+        } catch { return []; }
+      })
+    );
+    graphData.edges = edgesResults.flat().filter(Boolean);
+    graphData.loaded = true;
+
+    // Load storage stats
+    const statsResults = await Promise.all(
+      active.map(async (c) => {
+        try {
+          const res = await fetch(`/api/clusters/${c.id}/storage-stats`);
+          if (!res.ok) return null;
+          return await res.json() as StorageStats;
+        } catch { return null; }
+      })
+    );
+    const mergedStats = statsResults.reduce((acc: any, s) => {
+      if (!s) return acc;
+      for (const [k, v] of Object.entries(s)) {
+        acc[k] = (acc[k] || 0) + (v as number);
+      }
+      return acc;
+    }, {}) as StorageStats;
+    storageData.stats = mergedStats;
+    storageData.loaded = true;
+
+    // Load usage daily
+    const usageResults = await Promise.all(
+      active.map(async (c) => {
+        try {
+          const res = await fetch(`/api/clusters/${c.id}/usage`);
+          if (!res.ok) return { daily: [] };
+          return await res.json();
+        } catch { return { daily: [] }; }
+      })
+    );
+    const allDaily: any[] = [];
+    const dateMap = new Map<string, any>();
+    for (const r of usageResults) {
+      for (const d of r.daily || []) {
+        const key = d.date || "";
+        if (dateMap.has(key)) {
+          const e = dateMap.get(key)!;
+          e.request_count += d.request_count || 0;
+          e.ingest_count += d.ingest_count || 0;
+          e.query_count += d.query_count || 0;
+          e.graph_ops += d.graph_ops || 0;
+        } else {
+          dateMap.set(key, { ...d });
+        }
+      }
+    }
+    usageData.daily = Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+    usageData.loaded = true;
   });
 
   
@@ -579,7 +648,7 @@ export default component$(() => {
               }}
             >
               <KeyIcon class={`w-3.5 h-3.5 ${activeMissionTab.value === "api" ? "text-on-primary" : "text-tertiary"}`} />
-              API Access
+              Pay Per Usage
             </button>
           </div>
         )}
@@ -760,184 +829,176 @@ export default component$(() => {
         )}
 
         {activeMissionTab.value === "api" && (
-          <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div class="lg:col-span-2 space-y-6">
-              <section>
-                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h3 class="text-base font-bold tracking-tight text-on-surface">API Key Management</h3>
-                    <p class="mt-1 text-sm text-tertiary">Generate, rotate, and segment access keys for every environment.</p>
+          <div class="space-y-6">
+            {/* Key creation success banner (shows regardless of active sub-tab) */}
+            {createKeyAction.value?.success && createKeyAction.value.key?.token && (
+              <div class="rounded-xl bg-primary/[0.06] border border-primary/25 p-5">
+                <div class="flex items-center gap-2.5 mb-3">
+                  <div class="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10">
+                    <CheckCircle2Icon class="w-3.5 h-3.5 text-primary" />
                   </div>
-                  <div class="inline-flex rounded-lg border border-outline-variant/10 bg-surface-container-low p-0.5">
-                    <button
-                      type="button"
-                      class={`rounded-md px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] transition-all ${
-                        activeApiTab.value === "keys"
-                          ? "bg-primary text-on-primary shadow-sm"
-                          : "text-tertiary hover:text-on-surface"
-                      }`}
-                      onClick$={() => {
-                        activeApiTab.value = "keys";
-                      }}
-                    >
-                      Active Keys
-                    </button>
-                    <button
-                      type="button"
-                      class={`rounded-md px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] transition-all ${
-                        activeApiTab.value === "create"
-                          ? "bg-primary text-on-primary shadow-sm"
-                          : "text-tertiary hover:text-on-surface"
-                      }`}
-                      onClick$={() => {
-                        activeApiTab.value = "create";
-                      }}
-                    >
-                      Create Key
-                    </button>
-                  </div>
+                  <p class="text-xs font-bold text-primary">New Key Generated Successfully</p>
                 </div>
-
-                {createKeyAction.value?.success && createKeyAction.value.key?.token && (
-                  <div class="mb-6 rounded-xl bg-primary/[0.06] border border-primary/25 p-5">
-                    <div class="flex items-center gap-2.5 mb-3">
-                      <div class="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10">
-                        <CheckCircle2Icon class="w-3.5 h-3.5 text-primary" />
-                      </div>
-                      <p class="text-xs font-bold text-primary">New Key Generated Successfully</p>
-                    </div>
-                    <p class="text-xs text-tertiary mb-3">Make sure to copy your API key now. You won't be able to see it again.</p>
-                    <div class="flex items-center gap-2 rounded-lg bg-black/40 p-3 font-mono text-xs text-primary border border-primary/15">
-                      <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
-                      <button
-                        class="p-1.5 hover:bg-primary/20 rounded transition-colors shrink-0"
-                        onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
-                      >
-                        <CopyIcon class="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    <div class="mt-4 rounded-lg bg-black/20 border border-outline-variant/10 p-4">
-                      <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-2">Usage Example</p>
-                      <pre class="overflow-x-auto font-mono text-[10px] leading-relaxed text-primary/70 whitespace-pre-wrap">{`curl -X POST https://aletheiadb.com/api/ingest \\
+                <p class="text-xs text-tertiary mb-3">Make sure to copy your API key now. You won't be able to see it again.</p>
+                <div class="flex items-center gap-2 rounded-lg bg-black/40 p-3 font-mono text-xs text-primary border border-primary/15">
+                  <span class="flex-1 truncate">{createKeyAction.value.key.token}</span>
+                  <button
+                    class="p-1.5 hover:bg-primary/20 rounded transition-colors shrink-0"
+                    onClick$={() => navigator.clipboard.writeText(createKeyAction.value?.key?.token || "")}
+                  >
+                    <CopyIcon class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div class="mt-4 rounded-lg bg-black/20 border border-outline-variant/10 p-4">
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-tertiary mb-2">Usage Example</p>
+                  <pre class="overflow-x-auto font-mono text-[10px] leading-relaxed text-primary/70 whitespace-pre-wrap">{`curl -X POST https://aletheiadb.com/api/ingest \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: ${createKeyAction.value.key.token.substring(0, 20)}..." \\
   -d '{
     "entity_id": "user-1",
     "textual_content": "Hello, AletheiaDB!"
   }'`}</pre>
-                    </div>
-                    <a href="/docs/quickstart" class="mt-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:opacity-80 transition-opacity">
-                      <ExternalLinkIcon class="w-3 h-3" />
-                      Read the Quickstart Guide →
-                    </a>
-                    {createKeyAction.value.engineSynced ? (
-                      <p class="text-[10px] text-green-400 mt-3 flex items-center gap-1">
-                        <CheckCircle2Icon class="w-3 h-3" />
-                        Key synced to engine - ready for direct API access
-                      </p>
-                    ) : (
-                      <p class="text-[10px] text-amber-400 mt-3 flex items-center gap-1">
-                        <AlertCircleIcon class="w-3 h-3" />
-                        Key created but engine sync failed ({createKeyAction.value.engineError || "unknown error"}). Use the proxy endpoint or contact support.
-                      </p>
-                    )}
-                  </div>
+                </div>
+                <a href="/docs/quickstart" class="mt-3 inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:opacity-80 transition-opacity">
+                  <ExternalLinkIcon class="w-3 h-3" />
+                  Read the Quickstart Guide →
+                </a>
+                {createKeyAction.value.engineSynced ? (
+                  <p class="text-[10px] text-green-400 mt-3 flex items-center gap-1">
+                    <CheckCircle2Icon class="w-3 h-3" />
+                    Key synced to engine - ready for direct API access
+                  </p>
+                ) : (
+                  <p class="text-[10px] text-amber-400 mt-3 flex items-center gap-1">
+                    <AlertCircleIcon class="w-3 h-3" />
+                    Key created but engine sync failed ({createKeyAction.value.engineError || "unknown error"}). Use the proxy endpoint or contact support.
+                  </p>
                 )}
+              </div>
+            )}
 
-                {activeApiTab.value === "keys" ? (
-                  <div class="space-y-3">
-                    {keys.length === 0 && !createKeyAction.value?.success && (
-                      <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant/15 py-12 px-6 text-center">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-surface-container-high text-tertiary mb-4">
-                          <KeyIcon class="w-6 h-6" />
-                        </div>
-                        <p class="text-sm font-medium text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
-                        <button
-                          type="button"
-                          class="rounded-lg bg-primary px-5 py-2 text-xs font-bold text-on-primary transition-all hover:opacity-90 shadow-sm"
-                          onClick$={() => {
-                            activeApiTab.value = "create";
-                          }}
-                        >
-                          Create First Key
+            {/* Sub-tab pill bar */}
+            <div class="mb-2 inline-flex flex-wrap rounded-xl border border-outline-variant/10 bg-surface-container-low p-1 gap-1">
+              <button type="button"
+                class={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-all ${activeApiTab.value === "keys" ? "bg-primary text-on-primary shadow-sm" : "text-tertiary hover:text-on-surface"}`}
+                onClick$={() => { activeApiTab.value = "keys"; }}>
+                <KeyIcon class={`w-3.5 h-3.5 ${activeApiTab.value === "keys" ? "text-on-primary" : "text-tertiary"}`} />
+                API Keys
+              </button>
+              <button type="button"
+                class={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-all ${activeApiTab.value === "usage" ? "bg-primary text-on-primary shadow-sm" : "text-tertiary hover:text-on-surface"}`}
+                onClick$={() => { activeApiTab.value = "usage"; }}>
+                <TrendingUpIcon class={`w-3.5 h-3.5 ${activeApiTab.value === "usage" ? "text-on-primary" : "text-tertiary"}`} />
+                Usage Analytics
+              </button>
+              <button type="button"
+                class={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-all ${activeApiTab.value === "graph" ? "bg-primary text-on-primary shadow-sm" : "text-tertiary hover:text-on-surface"}`}
+                onClick$={() => { activeApiTab.value = "graph"; }}>
+                <GitBranchIcon class={`w-3.5 h-3.5 ${activeApiTab.value === "graph" ? "text-on-primary" : "text-tertiary"}`} />
+                Knowledge Graph
+              </button>
+              <button type="button"
+                class={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-all ${activeApiTab.value === "storage" ? "bg-primary text-on-primary shadow-sm" : "text-tertiary hover:text-on-surface"}`}
+                onClick$={() => { activeApiTab.value = "storage"; }}>
+                <DatabaseIcon class={`w-3.5 h-3.5 ${activeApiTab.value === "storage" ? "text-on-primary" : "text-tertiary"}`} />
+                Storage Explorer
+              </button>
+            </div>
+
+            {/* ───── API Keys Sub-tab ───── */}
+            {(activeApiTab.value === "keys" || activeApiTab.value === "create") && (
+              <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div class="lg:col-span-2 space-y-6">
+                  <section>
+                    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 class="text-base font-bold tracking-tight text-on-surface">API Key Management</h3>
+                        <p class="mt-1 text-sm text-tertiary">Generate, rotate, and segment access keys for every environment.</p>
+                      </div>
+                      <div class="inline-flex rounded-lg border border-outline-variant/10 bg-surface-container-low p-0.5">
+                        <button type="button"
+                          class={`rounded-md px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] transition-all ${activeApiTab.value === "keys" ? "bg-primary text-on-primary shadow-sm" : "text-tertiary hover:text-on-surface"}`}
+                          onClick$={() => { activeApiTab.value = "keys"; }}>
+                          Active Keys
+                        </button>
+                        <button type="button"
+                          class={`rounded-md px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.12em] transition-all ${activeApiTab.value === "create" ? "bg-primary text-on-primary shadow-sm" : "text-tertiary hover:text-on-surface"}`}
+                          onClick$={() => { activeApiTab.value = "create"; }}>
+                          Create Key
                         </button>
                       </div>
-                    )}
+                    </div>
 
-                    {keys.map((key) => (
-                      <div key={key.key_id} class="group flex flex-col justify-between gap-4 rounded-xl border border-outline-variant/10 bg-surface-container-low p-4 transition-all hover:border-primary/20 hover:shadow-sm lg:flex-row lg:items-center">
-                        <div class="flex items-center gap-3.5">
-                          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
-                            <KeyIcon class="w-4 h-4" />
+                    {activeApiTab.value === "keys" ? (
+                      <div class="space-y-3">
+                        {keys.length === 0 && !createKeyAction.value?.success && (
+                          <div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant/15 py-12 px-6 text-center">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-surface-container-high text-tertiary mb-4">
+                              <KeyIcon class="w-6 h-6" />
+                            </div>
+                            <p class="text-sm font-medium text-tertiary mb-4">No API keys yet. Create one to start using the engine.</p>
+                            <button type="button"
+                              class="rounded-lg bg-primary px-5 py-2 text-xs font-bold text-on-primary transition-all hover:opacity-90 shadow-sm"
+                              onClick$={() => { activeApiTab.value = "create"; }}>
+                              Create First Key
+                            </button>
                           </div>
-                          <div>
-                            <h4 class="text-sm font-bold text-on-surface">{key.name}</h4>
-                            <p class="mt-0.5 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
+                        )}
+                        {keys.map((key) => (
+                          <div key={key.key_id} class="group flex flex-col justify-between gap-4 rounded-xl border border-outline-variant/10 bg-surface-container-low p-4 transition-all hover:border-primary/20 hover:shadow-sm lg:flex-row lg:items-center">
+                            <div class="flex items-center gap-3.5">
+                              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-high text-primary">
+                                <KeyIcon class="w-4 h-4" />
+                              </div>
+                              <div>
+                                <h4 class="text-sm font-bold text-on-surface">{key.name}</h4>
+                                <p class="mt-0.5 font-mono text-xs text-tertiary tracking-widest">{key.key_prefix}••••••••••••</p>
+                              </div>
+                            </div>
+                            <div class="flex items-center gap-5">
+                              <div class="text-right">
+                                <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary">Created</p>
+                                <p class="font-mono text-xs text-on-surface"><LocalDateTime value={key.created_at_ms} /></p>
+                              </div>
+                              <Form action={revokeKeyAction}>
+                                <input type="hidden" name="id" value={key.key_id} />
+                                <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white" title="Revoke key">
+                                  <Trash2Icon class="w-3.5 h-3.5" />
+                                </button>
+                              </Form>
+                            </div>
                           </div>
-                        </div>
-                        <div class="flex items-center gap-5">
-                          <div class="text-right">
-                            <p class="text-[10px] font-bold uppercase tracking-[0.1em] text-tertiary">Created</p>
-                            <p class="font-mono text-xs text-on-surface">
-                              <LocalDateTime value={key.created_at_ms} />
-                            </p>
-                          </div>
-                          <Form action={revokeKeyAction}>
-                            <input type="hidden" name="id" value={key.key_id} />
-                            <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-colors hover:bg-red-500 hover:text-white" title="Revoke key">
-                              <Trash2Icon class="w-3.5 h-3.5" />
+                        ))}
+                      </div>
+                    ) : (
+                      <section>
+                        <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                          <h3 class="text-sm font-bold text-on-surface mb-1">Provision Access</h3>
+                          <p class="text-xs text-tertiary mb-4">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
+                          <Form action={createKeyAction} class="flex flex-col gap-3 sm:flex-row">
+                            <input name="name" value={newApiKeyName.value}
+                              onInput$={(_, el) => { newApiKeyName.value = el.value; }}
+                              class="flex-1 rounded-lg border border-outline-variant/15 bg-surface-container-highest px-3.5 py-2.5 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors placeholder:text-tertiary/50"
+                              placeholder="Key identifier (e.g. Production)" required />
+                            <button type="submit" disabled={createKeyAction.isRunning}
+                              class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 shrink-0 shadow-sm">
+                              {createKeyAction.isRunning ? (<><Loader2Icon class="w-3.5 h-3.5 animate-spin" /> Generating...</>) : ("Generate New Key")}
                             </button>
                           </Form>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <section>
-                    <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
-                      <h3 class="text-sm font-bold text-on-surface mb-1">Provision Access</h3>
-                      <p class="text-xs text-tertiary mb-4">Create multiple keys to isolate your staging, production, and sidecar environments.</p>
-                      <Form action={createKeyAction} class="flex flex-col gap-3 sm:flex-row">
-                        <input
-                          name="name"
-                          value={newApiKeyName.value}
-                          onInput$={(_, el) => {
-                            newApiKeyName.value = el.value;
-                          }}
-                          class="flex-1 rounded-lg border border-outline-variant/15 bg-surface-container-highest px-3.5 py-2.5 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors placeholder:text-tertiary/50"
-                          placeholder="Key identifier (e.g. Production)"
-                          required
-                        />
-                        <button
-                          type="submit"
-                          disabled={createKeyAction.isRunning}
-                          class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 shrink-0 shadow-sm"
-                        >
-                          {createKeyAction.isRunning ? (
-                            <>
-                              <Loader2Icon class="w-3.5 h-3.5 animate-spin" />
-                              Generating...
-                            </>
-                          ) : (
-                            "Generate New Key"
-                          )}
-                        </button>
-                      </Form>
-                    </div>
+                      </section>
+                    )}
                   </section>
-                )}
-              </section>
-            </div>
-
-            <aside class="space-y-6">
-              <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
-                <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-sm font-bold text-on-surface">Local Sidecar</h3>
-                  <span class="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold">Python SDK</span>
                 </div>
-                <p class="text-xs text-tertiary mb-3 leading-relaxed">Connect your local agent to the engine using your provisioned key.</p>
-                <pre class="overflow-x-auto rounded-lg bg-black/30 p-4 font-mono text-[10px] leading-relaxed text-primary/70 border border-primary/5">
-                  <code>{`from aletheia import AletheiaDBClient
+                <aside class="space-y-6">
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <div class="flex items-center justify-between mb-3">
+                      <h3 class="text-sm font-bold text-on-surface">Local Sidecar</h3>
+                      <span class="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary font-bold">Python SDK</span>
+                    </div>
+                    <p class="text-xs text-tertiary mb-3 leading-relaxed">Connect your local agent to the engine using your provisioned key.</p>
+                    <pre class="overflow-x-auto rounded-lg bg-black/30 p-4 font-mono text-[10px] leading-relaxed text-primary/70 border border-primary/5">
+                      <code>{`from aletheia import AletheiaDBClient
 
 client = AletheiaDBClient(
   api_key="${activeKey}",
@@ -948,26 +1009,282 @@ client.ingest(
   entity_id="u_99",
   text="I prefer jasmine tea."
 )`}</code>
-                </pre>
-              </div>
-
-              <div class="rounded-xl bg-gradient-to-br from-primary/[0.07] to-primary/[0.02] border border-primary/15 p-5">
-                <div class="flex items-center gap-2.5 mb-3">
-                  <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary">
-                    <BarChart3Icon class="w-4 h-4" />
+                    </pre>
                   </div>
-                  <h3 class="text-sm font-bold text-primary">Need Scale?</h3>
-                </div>
-                <p class="text-xs text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region sync for massive deployments.</p>
-                <a
-                  href={CONTACT_MAILTO}
-                  class="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] shadow-sm"
-                >
-                  Contact Engineering
-                  <ExternalLinkIcon class="w-3 h-3" />
-                </a>
+                  <div class="rounded-xl bg-gradient-to-br from-primary/[0.07] to-primary/[0.02] border border-primary/15 p-5">
+                    <div class="flex items-center gap-2.5 mb-3">
+                      <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary"><BarChart3Icon class="w-4 h-4" /></div>
+                      <h3 class="text-sm font-bold text-primary">Need Scale?</h3>
+                    </div>
+                    <p class="text-xs text-tertiary leading-relaxed">Unlock dedicated HNSW clusters and multi-region sync for massive deployments.</p>
+                    <a href={CONTACT_MAILTO} class="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] shadow-sm">
+                      Contact Engineering <ExternalLinkIcon class="w-3 h-3" />
+                    </a>
+                  </div>
+                </aside>
               </div>
-            </aside>
+            )}
+
+            {/* ───── Usage Analytics Sub-tab ───── */}
+            {activeApiTab.value === "usage" && (
+              <div class="space-y-6">
+                {/* Summary cards */}
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Total Requests</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{usage?.request_count || 0}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Ingests</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{usage?.ingest_count || 0}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Queries</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{usage?.query_count || 0}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Credits Used</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum((usage?.request_count || 0) + (usage?.ingest_count || 0))}</p>
+                  </div>
+                </div>
+
+                {/* Knowledge space summary */}
+                <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Total Memories</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum(combinedStats.memory_count)}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Entities</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum(combinedStats.entity_count)}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Facts</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum(combinedStats.fact_count)}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Storage</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatBytes(combinedStats.storage_bytes)}</p>
+                  </div>
+                </div>
+
+                {/* Daily usage bar chart */}
+                <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                  <h3 class="text-sm font-bold text-on-surface mb-4">Daily Usage (Last {usageData.daily.length} days)</h3>
+                  {usageData.daily.length === 0 ? (
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                      <div class="flex items-center justify-center h-10 w-10 rounded-lg bg-surface-container-high text-tertiary mb-3">
+                        <TrendingUpIcon class="w-5 h-5" />
+                      </div>
+                      <p class="text-sm font-medium text-tertiary">No usage data yet.</p>
+                      <p class="text-xs text-tertiary/60 mt-1">Start making API requests to see your usage patterns.</p>
+                    </div>
+                  ) : (
+                    <div class="overflow-x-auto">
+                      <svg width={Math.max(600, usageData.daily.length * 50)} height="200" class="text-tertiary">
+                        <g transform="translate(40, 10)">
+                          {(() => {
+                            const maxVal = Math.max(1, ...usageData.daily.map(d => d.request_count || 0));
+                            const barW = Math.max(20, (Math.min(600, usageData.daily.length * 50) - 40) / usageData.daily.length - 6);
+                            return usageData.daily.map((d, i) => {
+                              const h = (d.request_count || 0) / maxVal * 150;
+                              return (
+                                <g key={d.date}>
+                                  <rect x={i * (barW + 6)} y={150 - h} width={barW} height={h} rx="2" fill="currentColor" class="fill-primary/60 hover:fill-primary transition-colors" />
+                                  <text x={i * (barW + 6) + barW / 2} y={175} text-anchor="middle" class="fill-tertiary text-[8px] font-mono">{d.date.slice(5)}</text>
+                                  <title>{`${d.date}: ${d.request_count} requests`}</title>
+                                </g>
+                              );
+                            });
+                          })()}
+                        </g>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ───── Knowledge Graph Sub-tab ───── */}
+            {activeApiTab.value === "graph" && (
+              <div class="space-y-6">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Total Edges</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum(graphData.edges.length)}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Unique Nodes</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum((() => { const s = new Set<string>(); for (const e of graphData.edges) { s.add(e.source); s.add(e.target); } return s.size; })())}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Edge Types</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum((() => { const s = new Set<string>(); for (const e of graphData.edges) { s.add(e.edge_type); } return s.size; })())}</p>
+                  </div>
+                </div>
+
+                <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                  <h3 class="text-sm font-bold text-on-surface mb-4">Knowledge Graph Visualization</h3>
+                  {graphData.edges.length === 0 ? (
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                      <div class="flex items-center justify-center h-10 w-10 rounded-lg bg-surface-container-high text-tertiary mb-3">
+                        <GitBranchIcon class="w-5 h-5" />
+                      </div>
+                      <p class="text-sm font-medium text-tertiary">{graphData.loaded ? "No graph edges found." : "Loading graph data..."}</p>
+                      <p class="text-xs text-tertiary/60 mt-1">Graph edges are created when facts connect entities in your knowledge base.</p>
+                    </div>
+                  ) : (
+                    <div class="overflow-x-auto">
+                      <svg width={Math.max(500, graphData.edges.length * 1.5)} height="400">
+                        {(() => {
+                          const nodes = Array.from((() => { const s = new Set<string>(); for (const e of graphData.edges) { s.add(e.source); s.add(e.target); } return s; })());
+                          const nodePos = new Map<string, {x: number; y: number}>();
+                          const cx = Math.max(500, graphData.edges.length * 1.5) / 2;
+                          const cy = 200;
+                          const r = Math.min(180, nodes.length * 15);
+                          nodes.forEach((n, i) => {
+                            const angle = (2 * Math.PI * i) / nodes.length - Math.PI / 2;
+                            nodePos.set(n, { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
+                          });
+                          return (
+                            <>
+                              {graphData.edges.slice(0, 200).map((e, i) => {
+                                const sp = nodePos.get(e.source);
+                                const tp = nodePos.get(e.target);
+                                if (!sp || !tp) return null;
+                                return (
+                                  <g key={e.edge_id}>
+                                    <line x1={sp.x} y1={sp.y} x2={tp.x} y2={tp.y} stroke="currentColor" class="stroke-primary/20" stroke-width={Math.max(0.5, e.weight * 3)} />
+                                    <title>{`${e.source} → ${e.target}: ${e.label || e.edge_type} (w: ${e.weight.toFixed(2)})`}</title>
+                                  </g>
+                                );
+                              })}
+                              {nodes.map((n) => {
+                                const p = nodePos.get(n)!;
+                                return (
+                                  <g key={n}>
+                                    <circle cx={p.x} cy={p.y} r="6" class="fill-primary stroke-surface-container-low" stroke-width="2" />
+                                    <text x={p.x} y={p.y + 16} text-anchor="middle" class="fill-tertiary text-[9px] font-mono" font-size="9">{n.length > 20 ? n.slice(0, 18) + '..' : n}</text>
+                                    <title>{n}</title>
+                                  </g>
+                                );
+                              })}
+                            </>
+                          );
+                        })()}
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                {/* Edge Type Distribution */}
+                {graphData.edges.length > 0 && (
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <h3 class="text-sm font-bold text-on-surface mb-4">Edge Type Distribution</h3>
+                    <div class="space-y-2">
+                      {(() => {
+                        const dist = new Map<string, number>();
+                        for (const e of graphData.edges) { dist.set(e.edge_type, (dist.get(e.edge_type) || 0) + 1); }
+                        const maxCount = Math.max(1, ...dist.values());
+                        return Array.from(dist.entries()).sort((a, b) => b[1] - a[1]).map(([type, count]) => (
+                          <div key={type} class="flex items-center gap-3">
+                            <span class="w-24 shrink-0 text-xs font-mono text-on-surface truncate">{type}</span>
+                            <div class="flex-1 h-5 rounded bg-outline-variant/10 overflow-hidden">
+                              <div class="h-full rounded bg-gradient-to-r from-primary to-secondary transition-all" style={{ width: `${(count / maxCount) * 100}%` }} />
+                            </div>
+                            <span class="w-12 text-right text-xs font-bold text-tertiary">{count}</span>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ───── Storage Explorer Sub-tab ───── */}
+            {activeApiTab.value === "storage" && (
+              <div class="space-y-6">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Total Records</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatNum(storageData.stats ? Object.entries(storageData.stats).filter(([k]) => k.endsWith('_count')).reduce((s, [, v]) => s + (v as number), 0) : 0)}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Data Structures</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{storageData.stats ? Object.entries(storageData.stats).filter(([k]) => k.endsWith('_count')).length : 0}</p>
+                  </div>
+                  <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">DB Size</p>
+                    <p class="mt-1.5 text-2xl font-black text-on-surface tracking-tight">{formatBytes(storageData.stats?.storage_bytes || 0)}</p>
+                  </div>
+                </div>
+
+                {/* Data structure bar chart */}
+                <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
+                  <h3 class="text-sm font-bold text-on-surface mb-4">AletheiaDB Schema — Record Distribution</h3>
+                  {!storageData.loaded ? (
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                      <Loader2Icon class="w-6 h-6 animate-spin text-primary mb-3" />
+                      <p class="text-xs text-tertiary">Loading storage statistics...</p>
+                    </div>
+                  ) : !storageData.stats ? (
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                      <div class="flex items-center justify-center h-10 w-10 rounded-lg bg-surface-container-high text-tertiary mb-3">
+                        <DatabaseIcon class="w-5 h-5" />
+                      </div>
+                      <p class="text-sm font-medium text-tertiary">No storage data available.</p>
+                    </div>
+                  ) : (
+                    <div class="space-y-2">
+                      {(() => {
+                        const entries: [string, number][] = [];
+                        for (const [k, v] of Object.entries(storageData.stats!)) {
+                          if (k.endsWith('_count') && k !== 'storage_bytes') {
+                            entries.push([k.replace(/_count$/, '').replace(/_/g, ' '), v as number]);
+                          }
+                        }
+                        entries.sort((a, b) => b[1] - a[1]);
+                        const maxCount = Math.max(1, ...entries.map(e => e[1]));
+                        const labelMap: Record<string, string> = {
+                          'memory card': 'Memory Cards',
+                          'edge': 'Graph Edges',
+                          'memory': 'Memories',
+                          'metric': 'Metrics',
+                          'ledger turn': 'Ledger Turns',
+                          'memory artifact': 'Artifacts',
+                          'temporal event': 'Temporal Events',
+                          'shadow question': 'Shadow Questions',
+                          'facet posting': 'Facet Postings',
+                          'mem cell': 'Memory Cells',
+                          'mem scene': 'Memory Scenes',
+                          'profile fact': 'Profile Facts',
+                          'session router': 'Session Routers',
+                          'fact version': 'Fact Versions',
+                          'card relation': 'Card Relations',
+                          'memory link': 'Memory Links',
+                          'alias': 'Aliases',
+                          'preference': 'Preferences',
+                          'core profile': 'Core Profiles',
+                          'deletion tombstone': 'Tombstones',
+                        };
+                        return entries.map(([label, count]) => (
+                          <div key={label} class="flex items-center gap-3">
+                            <span class="w-32 shrink-0 text-xs font-semibold text-on-surface truncate capitalize">{labelMap[label] || label}</span>
+                            <div class="flex-1 h-5 rounded bg-outline-variant/10 overflow-hidden">
+                              <div class="h-full rounded bg-gradient-to-r from-secondary to-primary transition-all flex items-center justify-end pr-1.5" style={{ width: `${Math.max(2, (count / maxCount) * 100)}%` }}>
+                                {count > maxCount * 0.15 && <span class="text-[9px] font-bold text-on-primary">{count}</span>}
+                              </div>
+                            </div>
+                            {count <= maxCount * 0.15 && <span class="w-16 text-right text-xs font-bold text-tertiary">{formatNum(count)}</span>}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -171,13 +171,13 @@ export default component$(() => {
             <RocketIcon class="w-12 h-12 text-primary mx-auto mb-4 animate-pulse" />
             <h3 class="text-xl font-bold text-on-surface mb-2">Ready to ingest memories immediately</h3>
             <p class="text-sm text-tertiary mb-6 leading-relaxed">
-              No deployment necessary. Since you selected the shared public engine, you can generate an API key on the API Access tab and start indexing truths right away.
+              No deployment necessary. Since you selected the shared public engine, you can generate an API key on the Pay Per Usage tab and start indexing truths right away.
             </p>
             <Link
               href="/platform?tab=api"
               class="inline-block rounded-lg bg-primary px-8 py-3 font-bold text-on-primary transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20"
             >
-              Go to API Access & Create Key
+              Go to Pay Per Usage & Create Key
             </Link>
           </div>
         )}

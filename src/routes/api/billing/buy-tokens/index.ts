@@ -34,10 +34,10 @@ export const onPost: RequestHandler = async (event) => {
     const packageId = body?.package_id || "starter";
     const pack = PACKAGES[packageId];
 
-    if (!pack) throw event.error(400, "Invalid token package selected");
+    if (!pack) throw new Error("Invalid token package selected");
 
     const supabase = getAdminSupabaseClient(event.env);
-    if (!supabase) throw event.error(500, "Internal Server Error - Database connection offline");
+    if (!supabase) throw new Error("Database connection offline");
 
     // Check if Stripe is in mock mode for local testing
     const stripeKey = event.env.get("STRIPE_SECRET_KEY") || "";
@@ -55,7 +55,7 @@ export const onPost: RequestHandler = async (event) => {
       try {
         const { data: authData, error: authError } = await supabase.auth.admin.getUserById(user.user_id);
         if (authError || !authData?.user?.email) {
-          throw event.error(400, "Could not retrieve user email for billing");
+          throw new Error("Could not retrieve user email for billing");
         }
         const customer = await createStripeCustomer(event.env, authData.user.email, { user_id: user.user_id });
         customerId = customer.id;
@@ -68,9 +68,10 @@ export const onPost: RequestHandler = async (event) => {
           status: "active",
         }, { onConflict: "user_id" });
       } catch (err: any) {
+        const msg = err instanceof Error ? err.message : String(err);
         captureError(err, { action: "buyTokens_createCustomer" });
-        console.error("Stripe customer creation error:", err);
-        throw event.error(500, "Failed to initialize payment gateway");
+        console.error("Stripe customer creation error:", msg || err);
+        throw new Error("Failed to initialize payment gateway");
       }
     } else if (isMockStripe && !customerId) {
       customerId = "cus_mock_123";
@@ -137,13 +138,16 @@ export const onPost: RequestHandler = async (event) => {
       if (err.headers?.location) {
         throw err;
       }
+      const msg = err instanceof Error ? err.message : String(err);
       captureError(err, { action: "buyTokens_createCheckout" });
-      console.error("Stripe checkout error:", err);
-      throw event.error(500, "Failed to initiate checkout");
+      console.error("Stripe checkout error:", msg || err);
+      throw new Error("Failed to initiate checkout");
     }
   } catch (e: any) {
     if (e?.headers?.location) throw e;
+    const errMsg = e instanceof Error ? e.message : (typeof e === "string" ? e : JSON.stringify(e));
     captureError(e, { action: "buyTokens" });
-    throw event.error(500, "Internal Server Error");
+    console.error("[BuyTokens] Error:", errMsg || "(no message)");
+    throw event.error(500, errMsg || "Internal Server Error");
   }
 };

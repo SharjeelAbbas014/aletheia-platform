@@ -17,11 +17,11 @@ export const onPost: RequestHandler = async (event) => {
     const storageGb = tier === "fractional" ? 10 : Math.max(10, Math.min(1000, parseInt(body?.storage_gb || "50", 10) || 50));
 
     const supabase = getAdminSupabaseClient(event.env);
-    if (!supabase) throw event.error(500, "Internal Server Error - Database connection offline");
+    if (!supabase) throw new Error("Database connection offline");
 
     // 1. Create the cluster in the database
     const cluster = await createCluster(event, name, tier);
-    if (!cluster) throw event.error(500, "Failed to create cluster");
+    if (!cluster) throw new Error("Failed to create cluster");
 
     // 2. Free tier — provision immediately and redirect to cluster page
     if (tier === "fractional") {
@@ -44,7 +44,7 @@ export const onPost: RequestHandler = async (event) => {
       try {
         const { data: authData, error: authError } = await supabase.auth.admin.getUserById(user.user_id);
         if (authError || !authData?.user?.email) {
-          throw event.error(400, "Could not retrieve user email for billing");
+          throw new Error("Could not retrieve user email for billing");
         }
         const customer = await createStripeCustomer(event.env, authData.user.email, { user_id: user.user_id });
         customerId = customer.id;
@@ -56,9 +56,10 @@ export const onPost: RequestHandler = async (event) => {
           status: "active",
         }, { onConflict: "user_id" });
       } catch (err: any) {
+        const msg = err instanceof Error ? err.message : String(err);
         captureError(err, { action: "checkout_createCustomer" });
-        console.error("[Checkout] Stripe customer creation failed:", err);
-        throw event.error(500, "Failed to initialize payment gateway");
+        console.error("[Checkout] Stripe customer creation failed:", msg || err);
+        throw new Error("Failed to initialize payment gateway");
       }
     } else if (isMockStripe && !customerId) {
       customerId = "cus_mock_123";
@@ -74,7 +75,7 @@ export const onPost: RequestHandler = async (event) => {
 
     const vmConfig = vmConfigs[tier];
     if (!vmConfig) {
-      throw event.error(400, "Invalid tier selected for deployment");
+      throw new Error("Invalid tier selected for deployment");
     }
 
     const totalCents = vmConfig.priceCents + (storageGb * 15);
@@ -162,16 +163,18 @@ export const onPost: RequestHandler = async (event) => {
         metadata: { user_id: user.user_id, cluster_id: cluster.id, tier, storage_gb: String(storageGb) },
       });
     } catch (stripeErr: any) {
+      const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
       captureError(stripeErr, { action: "billingCheckout_stripeSession", tier, customerId });
-      console.error("[Checkout] Stripe session creation failed:", stripeErr);
-      throw event.error(500, "Failed to initiate checkout session");
+      console.error("[Checkout] Stripe session creation failed:", msg || stripeErr);
+      throw new Error("Failed to initiate checkout session");
     }
 
     throw event.redirect(302, session.url!);
   } catch (e: any) {
     if (e?.headers?.location) throw e;
+    const errMsg = e instanceof Error ? e.message : (typeof e === "string" ? e : JSON.stringify(e));
     captureError(e, { action: "billingCheckout" });
-    console.error("[Checkout] Unexpected error:", e);
-    throw event.error(500, e?.message ? `Internal Server Error: ${e.message}` : "Internal Server Error");
+    console.error("[Checkout] Error:", errMsg || "(no message)");
+    throw event.error(500, errMsg || "Internal Server Error");
   }
 };
