@@ -53,7 +53,10 @@ const docsPages = [
   { loc: "/docs/self-hosting", priority: 0.7 },
 ];
 
+import { setPublicEdgeCache } from "~/lib/cache";
+
 export const onGet: RequestHandler = (event) => {
+  setPublicEdgeCache(event);
   const blogPosts = getAllBlogPosts();
 
   const urls = [
