@@ -74,7 +74,7 @@ export default component$(() => {
           </div>
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 text-center">
             <ClockIcon class="w-8 h-8 text-green-400 mx-auto mb-3" />
-            <p class="text-3xl font-extrabold">&lt;200ms</p>
+            <p class="text-3xl font-extrabold">&lt;100ms</p>
             <p class="text-xs text-tertiary mt-1">P95 Retrieval Latency</p>
           </div>
           <div class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 text-center">
