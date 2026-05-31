@@ -326,6 +326,7 @@ export default component$(() => {
   const newlyCreatedKey = useStore<{ token: string; engineSynced: boolean; engineError: string }>({ token: "", engineSynced: false, engineError: "" });
   const localKeyList = useSignal<ApiKey[]>([]);
   const settingsNewName = useSignal("");
+  const graphEntityId = useSignal("");
 
   useTask$(({ track }) => {
     const user = track(() => platformData.value.user);
@@ -457,7 +458,9 @@ export default component$(() => {
         // No active dedicated clusters — fetch graph from the shared server directly
         // using the user's API keys (Pay Per Usage path)
         try {
-          const sharedRes = await fetch("/api/shared/graph-edges");
+          const eid = graphEntityId.value.trim();
+          const url = eid ? `/api/shared/graph-edges?entity_id=${encodeURIComponent(eid)}` : "/api/shared/graph-edges";
+          const sharedRes = await fetch(url);
           graphData.edges = sharedRes.ok ? await sharedRes.json() as GraphEdge[] : [];
         } catch {
           graphData.edges = [];
@@ -1197,7 +1200,35 @@ client.ingest(
                 </div>
 
                 <div class="rounded-xl border border-outline-variant/10 bg-surface-container-low p-5">
-                  <h3 class="text-sm font-bold text-on-surface mb-4">Knowledge Graph Visualization</h3>
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+                    <h3 class="text-sm font-bold text-on-surface">Knowledge Graph Visualization</h3>
+                    <div class="flex items-center gap-2">
+                      <input
+                        value={graphEntityId.value}
+                        onInput$={(_, el) => { graphEntityId.value = el.value; }}
+                        placeholder="entity_id (e.g. user-1223)"
+                        class="rounded-lg border border-outline-variant/15 bg-surface-container-highest px-3 py-1.5 text-xs text-on-surface outline-none focus:border-primary/50 transition-colors placeholder:text-tertiary/50 w-48"
+                      />
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.97] shrink-0"
+                        onClick$={async () => {
+                          graphData.loaded = false;
+                          graphData.edges = [];
+                          try {
+                            const eid = graphEntityId.value.trim();
+                            const url = eid ? `/api/shared/graph-edges?entity_id=${encodeURIComponent(eid)}` : "/api/shared/graph-edges";
+                            const res = await fetch(url);
+                            graphData.edges = res.ok ? await res.json() as GraphEdge[] : [];
+                          } catch { graphData.edges = []; }
+                          graphData.loaded = true;
+                        }}
+                      >
+                        <GitBranchIcon class="w-3 h-3" />
+                        Explore
+                      </button>
+                    </div>
+                  </div>
                   {graphData.edges.length === 0 ? (
                     <div class="flex flex-col items-center justify-center py-12 text-center">
                       <div class="flex items-center justify-center h-10 w-10 rounded-lg bg-surface-container-high text-tertiary mb-3">
@@ -1205,12 +1236,12 @@ client.ingest(
                       </div>
                       {graphData.loaded ? (
                         <>
-                          <p class="text-sm font-medium text-tertiary">No knowledge graph data yet.</p>
-                          <p class="text-xs text-tertiary/60 mt-1 max-w-sm">Ingest some memories via the API and your knowledge graph will appear here automatically.</p>
+                          <p class="text-sm font-medium text-tertiary">No knowledge graph data loaded yet.</p>
+                          <p class="text-xs text-tertiary/60 mt-1 max-w-sm">Enter your entity_id above and click Explore to load your knowledge graph, or ingest some memories via the API first.</p>
                           <pre class="mt-4 text-left rounded-lg bg-black/30 border border-outline-variant/10 p-3 font-mono text-[10px] text-primary/70 max-w-sm">
 {`curl -X POST https://aletheiadb.com/api/ingest \\
   -H "x-api-key: YOUR_KEY" \\
-  -d '{"entity_id":"user-1","textual_content":"..."}'`}
+  -d '{"entity_id":"user-1223","textual_content":"..."}'`}
                           </pre>
                         </>
                       ) : (
