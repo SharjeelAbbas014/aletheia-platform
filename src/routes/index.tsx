@@ -173,7 +173,7 @@ export const SentientCheckbox = component$(({ delay }: { delay: string }) => {
 
 const landingStyles = `
 .landing-v2 {
-  background: #08080a;
+  background: #131314;
   --mouse-x: 52%;
   --mouse-y: 42%;
   --scroll-progress: 0;
@@ -188,18 +188,18 @@ const landingStyles = `
   width: 100%;
   height: 2px;
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .landing-v2 .progress-rail::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #6366f1 0%, #5de6ff 65%, #d946ef 100%);
+  background: linear-gradient(90deg, #9b9cff 0%, #5de6ff 100%);
   transform-origin: left center;
   transform: scaleX(var(--scroll-progress));
   transition: transform 100ms linear;
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 12px rgba(155, 156, 255, 0.4);
 }
 
 .landing-v2 .interactive-aurora {
@@ -207,11 +207,11 @@ const landingStyles = `
   inset: -10%;
   pointer-events: none;
   z-index: 0;
-  filter: blur(80px) saturate(140%);
+  filter: blur(90px) saturate(140%);
   background:
-    radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(99, 102, 241, 0.18), transparent 60%),
+    radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(155, 156, 255, 0.18), transparent 60%),
     radial-gradient(500px circle at calc(100% - var(--mouse-x)) calc(110% - var(--mouse-y)), rgba(93, 230, 255, 0.12), transparent 60%);
-  opacity: calc(0.35 + (var(--hero-progress) * 0.45));
+  opacity: calc(0.4 + (var(--hero-progress) * 0.45));
   transition: opacity 300ms ease;
 }
 
@@ -243,7 +243,7 @@ const landingStyles = `
   opacity: 0;
   background: radial-gradient(
     circle at var(--glare-x, 50%) var(--glare-y, 0%),
-    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.08),
     transparent 50%
   );
   transition: opacity 180ms ease;
@@ -254,23 +254,33 @@ const landingStyles = `
 }
 
 .landing-v2 .glass-panel {
-  background: rgba(13, 13, 17, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(28, 27, 28, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(70, 69, 84, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .landing-v2 .glass-panel:hover {
-  border-color: rgba(99, 102, 241, 0.2);
-  background: rgba(18, 18, 24, 0.75);
+  border-color: rgba(155, 156, 255, 0.45);
+  background: rgba(28, 27, 28, 0.65);
+  box-shadow: 0 12px 40px 0 rgba(155, 156, 255, 0.12);
 }
 
 .landing-v2 .obsidian-gradient {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #9b9cff 0%, #6366f1 100%);
+}
+
+.landing-v2 .text-gradient-accent {
+  background: linear-gradient(135deg, #9b9cff 0%, #5de6ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 
 .landing-v2 .text-glow {
-  text-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+  text-shadow: 0 0 15px rgba(155, 156, 255, 0.55);
 }
 
 .landing-v2 .scroll-reveal {
@@ -292,8 +302,8 @@ const landingStyles = `
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.2; filter: blur(8px); }
-  50% { opacity: 0.45; filter: blur(12px); }
+  0%, 100% { opacity: 0.15; filter: blur(8px); }
+  50% { opacity: 0.4; filter: blur(12px); }
 }
 
 .landing-v2 .active-glow {
@@ -351,13 +361,14 @@ const landingStyles = `
 }
 
 .landing-v2 ::selection {
-  background: rgba(99, 102, 241, 0.25);
+  background: rgba(192, 193, 255, 0.25);
+  color: #ffffff;
 }
 
 .landing-v2 .terminal-header {
   height: 38px;
   background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(70, 69, 84, 0.25);
   display: flex;
   align-items: center;
   padding: 0 16px;
@@ -372,7 +383,7 @@ const landingStyles = `
   border-radius: 50%;
   opacity: 0.6;
 }
-.landing-v2 .terminal-dot.red { background: #ef4444; }
+.landing-v2 .terminal-dot.red { background: #ffb4ab; }
 .landing-v2 .terminal-dot.yellow { background: #f59e0b; }
 .landing-v2 .terminal-dot.green { background: #10b981; }
 
@@ -434,36 +445,36 @@ const memoryGapCards = [
   {
     title: "Standard Vector DB",
     icon: "layers_clear",
-    iconWrapClass: "bg-red-500/20",
-    iconClass: "text-red-400",
-    panelClass: "",
+    iconWrapClass: "bg-error/15 border border-error/20",
+    iconClass: "text-error",
+    panelClass: "border-error/10 bg-error/[0.005]",
     items: [
       {
         title: "Amnesiac & Static",
         body: "Retrieves conflicting data from 2 years ago exactly like data from 2 minutes ago. No concept of evolving truth.",
         icon: "close",
-        iconClass: "text-red-500",
+        iconClass: "text-error",
       },
       {
         title: "Fails at Counting",
         body: "Cannot accurately aggregate or count facts (e.g. 'How many cars do I own?'). Relies entirely on the LLM to do math.",
         icon: "close",
-        iconClass: "text-red-500",
+        iconClass: "text-error",
       },
       {
         title: "Bloated Storage",
         body: "Stores every single conversational 'uh' and 'um' instead of maintaining a clean, structured user profile.",
         icon: "close",
-        iconClass: "text-red-500",
+        iconClass: "text-error",
       },
     ],
   },
   {
     title: "AletheiaDB Memory Engine",
     icon: "psychology",
-    iconWrapClass: "bg-primary/20",
+    iconWrapClass: "bg-primary/10 border border-primary/20",
     iconClass: "text-primary",
-    panelClass: "border-primary/40 shadow-[0_0_50px_rgba(99,102,241,0.1)]",
+    panelClass: "border-primary/30 shadow-[0_0_50px_rgba(192,193,255,0.08)] bg-primary/[0.01]",
     items: [
       {
         title: "Fact Supersession (Temporal Truth)",
@@ -506,7 +517,7 @@ const userFlowCards = [
     quote: "Hey! I just bought a white Mercedes! What should I do first?",
     summary: "GPT-4o detects: User Ownership → Vehicle: Mercedes (White)",
     icon: "chat_bubble",
-    iconWrapClass: "bg-primary/20",
+    iconWrapClass: "bg-primary/10 border border-primary/20",
     iconClass: "text-primary",
     borderClass: "border-l-4 border-l-primary/30",
     delay: "",
@@ -516,9 +527,9 @@ const userFlowCards = [
     quote: "Fact Integration",
     summary: "",
     icon: "psychology",
-    iconWrapClass: "bg-primary",
-    iconClass: "text-white",
-    borderClass: "border-primary/40 shadow-[0_20px_40px_rgba(0,0,0,0.3)]",
+    iconWrapClass: "bg-primary text-background",
+    iconClass: "text-background",
+    borderClass: "border-primary/30 shadow-[0_20px_40px_rgba(0,0,0,0.3)] bg-primary/[0.01]",
     delay: "150ms",
     facts: ["Fact: Owns Mercedes", "Context: Initial Purchase"],
   },
@@ -527,9 +538,9 @@ const userFlowCards = [
     quote: "What was that maintenance tip for my car?",
     summary: 'Claude 3.5 recalls: "For your white Mercedes, I recommend..."',
     icon: "auto_awesome",
-    iconWrapClass: "bg-indigo-500/20",
-    iconClass: "text-indigo-400",
-    borderClass: "border-l-4 border-l-indigo-400/30",
+    iconWrapClass: "bg-secondary/10 border border-secondary/20",
+    iconClass: "text-secondary",
+    borderClass: "border-l-4 border-l-secondary/30",
     delay: "300ms",
   },
 ];
@@ -1069,6 +1080,270 @@ export default component$(() => {
         </section>
 
         <section
+          id="interactive-tester"
+          class="px-6 py-24 md:py-32 border-b border-white/5 bg-transparent"
+        >
+          <div class="container mx-auto">
+            <div class="scroll-reveal mb-16 text-center">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
+                Interactive Demo
+              </h2>
+              <h3 class="text-4xl font-extrabold tracking-tight md:text-5xl font-headline">
+                Live Memory{" "}
+                <span class="text-gradient-accent italic">Simulation.</span>
+              </h3>
+              <p class="mt-6 mx-auto max-w-2xl text-base text-tertiary leading-relaxed">
+                Experience AletheiaDB's real-time ingestion and recall loop.
+                Store a fact, then retrieve it across model contexts.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* Left Side: Store/Warmup */}
+              <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-mono font-bold px-2 py-0.5 rounded border border-primary/25 bg-primary/10 text-primary shadow-[0_0_8px_rgba(155,156,255,0.15)]">
+                    01
+                  </span>
+                  <h3 class="text-xl font-extrabold tracking-wider font-headline text-primary uppercase">
+                    STEP 1
+                  </h3>
+                  <div class="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent"></div>
+                </div>
+                <div class="glass-panel relative rounded-2xl p-6 md:p-8 overflow-hidden">
+                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(192,193,255,0.04),transparent_50%)]" />
+                  <div class="relative z-10 space-y-6">
+                  <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+                    <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                      <MaterialIcon name="input" class="text-xl" />
+                    </div>
+                    <div>
+                      <h4 class="text-lg font-bold font-headline text-on-surface">
+                        Ingestion Layer
+                      </h4>
+                      <p class="text-[9px] font-mono uppercase tracking-widest text-tertiary font-bold">
+                        Write Pipeline
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="rounded-xl border border-white/5 bg-black/25 p-5">
+                    <div class="flex items-center justify-between mb-3">
+                      <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-primary">
+                        Demo Memory Session Key
+                      </p>
+                      <button
+                        type="button"
+                        class="text-[9px] font-mono text-tertiary hover:text-primary transition-colors flex items-center gap-1 disabled:opacity-50"
+                        onClick$={regenerateKey}
+                      >
+                        <MaterialIcon
+                          name="published_with_changes"
+                          class="text-[10px]"
+                        />
+                        Regenerate
+                      </button>
+                    </div>
+                    <div class="relative flex items-center">
+                      <input
+                        type="text"
+                        class="w-full rounded-lg border border-white/5 bg-black/35 px-3 py-2 text-xs text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 font-mono"
+                        value={demoKey.value}
+                        onInput$={(_, currentTarget) => {
+                          const cleanKey = currentTarget.value.trim();
+                          demoKey.value = cleanKey;
+                          localStorage.setItem("aletheia_demo_key", cleanKey);
+                        }}
+                        placeholder="Enter custom session key..."
+                      />
+                    </div>
+                    <p class="mt-2 text-[10px] text-tertiary leading-relaxed">
+                      Memories are stored and queried using this unique key. It
+                      isolates your demo session and persists across reloads.
+                    </p>
+                  </div>
+
+                  <div class="space-y-3">
+                    <label class="block text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary">
+                      Raw Memory Input string
+                    </label>
+                    <textarea
+                      class="min-h-[120px] w-full rounded-xl border border-white/5 bg-black/35 px-4 py-3 text-xs md:text-sm text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 shadow-inner"
+                      placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
+                      value={heroMessage.value}
+                      onInput$={(_, currentTarget) => {
+                        heroMessage.value = currentTarget.value;
+                      }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      class="obsidian-gradient w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-xs md:text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(192,193,255,0.25)] active:scale-[0.98] disabled:opacity-50 shadow-lg"
+                      disabled={heroDemoRunning.value}
+                      onClick$={() => runHeroDemo("store")}
+                    >
+                      {heroDemoRunning.value && heroDemoMode.value === "store"
+                        ? "Writing to disk..."
+                        : "Commit to Long-Term Memory"}
+                      <MaterialIcon
+                        name="published_with_changes"
+                        class="text-sm"
+                      />
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-4 pt-1">
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Ingest Latency (Engine)
+                        </p>
+                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
+                          {heroDemoResult.value?.ingestLabel ?? "---"}
+                        </p>
+                      </div>
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Ingest Latency (Network RTT)
+                        </p>
+                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
+                          {heroDemoResult.value?.ingestRoundTripLabel ?? "---"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+              {/* Right Side: Recall & Results */}
+              <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-mono font-bold px-2 py-0.5 rounded border border-secondary/25 bg-secondary/10 text-secondary shadow-[0_0_8px_rgba(93,230,255,0.12)]">
+                    02
+                  </span>
+                  <h3 class="text-xl font-extrabold tracking-wider font-headline text-secondary uppercase">
+                    STEP 2
+                  </h3>
+                  <div class="h-px flex-1 bg-gradient-to-r from-secondary/30 to-transparent"></div>
+                </div>
+                <div class="glass-panel relative rounded-2xl p-6 md:p-8 overflow-hidden">
+                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(93,230,255,0.04),transparent_50%)]" />
+                  <div class="relative z-10 space-y-5">
+                    <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+                      <div class="h-10 w-10 rounded-xl obsidian-gradient flex items-center justify-center text-white shadow-lg">
+                        <MaterialIcon name="travel_explore" class="text-xl" />
+                      </div>
+                      <div>
+                        <h4 class="text-lg font-bold font-headline text-white">
+                          Truth Retrieval
+                        </h4>
+                        <p class="text-[9px] font-mono uppercase tracking-widest text-primary font-bold">
+                          Read Substrate
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="space-y-3">
+                      <label class="block text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary">
+                        Memory Query (Semantic Search)
+                      </label>
+                      <textarea
+                        class="min-h-[80px] w-full rounded-xl border border-white/5 bg-black/35 px-4 py-3 text-xs md:text-sm text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 shadow-inner"
+                        placeholder="Where do I live?"
+                        value={heroQuery.value}
+                        onInput$={(_, currentTarget) => {
+                          heroQuery.value = currentTarget.value;
+                        }}
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      class="glass-panel w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-xs md:text-sm font-bold text-on-surface transition-all hover:bg-white/5 active:scale-[0.98] disabled:opacity-50"
+                      disabled={heroDemoRunning.value}
+                      onClick$={() => runHeroDemo("recall")}
+                    >
+                      {heroDemoRunning.value && heroDemoMode.value === "recall"
+                        ? "Retrieving..."
+                        : "Retrieve Memory"}
+                      <MaterialIcon name="speed" class="text-sm text-primary" />
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Query Latency (Engine)
+                        </p>
+                        <p class="mt-1 text-sm font-mono font-extrabold text-primary text-glow">
+                          {heroDemoResult.value?.queryLabel ?? "---"}
+                        </p>
+                      </div>
+                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Query Latency (Network RTT)
+                        </p>
+                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
+                          {heroDemoResult.value?.queryRoundTripLabel ?? "---"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="rounded-xl border border-white/5 bg-black/35 p-4 shadow-inner">
+                      <div class="flex items-center justify-between mb-3">
+                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                          Retrieved Memory Hits
+                        </p>
+                        {heroDemoResult.value?.memoryId && (
+                          <span class="px-2 py-0.5 rounded bg-primary/10 text-[8px] font-mono text-primary border border-primary/20">
+                            {heroDemoResult.value.entityId}
+                          </span>
+                        )}
+                      </div>
+                      <div class="space-y-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                        {heroDemoResult.value?.ok &&
+                        heroDemoResult.value.hits &&
+                        heroDemoResult.value.hits.length > 0 ? (
+                          heroDemoResult.value.hits.map((hit, idx) => (
+                            <div
+                              key={idx}
+                              class="p-2.5 rounded-lg bg-white/[0.01] border border-white/5 text-xs text-tertiary leading-relaxed animate-fade-in font-mono"
+                            >
+                              {hit.textual_content}
+                            </div>
+                          ))
+                        ) : (
+                          <p class="text-xs text-tertiary italic text-center py-6">
+                            No memories retrieved yet. Ingest a fact first.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {heroDemoResult.value?.queryUnderBlink && (
+                  <div class="feature-entrance rounded-xl border border-secondary/25 bg-secondary/5 p-5 flex items-start gap-3 shadow-lg shadow-secondary/5">
+                    <MaterialIcon
+                      name="verified"
+                      class="text-secondary mt-0.5 text-sm"
+                    />
+                    <div>
+                      <h5 class="text-xs font-bold text-white font-headline">
+                        Sub-100ms In-Memory Verified
+                      </h5>
+                      <p class="text-[11px] text-tertiary mt-0.5 leading-relaxed">
+                        This session query was resolved faster than a human
+                        blink at the database layer.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
           id="memory-gap"
           class="border-y border-outline-variant/10 bg-surface-container-high/20 px-6 py-32"
         >
@@ -1092,11 +1367,7 @@ export default component$(() => {
               {memoryGapCards.map((card, cardIndex) => (
                 <div
                   key={card.title}
-                  class={`glass-panel scroll-reveal tilt-panel rounded-2xl p-8 md:p-10 ${
-                    cardIndex === 1
-                      ? "border-primary/20 bg-primary/[0.01] shadow-[0_0_40px_rgba(99,102,241,0.05)]"
-                      : "border-white/5 bg-white/[0.01]"
-                  }`}
+                  class={`glass-panel scroll-reveal tilt-panel rounded-2xl p-8 md:p-10 ${card.panelClass}`}
                   data-tilt
                   style={{
                     transitionDelay: cardIndex === 1 ? "150ms" : undefined,
@@ -1140,7 +1411,7 @@ export default component$(() => {
 
             <div class="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2">
               {/* Precision Benchmark Widget */}
-              <div class="glass-panel scroll-reveal rounded-2xl p-8 border border-white/5 bg-white/[0.01]">
+              <div class="glass-panel scroll-reveal rounded-2xl p-8">
                 <div class="flex items-center justify-between mb-8">
                   <h4 class="text-lg font-bold font-headline">
                     Recall Precision Benchmarks
@@ -1162,11 +1433,11 @@ export default component$(() => {
                   {/* Standard RAG Bar */}
                   <div class="flex-1 h-full flex flex-col justify-end items-center gap-3">
                     <div
-                      class="w-full bg-white/[0.02] border border-white/5 rounded-t-xl relative overflow-hidden group transition-all"
+                      class="w-full bg-black/40 border border-error/15 rounded-t-xl relative overflow-hidden group transition-all"
                       style="height: 68%;"
                     >
-                      <div class="absolute inset-0 bg-gradient-to-t from-red-950/45 to-red-500/25 rounded-t-xl transition-all animate-bar" />
-                      <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-mono font-bold text-red-300 z-10">
+                      <div class="absolute inset-0 bg-gradient-to-t from-error/25 to-error/85 rounded-t-xl transition-all animate-bar" />
+                      <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-mono font-bold text-error z-10 text-glow">
                         68%
                       </span>
                     </div>
@@ -1178,15 +1449,15 @@ export default component$(() => {
                   {/* AletheiaDB Bar */}
                   <div class="flex-1 h-full flex flex-col justify-end items-center gap-3">
                     <div
-                      class="w-full bg-white/[0.02] border border-primary/10 rounded-t-xl relative overflow-hidden group transition-all"
+                      class="w-full bg-black/40 border border-primary/30 rounded-t-xl relative overflow-hidden group transition-all"
                       style="height: 95.4%;"
                     >
-                      <div class="absolute inset-0 bg-gradient-to-t from-indigo-950/50 to-primary/40 rounded-t-xl transition-all animate-bar shadow-[0_0_20px_rgba(99,102,241,0.2)]" />
+                      <div class="absolute inset-0 bg-gradient-to-t from-primary/35 to-secondary/90 rounded-t-xl transition-all animate-bar shadow-[0_0_20px_rgba(155,156,255,0.35)]" />
                       <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-mono font-bold text-white z-10 text-glow">
                         95%+
                       </span>
                     </div>
-                    <span class="text-[9px] font-mono uppercase font-bold tracking-widest text-primary">
+                    <span class="text-[9px] font-mono uppercase font-bold tracking-widest text-primary font-bold">
                       AletheiaDB
                     </span>
                   </div>
@@ -1200,7 +1471,7 @@ export default component$(() => {
               </div>
 
               {/* Temporal Fact Evolution Widget */}
-              <div class="glass-panel scroll-reveal rounded-2xl p-8 border border-white/5 bg-white/[0.01]">
+              <div class="glass-panel scroll-reveal rounded-2xl p-8 bg-white/[0.01]">
                 <div class="flex items-center justify-between mb-8">
                   <h4 class="text-lg font-bold font-headline">
                     Temporal Fact Evolution
@@ -1211,21 +1482,21 @@ export default component$(() => {
                 </div>
 
                 <div class="relative py-8 px-4">
-                  <div class="absolute left-0 top-[40%] h-[1px] w-full border-t border-dashed border-white/10 -translate-y-1/2 z-0" />
+                  <div class="absolute left-0 top-[40%] h-[1px] w-full border-t border-dashed border-white/5 -translate-y-1/2 z-0" />
                   <div class="relative z-10 flex justify-between items-center h-20">
                     {/* State 2025 (Stale) */}
                     <div class="flex flex-col items-center gap-2">
-                      <div class="h-8 w-8 rounded-full bg-red-950/20 border border-red-500/20 flex items-center justify-center stale-node">
+                      <div class="h-8 w-8 rounded-full bg-error/15 border border-error/20 flex items-center justify-center stale-node">
                         <MaterialIcon
                           name="cancel"
-                          class="text-xs text-red-400"
+                          class="text-xs text-error"
                         />
                       </div>
                       <div class="text-center font-mono">
-                        <span class="block text-[9px] uppercase tracking-widest text-tertiary/60">
+                        <span class="block text-[9px] uppercase tracking-widest text-error/70 font-semibold">
                           2025 (STALE)
                         </span>
-                        <span class="block text-[10px] text-red-400/50 line-through">
+                        <span class="block text-[10px] text-error/50 line-through">
                           "Living in NYC"
                         </span>
                       </div>
@@ -1241,7 +1512,7 @@ export default component$(() => {
 
                     {/* State Today (Active) */}
                     <div class="flex flex-col items-center gap-2">
-                      <div class="h-8 w-8 rounded-full bg-indigo-950/30 border border-primary/20 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                      <div class="h-8 w-8 rounded-full bg-primary/10 border border-primary/25 flex items-center justify-center shadow-[0_0_15px_rgba(192,193,255,0.25)]">
                         <MaterialIcon
                           name="verified"
                           class="text-xs text-primary"
@@ -1340,7 +1611,7 @@ export default component$(() => {
 
                   {/* Step 2: Processing Core */}
                   <div class="flex w-full flex-col items-center border-y border-white/5 py-6">
-                    <div class="obsidian-gradient mb-3 flex h-16 w-16 items-center justify-center rounded-2xl shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+                    <div class="obsidian-gradient mb-3 flex h-16 w-16 items-center justify-center rounded-2xl shadow-[0_0_20px_rgba(192,193,255,0.25)]">
                       <MaterialIcon
                         name="settings_input_component"
                         class="text-3xl text-white"
@@ -1593,8 +1864,8 @@ export default component$(() => {
               </p>
             </div>
 
-            <div class="relative glass-panel rounded-[2.5rem] border border-primary/20 p-8 md:p-16 overflow-hidden">
-              <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05),transparent_70%)]" />
+            <div class="relative glass-panel rounded-[2.5rem] border border-primary/25 p-8 md:p-16 overflow-hidden">
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192, 193, 255, 0.05),transparent_70%)]" />
 
               <div class="relative z-10 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                 <div class="flex flex-col items-center text-center gap-4">
@@ -1629,7 +1900,7 @@ export default component$(() => {
                   </svg>
                 </div>
 
-                <div class="flex flex-col items-center text-center gap-4 p-6 rounded-3xl bg-primary/10 border border-primary/30 shadow-[0_0_40px_rgba(99,102,241,0.1)]">
+                <div class="flex flex-col items-center text-center gap-4 p-6 rounded-3xl bg-primary/10 border border-primary/35 shadow-[0_0_40px_rgba(192,193,255,0.15)]">
                   <div class="h-16 w-16 rounded-2xl obsidian-gradient flex items-center justify-center shadow-xl">
                     <MaterialIcon
                       name="psychology"
@@ -1726,15 +1997,15 @@ export default component$(() => {
           </div>
         </section>
 
-        <section id="lattice" class="px-6 py-32 bg-black">
+        <section id="lattice" class="px-6 py-32 bg-transparent">
           <div class="container mx-auto">
             <div class="scroll-reveal mb-20">
-              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary">
+              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
                 Interactive Graph
               </h2>
               <h3 class="text-4xl font-black tracking-tight md:text-5xl">
                 Sentient{" "}
-                <span class="italic text-primary">Memory Lattice.</span>
+                <span class="text-gradient-accent italic">Memory Lattice.</span>
               </h3>
               <p class="mt-6 max-w-2xl text-tertiary">
                 Experience how AletheiaDB organizes memories. Drag nodes to
@@ -1743,21 +2014,21 @@ export default component$(() => {
               </p>
             </div>
 
-            <div class="glass-panel relative rounded-[3rem] border border-primary/20 bg-surface-container-low/20 overflow-hidden">
-              <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.08),transparent_50%)]" />
+            <div class="glass-panel relative rounded-[3rem] border border-primary/25 bg-surface-container-low/10 overflow-hidden">
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(192, 193, 255, 0.08),transparent_50%)]" />
               <MemoryLattice />
             </div>
 
             <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-tertiary">
               <div class="flex gap-4 p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                <MaterialIcon name="hub" class=" text-primary" />
+                <MaterialIcon name="hub" class="text-primary" />
                 <p>
                   Nodes represent discrete semantic facts, preferences, and
                   entities stored within the Rust engine.
                 </p>
               </div>
               <div class="flex gap-4 p-6 rounded-2xl border border-white/5 bg-white/[0.02]">
-                <MaterialIcon name="history" class=" text-red-400" />
+                <MaterialIcon name="history" class="text-error" />
                 <p>
                   Red nodes indicate **superseded memories**—stale data that has
                   been automatically invalidated by more recent truths.
@@ -1828,253 +2099,11 @@ export default component$(() => {
           </div>
         </section>
 
-        <section
-          id="interactive-tester"
-          class="px-6 py-24 md:py-32 border-b border-white/5 bg-white/[0.01]"
-        >
-          <div class="container mx-auto">
-            <div class="scroll-reveal mb-16 text-center">
-              <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
-                Interactive Demo
-              </h2>
-              <h3 class="text-4xl font-extrabold tracking-tight md:text-5xl font-headline">
-                Live Memory{" "}
-                <span class="text-gradient-accent italic">Simulation.</span>
-              </h3>
-              <p class="mt-6 mx-auto max-w-2xl text-base text-tertiary leading-relaxed">
-                Experience AletheiaDB's real-time ingestion and recall loop.
-                Store a fact, then retrieve it across model contexts.
-              </p>
-            </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              {/* Left Side: Store/Warmup */}
-              <div class="glass-panel relative rounded-2xl border border-white/5 p-6 md:p-8 shadow-xl overflow-hidden bg-white/[0.01]">
-                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.03),transparent_50%)]" />
-                <div class="relative z-10 space-y-6">
-                  <div class="flex items-center gap-3 border-b border-white/5 pb-4">
-                    <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                      <MaterialIcon name="input" class="text-xl" />
-                    </div>
-                    <div>
-                      <h4 class="text-lg font-bold font-headline text-on-surface">
-                        Ingestion Layer
-                      </h4>
-                      <p class="text-[9px] font-mono uppercase tracking-widest text-tertiary font-bold">
-                        Write Pipeline
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="rounded-xl border border-white/5 bg-black/25 p-5">
-                    <div class="flex items-center justify-between mb-3">
-                      <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-primary">
-                        Demo Memory Session Key
-                      </p>
-                      <button
-                        type="button"
-                        class="text-[9px] font-mono text-tertiary hover:text-primary transition-colors flex items-center gap-1 disabled:opacity-50"
-                        onClick$={regenerateKey}
-                      >
-                        <MaterialIcon
-                          name="published_with_changes"
-                          class="text-[10px]"
-                        />
-                        Regenerate
-                      </button>
-                    </div>
-                    <div class="relative flex items-center">
-                      <input
-                        type="text"
-                        class="w-full rounded-lg border border-white/5 bg-black/35 px-3 py-2 text-xs text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 font-mono"
-                        value={demoKey.value}
-                        onInput$={(_, currentTarget) => {
-                          const cleanKey = currentTarget.value.trim();
-                          demoKey.value = cleanKey;
-                          localStorage.setItem("aletheia_demo_key", cleanKey);
-                        }}
-                        placeholder="Enter custom session key..."
-                      />
-                    </div>
-                    <p class="mt-2 text-[10px] text-tertiary leading-relaxed">
-                      Memories are stored and queried using this unique key. It
-                      isolates your demo session and persists across reloads.
-                    </p>
-                  </div>
-
-                  <div class="space-y-3">
-                    <label class="block text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary">
-                      Raw Memory Input string
-                    </label>
-                    <textarea
-                      class="min-h-[120px] w-full rounded-xl border border-white/5 bg-black/35 px-4 py-3 text-xs md:text-sm text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 shadow-inner"
-                      placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
-                      value={heroMessage.value}
-                      onInput$={(_, currentTarget) => {
-                        heroMessage.value = currentTarget.value;
-                      }}
-                      required
-                    />
-                    <button
-                      type="button"
-                      class="obsidian-gradient w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-xs md:text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(99,102,241,0.25)] active:scale-[0.98] disabled:opacity-50 shadow-lg"
-                      disabled={heroDemoRunning.value}
-                      onClick$={() => runHeroDemo("store")}
-                    >
-                      {heroDemoRunning.value && heroDemoMode.value === "store"
-                        ? "Writing to disk..."
-                        : "Commit to Long-Term Memory"}
-                      <MaterialIcon
-                        name="published_with_changes"
-                        class="text-sm"
-                      />
-                    </button>
-
-                    <div class="grid grid-cols-2 gap-4 pt-1">
-                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
-                          Ingest Latency (Engine)
-                        </p>
-                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
-                          {heroDemoResult.value?.ingestLabel ?? "---"}
-                        </p>
-                      </div>
-                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
-                          Ingest Latency (Network RTT)
-                        </p>
-                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
-                          {heroDemoResult.value?.ingestRoundTripLabel ?? "---"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Side: Recall & Results */}
-              <div class="space-y-6">
-                <div class="glass-panel relative rounded-2xl border border-white/5 p-6 md:p-8 shadow-xl overflow-hidden bg-white/[0.01]">
-                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.03),transparent_50%)]" />
-                  <div class="relative z-10 space-y-5">
-                    <div class="flex items-center gap-3 border-b border-white/5 pb-4">
-                      <div class="h-10 w-10 rounded-xl obsidian-gradient flex items-center justify-center text-white shadow-lg">
-                        <MaterialIcon name="travel_explore" class="text-xl" />
-                      </div>
-                      <div>
-                        <h4 class="text-lg font-bold font-headline text-white">
-                          Truth Retrieval
-                        </h4>
-                        <p class="text-[9px] font-mono uppercase tracking-widest text-primary font-bold">
-                          Read Substrate
-                        </p>
-                      </div>
-                    </div>
-
-                    <div class="space-y-3">
-                      <label class="block text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary">
-                        Memory Query (Semantic Search)
-                      </label>
-                      <textarea
-                        class="min-h-[80px] w-full rounded-xl border border-white/5 bg-black/35 px-4 py-3 text-xs md:text-sm text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 shadow-inner"
-                        placeholder="Where do I live?"
-                        value={heroQuery.value}
-                        onInput$={(_, currentTarget) => {
-                          heroQuery.value = currentTarget.value;
-                        }}
-                        required
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      class="glass-panel w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-xs md:text-sm font-bold text-on-surface transition-all hover:bg-white/5 active:scale-[0.98] disabled:opacity-50 border border-white/5"
-                      disabled={heroDemoRunning.value}
-                      onClick$={() => runHeroDemo("recall")}
-                    >
-                      {heroDemoRunning.value && heroDemoMode.value === "recall"
-                        ? "Retrieving..."
-                        : "Retrieve Memory"}
-                      <MaterialIcon name="speed" class="text-sm text-primary" />
-                    </button>
-
-                    <div class="grid grid-cols-2 gap-4">
-                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
-                          Query Latency (Engine)
-                        </p>
-                        <p class="mt-1 text-sm font-mono font-extrabold text-primary text-glow">
-                          {heroDemoResult.value?.queryLabel ?? "---"}
-                        </p>
-                      </div>
-                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
-                          Query Latency (Network RTT)
-                        </p>
-                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
-                          {heroDemoResult.value?.queryRoundTripLabel ?? "---"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div class="rounded-xl border border-white/5 bg-black/35 p-4 shadow-inner">
-                      <div class="flex items-center justify-between mb-3">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
-                          Retrieved Memory Hits
-                        </p>
-                        {heroDemoResult.value?.memoryId && (
-                          <span class="px-2 py-0.5 rounded bg-primary/10 text-[8px] font-mono text-primary border border-primary/20">
-                            {heroDemoResult.value.entityId}
-                          </span>
-                        )}
-                      </div>
-                      <div class="space-y-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
-                        {heroDemoResult.value?.ok &&
-                        heroDemoResult.value.hits &&
-                        heroDemoResult.value.hits.length > 0 ? (
-                          heroDemoResult.value.hits.map((hit, idx) => (
-                            <div
-                              key={idx}
-                              class="p-2.5 rounded-lg bg-white/[0.01] border border-white/5 text-xs text-tertiary leading-relaxed animate-fade-in font-mono"
-                            >
-                              {hit.textual_content}
-                            </div>
-                          ))
-                        ) : (
-                          <p class="text-xs text-tertiary italic text-center py-6">
-                            No memories retrieved yet. Ingest a fact first.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {heroDemoResult.value?.queryUnderBlink && (
-                  <div class="feature-entrance rounded-xl border border-cyan-500/25 bg-cyan-950/10 p-5 flex items-start gap-3 shadow-lg shadow-cyan-500/5">
-                    <MaterialIcon
-                      name="verified"
-                      class="text-cyan-400 mt-0.5 text-sm"
-                    />
-                    <div>
-                      <h5 class="text-xs font-bold text-white font-headline">
-                        Sub-100ms In-Memory Verified
-                      </h5>
-                      <p class="text-[11px] text-tertiary mt-0.5 leading-relaxed">
-                        This session query was resolved faster than a human
-                        blink at the database layer.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
 
         <section id="calendly" class="px-6 py-16 md:py-24">
           <div class="container mx-auto">
-            <div class="glass-panel scroll-reveal rounded-2xl border border-white/5 p-8 md:p-12 bg-white/[0.01]">
+            <div class="glass-panel scroll-reveal rounded-2xl p-8 md:p-12">
               <p class="font-mono text-[9px] uppercase tracking-widest text-primary font-bold">
                 Book A Session
               </p>
@@ -2091,14 +2120,14 @@ export default component$(() => {
                   href={CALENDLY_30_MIN_URL}
                   target="_blank"
                   rel="noreferrer"
-                  class="obsidian-gradient inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-xs md:text-sm font-bold text-white shadow-lg shadow-primary/10 transition-all hover:shadow-[0_0_20px_rgba(99,102,241,0.2)] active:scale-[0.98]"
+                  class="obsidian-gradient inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-xs md:text-sm font-bold text-white shadow-lg shadow-primary/10 transition-all hover:shadow-[0_0_20px_rgba(192, 193, 255, 0.25)] active:scale-[0.98]"
                 >
                   Open Calendly
                   <MaterialIcon name="open_in_new" class="text-xs" />
                 </a>
                 <a
                   href={CONTACT_MAILTO}
-                  class="glass-panel inline-flex items-center justify-center rounded-xl px-6 py-3 text-xs md:text-sm font-bold text-on-surface hover:bg-white/5 transition-all border border-white/5"
+                  class="glass-panel inline-flex items-center justify-center rounded-xl px-6 py-3 text-xs md:text-sm font-bold text-on-surface hover:bg-white/5 transition-all"
                 >
                   Email Instead
                 </a>
@@ -2110,8 +2139,8 @@ export default component$(() => {
         {/* Final CTA Banner */}
         <section class="px-6 py-16 md:py-24">
           <div class="container mx-auto max-w-4xl">
-            <div class="rounded-2xl border border-primary/20 bg-gradient-to-br from-indigo-950/20 via-black to-indigo-950/10 p-10 text-center md:p-16 shadow-2xl relative overflow-hidden">
-              <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05),transparent_70%)]" />
+            <div class="glass-panel rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 p-10 text-center md:p-16 shadow-2xl relative overflow-hidden">
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(192, 193, 255, 0.05),transparent_70%)]" />
               <div class="relative z-10">
                 <h2 class="mb-4 text-3xl font-extrabold tracking-tight md:text-5xl text-on-surface font-headline leading-tight">
                   Build Agents That
@@ -2126,7 +2155,7 @@ export default component$(() => {
                   <Link
                     href="/signup"
                     onClick$={() => capture("cta_signup_clicked")}
-                    class="px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/15 text-sm"
+                    class="px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/15 text-sm animate-pulse-slow"
                   >
                     Get Started Free
                   </Link>
@@ -2162,7 +2191,7 @@ export default component$(() => {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Core (OSS) Card */}
-              <div class="rounded-2xl border border-white/5 bg-white/[0.01] p-8 transition-all duration-300 hover:border-white/10">
+              <div class="glass-panel rounded-2xl p-8 transition-all duration-300 hover:border-primary/25">
                 <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10">
                   <CpuIcon class="text-lg text-tertiary" />
                 </div>
@@ -2210,7 +2239,7 @@ export default component$(() => {
               </div>
 
               {/* Platform (SaaS) Card */}
-              <div class="rounded-2xl border border-primary/20 bg-primary/[0.01] p-8 transition-all duration-300 hover:border-primary/40 shadow-[0_0_40px_rgba(99,102,241,0.03)]">
+              <div class="glass-panel rounded-2xl border border-primary/25 bg-primary/[0.01] p-8 transition-all duration-300 hover:border-primary/45 shadow-[0_0_40px_rgba(192,193,255,0.08)]">
                 <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
                   <GlobeIcon class="text-lg text-primary" />
                 </div>
@@ -2243,7 +2272,7 @@ export default component$(() => {
                   <Link
                     href="/signup"
                     onClick$={() => capture("cta_signup_clicked")}
-                    class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-background transition-colors hover:opacity-90 shadow-md"
+                    class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-background transition-colors hover:opacity-90 shadow-md animate-pulse-slow"
                   >
                     Get Started Free
                   </Link>
@@ -2285,7 +2314,7 @@ export default component$(() => {
                 <Link
                   key={item.title}
                   href={item.link}
-                  class="glass-panel rounded-2xl border border-white/5 p-8 transition-all hover:border-primary/25 bg-white/[0.01]"
+                  class="glass-panel rounded-2xl p-8 transition-all hover:border-primary/35"
                 >
                   <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/20">
                     <MaterialIcon

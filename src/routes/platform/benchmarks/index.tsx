@@ -163,7 +163,7 @@ export default component$(() => {
               const isAletheia = ds.name === "AletheiaDB";
               // Custom gradient color mapping for progress bars
               const gradientClass = ds.name === "AletheiaDB" 
-                ? "bg-gradient-to-r from-[#8083ff] to-[#c0c1ff] shadow-[0_0_12px_rgba(128,131,255,0.3)]"
+                ? "bg-gradient-to-r from-[#8083ff] to-[#9b9cff] shadow-[0_0_12px_rgba(155,156,255,0.3)]"
                 : ds.name === "HydraDB"
                 ? "bg-gradient-to-r from-orange-600 to-amber-400"
                 : ds.name === "Zep"

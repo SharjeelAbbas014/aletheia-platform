@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [qwikCity(), qwikVite(), tsconfigPaths()],
+    plugins: [qwikCity({ trailingSlash: false }), qwikVite(), tsconfigPaths()],
     server: {
       port: 5173,
       strictPort: true

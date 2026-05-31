@@ -56,7 +56,7 @@ export const MemoryLattice = component$(() => {
       .selectAll("line")
       .data(links)
       .join("line")
-      .attr("stroke", (d: any) => d.target.stale ? "rgba(239, 68, 68, 0.2)" : "rgba(99, 102, 241, 0.3)")
+      .attr("stroke", (d: any) => d.target.stale ? "rgba(255, 180, 171, 0.15)" : "rgba(192, 193, 255, 0.25)")
       .attr("stroke-width", (d) => Math.sqrt(d.value))
       .attr("stroke-dasharray", (d: any) => d.target.stale ? "4" : "0");
 
@@ -82,17 +82,17 @@ export const MemoryLattice = component$(() => {
 
     node.append("circle")
       .attr("r", (d) => d.id === "user" ? 12 : 8)
-      .attr("fill", (d) => d.stale ? "rgba(239, 68, 68, 0.2)" : (d.id === "user" ? "#6366f1" : "#4f46e5"))
-      .attr("stroke", (d) => d.stale ? "#ef4444" : "#818cf8")
+      .attr("fill", (d) => d.stale ? "rgba(255, 180, 171, 0.15)" : (d.id === "user" ? "#9b9cff" : "#5de6ff"))
+      .attr("stroke", (d) => d.stale ? "#ffb4ab" : (d.id === "user" ? "#9b9cff" : "#5de6ff"))
       .attr("stroke-width", 2)
-      .style("filter", (d) => d.stale ? "none" : "drop-shadow(0 0 8px rgba(99, 102, 241, 0.6))");
+      .style("filter", (d) => d.stale ? "none" : "drop-shadow(0 0 8px rgba(155, 156, 255, 0.65))");
 
     node.append("text")
       .attr("dy", 20)
       .attr("text-anchor", "middle")
       .attr("fill", (d) => d.stale ? "rgba(255, 255, 255, 0.3)" : "rgba(255, 255, 255, 0.8)")
       .style("font-size", "10px")
-      .style("font-family", "monospace")
+      .style("font-family", "'JetBrains Mono', ui-monospace, SFMono-Regular, monospace")
       .style("pointer-events", "none")
       .text((d) => d.label);
 
@@ -113,11 +113,11 @@ export const MemoryLattice = component$(() => {
     <div ref={containerRef} class="w-full h-[400px] cursor-grab active:cursor-grabbing">
       <div class="absolute top-4 right-4 flex flex-col gap-2 text-[10px] uppercase font-bold tracking-widest text-tertiary">
          <div class="flex items-center gap-2">
-            <div class="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
+            <div class="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_rgba(155,156,255,0.7)]" />
             Active Truth
          </div>
          <div class="flex items-center gap-2 opacity-50">
-            <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500" />
+            <div class="w-3 h-3 rounded-full bg-error/20 border border-error" />
             Superseded Memory
          </div>
       </div>

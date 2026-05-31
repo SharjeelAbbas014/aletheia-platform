@@ -11,8 +11,8 @@ function normalizePath(pathname: string): string {
 
   const withLeadingSlash = pathname.startsWith("/") ? pathname : `/${pathname}`;
   return withLeadingSlash.endsWith("/")
-    ? withLeadingSlash
-    : `${withLeadingSlash}/`;
+    ? withLeadingSlash.slice(0, -1)
+    : withLeadingSlash;
 }
 
 export function absoluteUrl(pathname: string): string {
