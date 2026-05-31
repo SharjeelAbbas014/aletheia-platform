@@ -26,7 +26,7 @@ export const Header = component$((props: HeaderProps) => {
               mobileOpen.value = false;
             }}
           >
-            <div class="flex h-8 w-8 items-center justify-center rounded bg-primary shadow-lg shadow-primary/20 overflow-hidden">
+            <div class="flex h-8 w-8 items-center justify-center">
               <img
                 src="/icon-64.png"
                 alt="AletheiaDB"
