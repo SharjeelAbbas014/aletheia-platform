@@ -8,7 +8,7 @@
     "build.client": "node ./node_modules/vite/bin/vite.js build",
     "build.server": "node ./node_modules/vite/bin/vite.js build -c adapters/node-server/vite.config.ts",
     "build": "npm run build.client && npm run build.server",
-    "build.vercel": "npm run build.client && node ./node_modules/vite/bin/vite.js build -c adapters/vercel-edge/vite.config.ts && rm -f .vercel/output/static/sitemap.xml",
+    "build.vercel": "npm run build.client && node ./node_modules/vite/bin/vite.js build -c adapters/vercel-edge/vite.config.ts && node scripts/generate-sitemap.mjs",
     "serve": "node server/entry.node-server",
     "typecheck": "node ./node_modules/typescript/lib/tsc.js --noEmit",
     "prepare": "husky"

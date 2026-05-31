@@ -1,6 +1,10 @@
-import type { RequestHandler } from "@builder.io/qwik-city";
-import { getAllBlogPosts } from "~/lib/blog";
-import { absoluteUrl } from "~/lib/site";
+import { readFileSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import matter from "gray-matter";
+
+const SITE_ORIGIN = "https://aletheiadb.com";
+const BLOG_DIR = join(process.cwd(), "src/content/blog");
+const OUT_DIR = join(process.cwd(), ".vercel/output/static");
 
 const today = new Date().toISOString().split("T")[0];
 
@@ -53,23 +57,51 @@ const docsPages = [
   { loc: "/docs/self-hosting", priority: 0.7 },
 ];
 
-import { setPublicEdgeCache } from "~/lib/cache";
+function normalizeDate(value) {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return value.trim();
+  return "";
+}
 
-export const onGet: RequestHandler = (event) => {
-  setPublicEdgeCache(event);
-  const blogPosts = getAllBlogPosts();
+function getBlogPosts() {
+  const files = readdirSync(BLOG_DIR).filter((f) => f.endsWith(".md"));
+  return files
+    .map((file) => {
+      const raw = readFileSync(join(BLOG_DIR, file), "utf-8");
+      const { data } = matter(raw);
+      const slug = file.replace(/\.md$/, "");
+      const publishedAt = normalizeDate(data.publishedAt);
+      const updatedAt = normalizeDate(data.updatedAt) || publishedAt;
+      return {
+        url: `/blog/${slug}`,
+        publishedAt,
+        updatedAt,
+      };
+    })
+    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+}
 
-  const urls = [
-    ...staticPages,
-    ...docsPages.map((p) => ({ ...p, lastmod: today })),
-    ...blogPosts.map((post) => ({
-      loc: post.url,
-      priority: 0.8,
-      lastmod: post.updatedAt || post.publishedAt,
-    })),
-  ];
+function absoluteUrl(pathname) {
+  if (!pathname || pathname === "/") return `${SITE_ORIGIN}/`;
+  const p = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return `${SITE_ORIGIN}${p.endsWith("/") ? p.slice(0, -1) : p}`;
+}
 
-  const body = `<?xml version="1.0" encoding="UTF-8"?>
+mkdirSync(OUT_DIR, { recursive: true });
+
+const blogPosts = getBlogPosts();
+
+const urls = [
+  ...staticPages,
+  ...docsPages.map((p) => ({ ...p, lastmod: today })),
+  ...blogPosts.map((post) => ({
+    loc: post.url,
+    priority: 0.8,
+    lastmod: post.updatedAt || post.publishedAt,
+  })),
+];
+
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${urls
     .map(
@@ -82,6 +114,28 @@ export const onGet: RequestHandler = (event) => {
     .join("\n  ")}
 </urlset>`;
 
-  event.headers.set("Content-Type", "application/xml; charset=utf-8");
-  event.send(200, body);
-};
+writeFileSync(join(OUT_DIR, "sitemap.xml"), sitemap, "utf-8");
+console.log(`Generated sitemap.xml with ${urls.length} URLs`);
+
+const robots = [
+  "User-agent: *",
+  "Allow: /$",
+  "Allow: /blog",
+  "Allow: /docs",
+  "Allow: /platform/benchmarks",
+  "Allow: /platform/trust",
+  "Allow: /platform/byoc",
+  "Allow: /signup",
+  "Allow: /login",
+  "Disallow: /api/",
+  "Disallow: /platform/billing",
+  "Disallow: /platform/settings",
+  "Disallow: /platform/clusters",
+  "Disallow: /logout",
+  "",
+  `Sitemap: ${SITE_ORIGIN}/sitemap.xml`,
+  "",
+].join("\n");
+
+writeFileSync(join(OUT_DIR, "robots.txt"), robots, "utf-8");
+console.log("Generated robots.txt");
