@@ -117,7 +117,11 @@ Run a quick health check:
 
 ```bash
 curl http://127.0.0.1:3000/health
-# {"status":"ok","version":"0.4.2"}
+# {"status":"ok","auth_required":true,"device":"CPU","data_root":"./dev-data"}
+
+# Version info is at /version:
+curl http://127.0.0.1:3000/version
+# {"engine_version":"0.1.0","api_version":"0.1.0","auth_required":true}
 ```
 
 ## Storing and Retrieving Memories with Python

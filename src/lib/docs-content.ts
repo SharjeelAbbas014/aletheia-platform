@@ -602,9 +602,9 @@ t2: preferred_drink = tea      -> becomes current
             language: "json",
             code: `{
   "entity_id": "user-123",
-  "session_id": "chat-82",
-  "textual_content": "I moved from NYC to LA last month.",
-  "created_at_ms": 1763653742000
+  "memory_id": "user-123::chat-82::42",
+  "timestamp": 1763653742000,
+  "textual_content": "I moved from NYC to LA last month."
 }`,
           },
         ],
@@ -735,7 +735,6 @@ t2: preferred_drink = tea      -> becomes current
             label: "Delete request",
             language: "json",
             code: `{
-  "entity_id": "user-123",
   "memory_id": "user-123::chat-82::42",
   "reason": "user_requested_erasure"
 }`,
@@ -1043,7 +1042,7 @@ client.ingest_many(items)`,
             code: `docker run --rm -p 3000:3000 \\
   -v /srv/aletheia-data:/data \\
   -e TEMPORAL_MEMORY_DATA_DIR=/data \\
-  ghcr.io/sharjeel619/aletheia:latest`,
+  aletheia:latest (build from Dockerfile in repo)`,
           },
         ],
       },
@@ -1438,7 +1437,7 @@ reset first: true`,
           {
             label: "Docker quick start",
             language: "bash",
-            code: "docker run -p 3000:3000 \\\n  -e TEMPORAL_MEMORY_API_KEY=my-secret \\\n  -e TEMPORAL_MEMORY_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -e TEMPORAL_MEMORY_DATA_DIR=/data \\\n  ghcr.io/sharjeel619/aletheia:latest",
+            code: "docker run -p 3000:3000 \\\n  -e TEMPORAL_MEMORY_API_KEY=my-secret \\\n  -e TEMPORAL_MEMORY_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -e TEMPORAL_MEMORY_DATA_DIR=/data \\\n  aletheia:latest (build from Dockerfile in repo)",
           },
           {
             label: "First ingest",
@@ -1993,7 +1992,7 @@ reset first: true`,
           {
             label: "Docker",
             language: "bash",
-            code: "docker run -p 3000:3000 \\\n  -e TEMPORAL_MEMORY_API_KEY=my-secret \\\n  -e TEMPORAL_MEMORY_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -e TEMPORAL_MEMORY_DATA_DIR=/data \\\n  ghcr.io/sharjeel619/aletheia:latest",
+            code: "docker run -p 3000:3000 \\\n  -e TEMPORAL_MEMORY_API_KEY=my-secret \\\n  -e TEMPORAL_MEMORY_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -e TEMPORAL_MEMORY_DATA_DIR=/data \\\n  aletheia:latest (build from Dockerfile in repo)",
           },
         ],
       },

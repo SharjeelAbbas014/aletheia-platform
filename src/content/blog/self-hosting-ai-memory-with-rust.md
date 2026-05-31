@@ -339,7 +339,7 @@ For a production-ready setup with persistent storage:
 ```yaml
 services:
   aletheia:
-    image: ghcr.io/sharjeel619/aletheia:latest
+    build: .  # build from Dockerfile in repo
     container_name: aletheia
     restart: unless-stopped
     ports:
@@ -473,7 +473,7 @@ services:
       - caddy-data:/data
 
   aletheia:
-    image: ghcr.io/sharjeel619/aletheia:latest
+    build: .  # build from Dockerfile in repo
     expose:
       - "3000"
 
