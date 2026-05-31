@@ -79,10 +79,6 @@ export const onGet: RequestHandler = (event) => {
     .join("\n  ")}
 </urlset>`;
 
-  event.send(
-    new Response(body, {
-      status: 200,
-      headers: { "Content-Type": "application/xml; charset=utf-8" },
-    })
-  );
+  event.headers.set("Content-Type", "application/xml; charset=utf-8");
+  event.send(200, body);
 };
