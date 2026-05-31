@@ -1069,10 +1069,10 @@ export default component$(() => {
               </div>
             </div>
           </div>
-          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1 rounded-full border border-white/5 bg-white/[0.02] backdrop-blur-md">
+          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1 rounded-full border border-white/5 bg-white/[0.02] backdrop-blur-md whitespace-nowrap">
             <a
               href="/docs"
-              class="text-xs font-mono text-tertiary hover:text-primary transition-colors"
+              class="text-xs font-mono text-tertiary hover:text-primary transition-colors whitespace-nowrap"
             >
               Learn how the engine works →
             </a>
@@ -1101,14 +1101,15 @@ export default component$(() => {
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               {/* Left Side: Store/Warmup */}
               <div class="space-y-6">
-                <div class="flex items-center gap-3">
-                  <span class="text-xs font-mono font-bold px-2 py-0.5 rounded border border-primary/25 bg-primary/10 text-primary shadow-[0_0_8px_rgba(155,156,255,0.15)]">
+                <div class="flex items-center justify-center gap-4 mb-2">
+                  <div class="h-px w-8 sm:w-16 bg-gradient-to-l from-primary/40 to-transparent"></div>
+                  <span class="text-sm font-mono font-bold px-2.5 py-1 rounded-md border border-primary/25 bg-primary/10 text-primary shadow-[0_0_8px_rgba(155,156,255,0.15)] whitespace-nowrap">
                     01
                   </span>
-                  <h3 class="text-xl font-extrabold tracking-wider font-headline text-primary uppercase">
+                  <h3 class="text-2xl md:text-3xl font-extrabold tracking-widest font-headline text-primary uppercase text-glow whitespace-nowrap">
                     STEP 1
                   </h3>
-                  <div class="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent"></div>
+                  <div class="h-px w-8 sm:w-16 bg-gradient-to-r from-primary/40 to-transparent"></div>
                 </div>
                 <div class="glass-panel relative rounded-2xl p-6 md:p-8 overflow-hidden">
                   <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(192,193,255,0.04),transparent_50%)]" />
@@ -1216,14 +1217,15 @@ export default component$(() => {
 
               {/* Right Side: Recall & Results */}
               <div class="space-y-6">
-                <div class="flex items-center gap-3">
-                  <span class="text-xs font-mono font-bold px-2 py-0.5 rounded border border-secondary/25 bg-secondary/10 text-secondary shadow-[0_0_8px_rgba(93,230,255,0.12)]">
+                <div class="flex items-center justify-center gap-4 mb-2">
+                  <div class="h-px w-8 sm:w-16 bg-gradient-to-l from-secondary/40 to-transparent"></div>
+                  <span class="text-sm font-mono font-bold px-2.5 py-1 rounded-md border border-secondary/25 bg-secondary/10 text-secondary shadow-[0_0_8px_rgba(93,230,255,0.12)] whitespace-nowrap">
                     02
                   </span>
-                  <h3 class="text-xl font-extrabold tracking-wider font-headline text-secondary uppercase">
+                  <h3 class="text-2xl md:text-3xl font-extrabold tracking-widest font-headline text-secondary uppercase text-glow whitespace-nowrap">
                     STEP 2
                   </h3>
-                  <div class="h-px flex-1 bg-gradient-to-r from-secondary/30 to-transparent"></div>
+                  <div class="h-px w-8 sm:w-16 bg-gradient-to-r from-secondary/40 to-transparent"></div>
                 </div>
                 <div class="glass-panel relative rounded-2xl p-6 md:p-8 overflow-hidden">
                   <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(93,230,255,0.04),transparent_50%)]" />
@@ -1481,7 +1483,7 @@ export default component$(() => {
                   </span>
                 </div>
 
-                <div class="relative py-8 px-4">
+                <div class="relative pt-8 pb-16 px-4">
                   <div class="absolute left-0 top-[40%] h-[1px] w-full border-t border-dashed border-white/5 -translate-y-1/2 z-0" />
                   <div class="relative z-10 flex justify-between items-center h-20">
                     {/* State 2025 (Stale) */}
@@ -1492,11 +1494,11 @@ export default component$(() => {
                           class="text-xs text-error"
                         />
                       </div>
-                      <div class="text-center font-mono">
-                        <span class="block text-[9px] uppercase tracking-widest text-error/70 font-semibold">
+                      <div class="text-center font-mono whitespace-nowrap">
+                        <span class="block text-[9px] uppercase tracking-widest text-error/70 font-semibold whitespace-nowrap">
                           2025 (STALE)
                         </span>
-                        <span class="block text-[10px] text-error/50 line-through">
+                        <span class="block text-[10px] text-error/50 line-through whitespace-nowrap">
                           "Living in NYC"
                         </span>
                       </div>
@@ -1518,19 +1520,19 @@ export default component$(() => {
                           class="text-xs text-primary"
                         />
                       </div>
-                      <div class="text-center font-mono">
-                        <span class="block text-[9px] uppercase tracking-widest text-primary font-bold">
+                      <div class="text-center font-mono whitespace-nowrap">
+                        <span class="block text-[9px] uppercase tracking-widest text-primary font-bold whitespace-nowrap">
                           Today (ACTIVE)
                         </span>
-                        <span class="block text-[10px] font-bold text-white">
+                        <span class="block text-[10px] font-bold text-white whitespace-nowrap">
                           "Moving to SF"
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div class="absolute bottom-[-10px] left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25">
-                    <span class="text-[8px] font-mono uppercase tracking-[0.15em] text-primary font-bold">
+                  <div class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25 whitespace-nowrap z-20">
+                    <span class="text-[8px] font-mono uppercase tracking-[0.15em] text-primary font-bold whitespace-nowrap">
                       Fact Invalidation Complete
                     </span>
                   </div>
