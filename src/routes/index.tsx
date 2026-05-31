@@ -714,7 +714,8 @@ export default component$(() => {
   });
 
   const runHeroDemo = $(async (action: "store" | "recall") => {
-    const message = action === "store" ? heroMessage.value.trim() : heroQuery.value.trim();
+    const message =
+      action === "store" ? heroMessage.value.trim() : heroQuery.value.trim();
     if (!message) {
       heroDemoResult.value = {
         ok: false,
@@ -749,14 +750,14 @@ export default component$(() => {
       )) as HeroDemoResult;
       heroDemoResult.value = nextResult.ok
         ? {
-          ...(heroDemoResult.value ?? {}),
-          ...nextResult,
-          message: undefined,
-        }
+            ...(heroDemoResult.value ?? {}),
+            ...nextResult,
+            message: undefined,
+          }
         : {
-          ...(heroDemoResult.value ?? {}),
-          ...nextResult,
-        };
+            ...(heroDemoResult.value ?? {}),
+            ...nextResult,
+          };
     } catch (error) {
       captureError(error, { page: "landing", action: "heroDemo" });
       heroDemoResult.value = {
@@ -934,7 +935,7 @@ export default component$(() => {
         <section class="relative min-h-[90vh] flex items-center px-6 border-b border-white/5 overflow-hidden">
           {/* Background Aurora Effect */}
           <div aria-hidden="true" class="interactive-aurora" />
-          
+
           <div class="container mx-auto grid grid-cols-1 items-center gap-16 lg:grid-cols-2 relative z-10 py-16 md:py-24">
             <div>
               <div class="mb-6 inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 rounded-full backdrop-blur-md">
@@ -948,25 +949,40 @@ export default component$(() => {
               </div>
 
               <h1 class="mb-6 text-5xl font-extrabold tracking-tight md:text-7xl text-on-surface font-headline leading-[1.05]">
-                Memory Engine<br />
+                Memory Engine
+                <br />
                 <span class="text-gradient-accent">for AI Agents</span>
               </h1>
 
               <p class="mb-8 max-w-xl text-lg leading-relaxed text-tertiary">
-                Hybrid vector + BM25 search, knowledge graphs, deterministic analytics,
-                and fact supersession in a single Rust binary. Self-host or deploy on
-                our platform with one click.
+                Hybrid vector + BM25 search, knowledge graphs, deterministic
+                analytics, and fact supersession in a single Rust binary.
+                Self-host or deploy on our platform with one click.
               </p>
 
               <div class="flex flex-wrap gap-4">
-                <Link href="/signup" onClick$={() => capture("cta_signup_clicked")} class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10">
+                <Link
+                  href="/signup"
+                  onClick$={() => capture("cta_signup_clicked")}
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10"
+                >
                   Get Started Free
                   <ArrowRightIcon class="w-4 h-4" />
                 </Link>
-                <Link href="/login" onClick$={() => capture("cta_login_clicked")} class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-on-surface font-bold rounded-xl hover:bg-white/5 transition-colors">
+                <Link
+                  href="/login"
+                  onClick$={() => capture("cta_login_clicked")}
+                  class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-on-surface font-bold rounded-xl hover:bg-white/5 transition-colors"
+                >
                   Sign In
                 </Link>
-                <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" onClick$={() => capture("cta_demo_clicked")} class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-tertiary font-bold rounded-xl hover:bg-white/5 transition-colors text-sm">
+                <a
+                  href={CALENDLY_30_MIN_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick$={() => capture("cta_demo_clicked")}
+                  class="inline-flex items-center gap-2 px-6 py-3 border border-white/10 text-tertiary font-bold rounded-xl hover:bg-white/5 transition-colors text-sm"
+                >
                   Book a Demo
                   <ExternalLinkIcon class="w-3 h-3" />
                 </a>
@@ -979,27 +995,35 @@ export default component$(() => {
                 <span class="terminal-dot red" />
                 <span class="terminal-dot yellow" />
                 <span class="terminal-dot green" />
-                <span class="text-[10px] font-mono text-tertiary ml-2">aletheia serve --port 5001</span>
+                <span class="text-[10px] font-mono text-tertiary ml-2">
+                  aletheia serve --port 5001
+                </span>
               </div>
               <div class="p-6 font-mono text-xs space-y-4">
                 <div class="flex items-center justify-between text-green-400">
                   <span>● ENGINE: aletheiadb_core v2.0.1 [Active]</span>
                   <span class="animate-pulse">ONLINE</span>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-3 text-secondary">
                   <div class="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider">Retrieval p99</span>
+                    <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider">
+                      Retrieval p99
+                    </span>
                     <span class="text-lg font-bold text-white">4.2ms</span>
                   </div>
                   <div class="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider">Memory Blocks</span>
+                    <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider">
+                      Memory Blocks
+                    </span>
                     <span class="text-lg font-bold text-white">142,850</span>
                   </div>
                 </div>
-                
+
                 <div class="border-t border-white/5 pt-4 space-y-2">
-                  <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider mb-2">Memory Substrates Loaded</span>
+                  <span class="block text-[9px] text-tertiary font-bold uppercase tracking-wider mb-2">
+                    Memory Substrates Loaded
+                  </span>
                   <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
                     {[
                       { name: "HNSW Vector Index" },
@@ -1016,19 +1040,31 @@ export default component$(() => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div class="border-t border-white/5 pt-4">
                   <div class="bg-black/30 rounded-lg p-3 text-[10px] text-tertiary/90 leading-relaxed border border-white/5">
-                    <span class="text-primary">$</span> aletheia query "user preferences"<br />
-                    <span class="text-white">&gt; Ingesting fact... "prefer jasmine tea over coffee"</span><br />
-                    <span class="text-green-400">&gt; Fact supersession resolved. Invalidation complete.</span>
+                    <span class="text-primary">$</span> aletheia query "user
+                    preferences"
+                    <br />
+                    <span class="text-white">
+                      &gt; Ingesting fact... "prefer jasmine tea over coffee"
+                    </span>
+                    <br />
+                    <span class="text-green-400">
+                      &gt; Fact supersession resolved. Invalidation complete.
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1 rounded-full border border-white/5 bg-white/[0.02] backdrop-blur-md">
-            <a href="/docs" class="text-xs font-mono text-tertiary hover:text-primary transition-colors">Learn how the engine works →</a>
+            <a
+              href="/docs"
+              class="text-xs font-mono text-tertiary hover:text-primary transition-colors"
+            >
+              Learn how the engine works →
+            </a>
           </div>
         </section>
 
@@ -1075,7 +1111,9 @@ export default component$(() => {
                         class={`${card.iconClass}`.trim()}
                       />
                     </div>
-                    <h4 class="text-xl font-bold font-headline">{card.title}</h4>
+                    <h4 class="text-xl font-bold font-headline">
+                      {card.title}
+                    </h4>
                   </div>
 
                   <ul class="space-y-6">
@@ -1086,8 +1124,12 @@ export default component$(() => {
                           class={`shrink-0 mt-0.5 ${item.iconClass}`.trim()}
                         />
                         <div>
-                          <span class="mb-1 block font-bold text-sm text-on-surface">{item.title}</span>
-                          <p class="text-xs md:text-sm text-tertiary leading-relaxed">{item.body}</p>
+                          <span class="mb-1 block font-bold text-sm text-on-surface">
+                            {item.title}
+                          </span>
+                          <p class="text-xs md:text-sm text-tertiary leading-relaxed">
+                            {item.body}
+                          </p>
                         </div>
                       </li>
                     ))}
@@ -1107,7 +1149,7 @@ export default component$(() => {
                     LongMemEval-S Suite
                   </span>
                 </div>
-                
+
                 <div class="flex items-end gap-8 h-48 border-b border-white/5 pb-2 px-4 relative">
                   <div class="absolute left-0 top-0 h-full w-px bg-white/[0.02] flex flex-col justify-between text-[9px] text-tertiary font-mono -translate-x-full pr-3">
                     <span>100%</span>
@@ -1116,7 +1158,7 @@ export default component$(() => {
                     <span>25%</span>
                     <span>0%</span>
                   </div>
-                  
+
                   {/* Standard RAG Bar */}
                   <div class="flex-1 h-full flex flex-col justify-end items-center gap-3">
                     <div
@@ -1132,7 +1174,7 @@ export default component$(() => {
                       Standard RAG
                     </span>
                   </div>
-                  
+
                   {/* AletheiaDB Bar */}
                   <div class="flex-1 h-full flex flex-col justify-end items-center gap-3">
                     <div
@@ -1149,9 +1191,11 @@ export default component$(() => {
                     </span>
                   </div>
                 </div>
-                
+
                 <p class="mt-6 text-xs leading-relaxed text-tertiary">
-                  AletheiaDB resolves standard vector search failures. In memory tasks with high fact-density, the local hybrid architecture ensures precise recall.
+                  AletheiaDB resolves standard vector search failures. In memory
+                  tasks with high fact-density, the local hybrid architecture
+                  ensures precise recall.
                 </p>
               </div>
 
@@ -1165,11 +1209,10 @@ export default component$(() => {
                     Supersession State
                   </span>
                 </div>
-                
+
                 <div class="relative py-8 px-4">
                   <div class="absolute left-0 top-[40%] h-[1px] w-full border-t border-dashed border-white/10 -translate-y-1/2 z-0" />
                   <div class="relative z-10 flex justify-between items-center h-20">
-                    
                     {/* State 2025 (Stale) */}
                     <div class="flex flex-col items-center gap-2">
                       <div class="h-8 w-8 rounded-full bg-red-950/20 border border-red-500/20 flex items-center justify-center stale-node">
@@ -1214,16 +1257,18 @@ export default component$(() => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div class="absolute bottom-[-10px] left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25">
                     <span class="text-[8px] font-mono uppercase tracking-[0.15em] text-primary font-bold">
                       Fact Invalidation Complete
                     </span>
                   </div>
                 </div>
-                
+
                 <p class="mt-8 text-xs leading-relaxed text-tertiary">
-                  When newer truths supersede older context, the engine automatically tags prior states as stale, filtering them out from active agent context.
+                  When newer truths supersede older context, the engine
+                  automatically tags prior states as stale, filtering them out
+                  from active agent context.
                 </p>
               </div>
             </div>
@@ -1238,13 +1283,15 @@ export default component$(() => {
                   The Distillation Loop
                 </h2>
                 <h3 class="mb-8 text-4xl font-extrabold leading-tight md:text-5xl font-headline">
-                  We do not store text.<br />
-                  We extract <span class="text-gradient-accent italic">truth.</span>
+                  We do not store text.
+                  <br />
+                  We extract{" "}
+                  <span class="text-gradient-accent italic">truth.</span>
                 </h3>
                 <p class="mb-8 text-base text-tertiary leading-relaxed">
-                  Raw chat logs are noise. AletheiaDB acts as a cognitive filter,
-                  distilling human rambling into a clean, queryable lattice of
-                  facts.
+                  Raw chat logs are noise. AletheiaDB acts as a cognitive
+                  filter, distilling human rambling into a clean, queryable
+                  lattice of facts.
                 </p>
 
                 <div class="space-y-6">
@@ -1254,8 +1301,12 @@ export default component$(() => {
                         <MaterialIcon name={item.icon} class="text-primary" />
                       </div>
                       <div>
-                        <h4 class="mb-1 font-bold text-sm text-on-surface font-headline">{item.title}</h4>
-                        <p class="text-xs md:text-sm text-tertiary leading-relaxed">{item.body}</p>
+                        <h4 class="mb-1 font-bold text-sm text-on-surface font-headline">
+                          {item.title}
+                        </h4>
+                        <p class="text-xs md:text-sm text-tertiary leading-relaxed">
+                          {item.body}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -1268,12 +1319,13 @@ export default component$(() => {
                 style={{ transitionDelay: "200ms" }}
               >
                 <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.03),transparent_70%)]" />
-                
+
                 <div class="relative z-10 flex flex-col items-center gap-8">
                   {/* Step 1: Input Raw Chat */}
                   <div class="flex w-full items-center justify-between gap-4">
                     <div class="flex-1 rounded-xl border border-white/5 bg-white/[0.02] p-4 font-mono text-[11px] text-tertiary">
-                      <span class="text-primary/60 mr-1">User:</span> "Hey! I just bought a white Mercedes!"
+                      <span class="text-primary/60 mr-1">User:</span> "Hey! I
+                      just bought a white Mercedes!"
                     </div>
                     <div class="shrink-0 flex items-center gap-2">
                       <MaterialIcon
@@ -1366,19 +1418,21 @@ export default component$(() => {
                   </div>
 
                   <div
-                    class={`mb-3 font-mono text-xs uppercase tracking-wider ${card.date === "AletheiaDB Ingests"
+                    class={`mb-3 font-mono text-xs uppercase tracking-wider ${
+                      card.date === "AletheiaDB Ingests"
                         ? "text-primary"
                         : "text-tertiary"
-                      }`}
+                    }`}
                   >
                     {card.date}
                   </div>
 
                   <p
-                    class={`mb-6 text-lg leading-relaxed ${card.facts
+                    class={`mb-6 text-lg leading-relaxed ${
+                      card.facts
                         ? "font-bold"
                         : "font-medium italic text-on-surface/90"
-                      }`}
+                    }`}
                   >
                     {card.quote}
                   </p>
@@ -1426,17 +1480,22 @@ export default component$(() => {
           </div>
         </section>
 
-        <section id="capabilities" class="px-6 py-24 md:py-32 border-b border-white/5 bg-white/[0.01]">
+        <section
+          id="capabilities"
+          class="px-6 py-24 md:py-32 border-b border-white/5 bg-white/[0.01]"
+        >
           <div class="container mx-auto">
             <div class="scroll-reveal mb-16 text-center lg:text-left lg:max-w-2xl">
               <h2 class="mb-4 text-sm font-bold uppercase tracking-widest text-primary font-mono">
                 Core Capabilities
               </h2>
               <h3 class="mb-6 text-4xl font-extrabold md:text-5xl font-headline leading-tight">
-                Engineered for <span class="text-gradient-accent italic">AI Scale.</span>
+                Engineered for{" "}
+                <span class="text-gradient-accent italic">AI Scale.</span>
               </h3>
               <p class="text-base text-tertiary leading-relaxed">
-                AletheiaDB replaces complex, slow orchestration chains with a unified, high-performance cognitive database engine.
+                AletheiaDB replaces complex, slow orchestration chains with a
+                unified, high-performance cognitive database engine.
               </p>
             </div>
 
@@ -1457,7 +1516,9 @@ export default component$(() => {
                         class="text-xl text-primary"
                       />
                     </div>
-                    <h4 class="mb-2 text-base font-bold font-headline text-on-surface">{item.title}</h4>
+                    <h4 class="mb-2 text-base font-bold font-headline text-on-surface">
+                      {item.title}
+                    </h4>
                     <p class="text-xs md:text-sm text-tertiary leading-relaxed">
                       {item.body}
                     </p>
@@ -1470,7 +1531,9 @@ export default component$(() => {
                 {/* Latency Visual Card */}
                 <div class="glass-panel rounded-2xl border border-white/5 p-6 relative overflow-hidden bg-gradient-to-br from-indigo-950/20 to-transparent">
                   <div class="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-                  <p class="font-mono text-[9px] uppercase tracking-wider text-primary mb-2">Recall Engine Latency</p>
+                  <p class="font-mono text-[9px] uppercase tracking-wider text-primary mb-2">
+                    Recall Engine Latency
+                  </p>
                   <div class="my-6 text-center">
                     <div class="text-5xl font-extrabold tracking-tighter text-white font-headline text-glow">
                       &lt;100ms
@@ -1480,17 +1543,20 @@ export default component$(() => {
                     </div>
                   </div>
                   <p class="text-xs text-tertiary leading-relaxed text-center">
-                    Built natively in Rust. Delivers sub-100ms queries under heavy semantic and full-text loads.
+                    Built natively in Rust. Delivers sub-100ms queries under
+                    heavy semantic and full-text loads.
                   </p>
                 </div>
 
                 {/* Build Profile Card */}
                 <div class="glass-panel rounded-2xl border border-white/5 p-6">
-                  <p class="font-mono text-[9px] uppercase tracking-wider text-primary mb-4">Runtime Configuration</p>
+                  <p class="font-mono text-[9px] uppercase tracking-wider text-primary mb-4">
+                    Runtime Configuration
+                  </p>
                   <pre class="overflow-x-auto rounded-xl border border-white/5 bg-black/45 p-4 font-mono text-[11px] leading-relaxed text-secondary custom-scrollbar">
                     {runtimeSnapshot}
                   </pre>
-                  
+
                   <div class="mt-4 flex flex-wrap gap-1.5">
                     <span class="rounded-full border border-primary/25 bg-primary/5 px-2.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-primary">
                       Production
@@ -1707,11 +1773,15 @@ export default component$(() => {
                 Delivery Path
               </h2>
               <h3 class="text-4xl font-extrabold tracking-tight md:text-5xl font-headline">
-                From prototype to<br />
-                <span class="text-gradient-accent italic">production memory.</span>
+                From prototype to
+                <br />
+                <span class="text-gradient-accent italic">
+                  production memory.
+                </span>
               </h3>
               <p class="mt-6 text-base text-tertiary leading-relaxed">
-                The product has a clear progression: ingest fidelity, retrieval intelligence, and operational reliability.
+                The product has a clear progression: ingest fidelity, retrieval
+                intelligence, and operational reliability.
               </p>
             </div>
 
@@ -1768,11 +1838,12 @@ export default component$(() => {
                 Interactive Demo
               </h2>
               <h3 class="text-4xl font-extrabold tracking-tight md:text-5xl font-headline">
-                Live Memory <span class="text-gradient-accent italic">Simulation.</span>
+                Live Memory{" "}
+                <span class="text-gradient-accent italic">Simulation.</span>
               </h3>
               <p class="mt-6 mx-auto max-w-2xl text-base text-tertiary leading-relaxed">
-                Experience AletheiaDB's real-time ingestion and recall loop. Store
-                a fact, then retrieve it across model contexts.
+                Experience AletheiaDB's real-time ingestion and recall loop.
+                Store a fact, then retrieve it across model contexts.
               </p>
             </div>
 
@@ -1786,7 +1857,9 @@ export default component$(() => {
                       <MaterialIcon name="input" class="text-xl" />
                     </div>
                     <div>
-                      <h4 class="text-lg font-bold font-headline text-on-surface">Ingestion Layer</h4>
+                      <h4 class="text-lg font-bold font-headline text-on-surface">
+                        Ingestion Layer
+                      </h4>
                       <p class="text-[9px] font-mono uppercase tracking-widest text-tertiary font-bold">
                         Write Pipeline
                       </p>
@@ -1803,7 +1876,10 @@ export default component$(() => {
                         class="text-[9px] font-mono text-tertiary hover:text-primary transition-colors flex items-center gap-1 disabled:opacity-50"
                         onClick$={regenerateKey}
                       >
-                        <MaterialIcon name="published_with_changes" class="text-[10px]" />
+                        <MaterialIcon
+                          name="published_with_changes"
+                          class="text-[10px]"
+                        />
                         Regenerate
                       </button>
                     </div>
@@ -1821,7 +1897,8 @@ export default component$(() => {
                       />
                     </div>
                     <p class="mt-2 text-[10px] text-tertiary leading-relaxed">
-                      Memories are stored and queried using this unique key. It isolates your demo session and persists across reloads.
+                      Memories are stored and queried using this unique key. It
+                      isolates your demo session and persists across reloads.
                     </p>
                   </div>
 
@@ -1885,7 +1962,9 @@ export default component$(() => {
                         <MaterialIcon name="travel_explore" class="text-xl" />
                       </div>
                       <div>
-                        <h4 class="text-lg font-bold font-headline text-white">Truth Retrieval</h4>
+                        <h4 class="text-lg font-bold font-headline text-white">
+                          Truth Retrieval
+                        </h4>
                         <p class="text-[9px] font-mono uppercase tracking-widest text-primary font-bold">
                           Read Substrate
                         </p>
@@ -1951,8 +2030,8 @@ export default component$(() => {
                       </div>
                       <div class="space-y-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
                         {heroDemoResult.value?.ok &&
-                          heroDemoResult.value.hits &&
-                          heroDemoResult.value.hits.length > 0 ? (
+                        heroDemoResult.value.hits &&
+                        heroDemoResult.value.hits.length > 0 ? (
                           heroDemoResult.value.hits.map((hit, idx) => (
                             <div
                               key={idx}
@@ -1973,11 +2052,17 @@ export default component$(() => {
 
                 {heroDemoResult.value?.queryUnderBlink && (
                   <div class="feature-entrance rounded-xl border border-cyan-500/25 bg-cyan-950/10 p-5 flex items-start gap-3 shadow-lg shadow-cyan-500/5">
-                    <MaterialIcon name="verified" class="text-cyan-400 mt-0.5 text-sm" />
+                    <MaterialIcon
+                      name="verified"
+                      class="text-cyan-400 mt-0.5 text-sm"
+                    />
                     <div>
-                      <h5 class="text-xs font-bold text-white font-headline">Sub-100ms In-Memory Verified</h5>
+                      <h5 class="text-xs font-bold text-white font-headline">
+                        Sub-100ms In-Memory Verified
+                      </h5>
                       <p class="text-[11px] text-tertiary mt-0.5 leading-relaxed">
-                        This session query was resolved faster than a human blink at the database layer.
+                        This session query was resolved faster than a human
+                        blink at the database layer.
                       </p>
                     </div>
                   </div>
@@ -1994,10 +2079,12 @@ export default component$(() => {
                 Book A Session
               </p>
               <h3 class="mt-4 text-3xl md:text-4xl font-extrabold tracking-tight font-headline">
-                Schedule a 30-minute <span class="text-gradient-accent italic">walkthrough.</span>
+                Schedule a 30-minute{" "}
+                <span class="text-gradient-accent italic">walkthrough.</span>
               </h3>
               <p class="mt-3 max-w-2xl text-xs md:text-sm text-tertiary leading-relaxed">
-                Discuss database architecture, memory integration, and private deployment setups for your agentic applications.
+                Discuss database architecture, memory integration, and private
+                deployment setups for your agentic applications.
               </p>
               <div class="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
@@ -2027,11 +2114,13 @@ export default component$(() => {
               <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05),transparent_70%)]" />
               <div class="relative z-10">
                 <h2 class="mb-4 text-3xl font-extrabold tracking-tight md:text-5xl text-on-surface font-headline leading-tight">
-                  Build Agents That<br />
+                  Build Agents That
+                  <br />
                   <span class="text-gradient-accent">Actually Remember.</span>
                 </h2>
                 <p class="mx-auto mb-8 max-w-xl text-xs md:text-sm leading-relaxed text-tertiary">
-                  One binary, five memory substrates, zero lock-in. Start building persistent, self-improving agents today.
+                  One binary, five memory substrates, zero lock-in. Start
+                  building persistent, self-improving agents today.
                 </p>
                 <div class="flex flex-col justify-center gap-4 sm:flex-row">
                   <Link
@@ -2057,25 +2146,37 @@ export default component$(() => {
         </section>
 
         {/* Core vs Platform */}
-        <section id="core-vs-platform" class="px-6 py-16 md:py-24 border-t border-white/5">
+        <section
+          id="core-vs-platform"
+          class="px-6 py-16 md:py-24 border-t border-white/5"
+        >
           <div class="container mx-auto max-w-5xl">
             <div class="text-center mb-16">
-              <h2 class="mb-3 text-[9px] font-mono font-bold uppercase tracking-widest text-primary">Two Ways to Remember</h2>
-              <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight font-headline">Engine <span class="text-gradient-accent">and</span> Platform</h3>
+              <h2 class="mb-3 text-[9px] font-mono font-bold uppercase tracking-widest text-primary">
+                Two Ways to Remember
+              </h2>
+              <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight font-headline">
+                Engine <span class="text-gradient-accent">and</span> Platform
+              </h3>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Core (OSS) Card */}
               <div class="rounded-2xl border border-white/5 bg-white/[0.01] p-8 transition-all duration-300 hover:border-white/10">
                 <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10">
                   <CpuIcon class="text-lg text-tertiary" />
                 </div>
-                <h4 class="mb-2 text-2xl font-bold text-on-surface font-headline"><span class="text-primary">AletheiaDB</span> Core</h4>
-                <p class="mb-1 text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary/60">Open Source Engine</p>
+                <h4 class="mb-2 text-2xl font-bold text-on-surface font-headline">
+                  <span class="text-primary">AletheiaDB</span> Core
+                </h4>
+                <p class="mb-1 text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary/60">
+                  Open Source Engine
+                </p>
                 <p class="mb-6 text-xs md:text-sm leading-relaxed text-tertiary">
-                  The Rust-powered temporal memory engine that runs anywhere. Hybrid
-                  vector + BM25 search, knowledge graph traversal, deterministic
-                  analytics, and fact supersession — all in a single binary. No vendor lock-in.
+                  The Rust-powered temporal memory engine that runs anywhere.
+                  Hybrid vector + BM25 search, knowledge graph traversal,
+                  deterministic analytics, and fact supersession — all in a
+                  single binary. No vendor lock-in.
                 </p>
                 <ul class="mb-8 space-y-2.5 text-xs text-tertiary">
                   {[
@@ -2091,10 +2192,18 @@ export default component$(() => {
                   ))}
                 </ul>
                 <div class="flex gap-3">
-                  <Link href="/docs/core" class="rounded-xl bg-primary/10 px-5 py-2.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20">
+                  <Link
+                    href="/docs/core"
+                    class="rounded-xl bg-primary/10 px-5 py-2.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20"
+                  >
                     Read the Docs
                   </Link>
-                  <a href={CALENDLY_30_MIN_URL} target="_blank" rel="noreferrer" class="glass-panel border border-white/5 rounded-xl px-5 py-2.5 text-xs font-bold text-tertiary transition-colors hover:text-on-surface">
+                  <a
+                    href={CALENDLY_30_MIN_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="glass-panel border border-white/5 rounded-xl px-5 py-2.5 text-xs font-bold text-tertiary transition-colors hover:text-on-surface"
+                  >
                     Contact Us
                   </a>
                 </div>
@@ -2108,11 +2217,14 @@ export default component$(() => {
                 <h4 class="mb-2 text-2xl font-bold text-white font-headline">
                   <span class="text-primary">AletheiaDB</span> Platform
                 </h4>
-                <p class="mb-1 text-[9px] font-mono font-bold uppercase tracking-widest text-primary">Managed Cloud Service</p>
+                <p class="mb-1 text-[9px] font-mono font-bold uppercase tracking-widest text-primary">
+                  Managed Cloud Service
+                </p>
                 <p class="mb-6 text-xs md:text-sm leading-relaxed text-tertiary">
-                  A full SaaS experience on top of the core engine. Deploy clusters
-                  in one click, manage your team, track usage with analytics, explore
-                  knowledge graphs visually, and never worry about infrastructure.
+                  A full SaaS experience on top of the core engine. Deploy
+                  clusters in one click, manage your team, track usage with
+                  analytics, explore knowledge graphs visually, and never worry
+                  about infrastructure.
                 </p>
                 <ul class="mb-8 space-y-2.5 text-xs text-tertiary">
                   {[
@@ -2128,10 +2240,17 @@ export default component$(() => {
                   ))}
                 </ul>
                 <div class="flex gap-3">
-                  <Link href="/signup" onClick$={() => capture("cta_signup_clicked")} class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-background transition-colors hover:opacity-90 shadow-md">
+                  <Link
+                    href="/signup"
+                    onClick$={() => capture("cta_signup_clicked")}
+                    class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-background transition-colors hover:opacity-90 shadow-md"
+                  >
                     Get Started Free
                   </Link>
-                  <Link href="/docs/platform" class="glass-panel border border-white/5 rounded-xl px-5 py-2.5 text-xs font-bold text-tertiary transition-colors hover:text-on-surface">
+                  <Link
+                    href="/docs/platform"
+                    class="glass-panel border border-white/5 rounded-xl px-5 py-2.5 text-xs font-bold text-tertiary transition-colors hover:text-on-surface"
+                  >
                     Learn More
                   </Link>
                 </div>
@@ -2151,10 +2270,13 @@ export default component$(() => {
                 The AletheiaDB Ecosystem
               </h2>
               <h3 class="text-3xl md:text-4xl font-extrabold tracking-tight md:text-5xl font-headline">
-                Integrate Memory <span class="text-gradient-accent italic">Anywhere.</span>
+                Integrate Memory{" "}
+                <span class="text-gradient-accent italic">Anywhere.</span>
               </h3>
               <p class="mt-6 mx-auto max-w-2xl text-xs md:text-sm text-tertiary leading-relaxed">
-                We provide the tooling to make persistent memory a first-class citizen in your development workflow, from local testing to global scale.
+                We provide the tooling to make persistent memory a first-class
+                citizen in your development workflow, from local testing to
+                global scale.
               </p>
             </div>
 
@@ -2171,7 +2293,9 @@ export default component$(() => {
                       class="text-xl text-primary"
                     />
                   </div>
-                  <h4 class="mb-3 text-lg font-bold font-headline text-on-surface">{item.title}</h4>
+                  <h4 class="mb-3 text-lg font-bold font-headline text-on-surface">
+                    {item.title}
+                  </h4>
                   <p class="mb-6 text-xs md:text-sm leading-relaxed text-tertiary">
                     {item.body}
                   </p>
@@ -2193,7 +2317,8 @@ export default component$(() => {
               ALETHEIADB
             </span>
             <p class="mb-6 max-w-sm text-xs md:text-sm leading-relaxed text-tertiary">
-              The persistent memory layer for advanced AI agents. Built for humans, powered by Rust, dedicated to the truth.
+              The persistent memory layer for advanced AI agents. Built for
+              humans, powered by Rust, dedicated to the truth.
             </p>
             <p class="mb-6 text-xs md:text-sm text-tertiary">
               Contact:{" "}
@@ -2212,7 +2337,10 @@ export default component$(() => {
                 href="/blog"
                 class="glass-panel border border-white/5 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
               >
-                <MaterialIcon name="edit_square" class="text-sm text-tertiary" />
+                <MaterialIcon
+                  name="edit_square"
+                  class="text-sm text-tertiary"
+                />
               </Link>
             </div>
           </div>
@@ -2242,11 +2370,16 @@ export default component$(() => {
             <ul class="space-y-3 text-xs md:text-sm text-tertiary">
               {companyLinks.map((item) => (
                 <li key={item.label}>
-                  {item.href.startsWith("http") || item.href.startsWith("mailto:") ? (
+                  {item.href.startsWith("http") ||
+                  item.href.startsWith("mailto:") ? (
                     <a
                       href={item.href}
-                      target={item.href.startsWith("http") ? "_blank" : undefined}
-                      rel={item.href.startsWith("http") ? "noreferrer" : undefined}
+                      target={
+                        item.href.startsWith("http") ? "_blank" : undefined
+                      }
+                      rel={
+                        item.href.startsWith("http") ? "noreferrer" : undefined
+                      }
                       class="transition-colors hover:text-on-surface"
                     >
                       {item.label}
@@ -2287,7 +2420,8 @@ export default component$(() => {
         </div>
 
         <div class="container mx-auto mt-16 border-t border-white/5 pt-8 text-center font-mono text-[9px] uppercase tracking-widest text-tertiary/45">
-          © 2026 AletheiaDB Systems. All human memories preserved. Truth disclosed.
+          © 2026 AletheiaDB Systems. All human memories preserved. Truth
+          disclosed.
         </div>
       </footer>
     </div>
@@ -2306,7 +2440,7 @@ const structuredData = {
       description:
         "The persistent memory layer for AI agents. Hybrid vector + BM25 search, knowledge graphs, deterministic analytics, and fact supersession in a single Rust binary.",
       sameAs: [
-        "https://github.com/sharjeel619/aletheia",
+        "https://github.com/SharjeelAbbas014/Aletheia",
         "https://linkedin.com/company/aletheia",
       ],
     },
