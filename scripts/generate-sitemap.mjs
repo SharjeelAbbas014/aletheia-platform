@@ -11,9 +11,12 @@ const today = new Date().toISOString().split("T")[0];
 const staticPages = [
   { loc: "/", priority: 1.0, lastmod: today },
   { loc: "/blog", priority: 0.9, lastmod: today },
+  { loc: "/platform", priority: 0.8, lastmod: today },
   { loc: "/platform/benchmarks", priority: 0.7, lastmod: today },
   { loc: "/platform/trust", priority: 0.7, lastmod: today },
   { loc: "/platform/byoc", priority: 0.7, lastmod: today },
+  { loc: "/signup", priority: 0.6, lastmod: today },
+  { loc: "/login", priority: 0.5, lastmod: today },
 ];
 
 const docsPages = [
@@ -43,6 +46,7 @@ const docsPages = [
   { loc: "/docs/observability", priority: 0.6 },
   { loc: "/docs/benchmarking", priority: 0.7 },
   { loc: "/docs/security", priority: 0.8 },
+  { loc: "/docs/trust", priority: 0.7 },
   { loc: "/docs/troubleshooting", priority: 0.6 },
   { loc: "/docs/glossary", priority: 0.5 },
   { loc: "/docs/core", priority: 0.7 },
