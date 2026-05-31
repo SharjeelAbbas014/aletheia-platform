@@ -654,10 +654,10 @@ The three approaches above give you the conceptual foundation. You now understan
 Instead of building a file store, a vector database, and a metadata layer separately, you get them all through one client:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 
 # Start locally — no API keys, no servers, no Docker
-client = AletheiaDBClient.from_local(auto_start=True)
+client = AletheiaClient.from_local()
 ```
 
 **Approach 1 (file-based persistence) is handled automatically.** All data persists to disk. The local binary manages storage, indexing, and retrieval without configuration.
@@ -671,7 +671,7 @@ client.ingest(entity_id="user-123", text="I prefer pourover coffee.")
 # Semantic retrieval without managing embeddings yourself
 hits = client.query("What coffee do I prefer?", entity_id="user-123")
 for hit in hits:
-    print(f"{hit.text} (score: {hit.score})")
+    print(f"{hit.textual_content} (score: {hit.similarity})")
 ```
 
 **Approach 3 (structured metadata, supersession, temporal ranking) is core to the engine.** AletheiaDB treats every ingested fact as part of a temporal stream. It tracks recency, handles contradictions through fact supersession, and provides deterministic aggregation:
@@ -726,7 +726,7 @@ When multiple facts exist for the same entity, AletheiaDB can aggregate them det
 # Aggregate all facts for a user into a structured profile
 hits = client.query("summarize", entity_id="user-123", aggregate="latest")
 for hit in hits:
-    print(f"[{hit.timestamp}] {hit.text}")
+    print(f"[{hit.created_at_ms}] {hit.textual_content}")
 ```
 
 ### From Local to Cloud — Same API
@@ -735,11 +735,11 @@ The local binary is zero-config for development. When you're ready for productio
 
 ```python
 # Development
-client = AletheiaDBClient.from_local(auto_start=True)
+client = AletheiaClient.from_local()
 
 # Production — same API, managed infrastructure
-client = AletheiaDBClient.from_cloud(
-    "https://api.aletheia.com",
+client = AletheiaClient.from_cloud(
+    base_url="https://api.aletheia.com",
     api_key="YOUR_KEY",
 )
 

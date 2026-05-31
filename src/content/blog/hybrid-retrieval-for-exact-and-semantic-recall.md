@@ -303,9 +303,9 @@ The `HybridRetriever` class above is 70 lines of code, and that is just the retr
 AletheiaDB provides hybrid retrieval (HNSW + BM25 + cross-encoder reranking) out of the box. You get the same multi-signal retrieval pipeline without building or maintaining any of the infrastructure yourself:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 
-client = AletheiaDBClient(api_key="sk-...")
+client = AletheiaClient.from_cloud(api_key="sk-...")
 
 # Ingest documents — AletheiaDB builds HNSW and BM25 indexes automatically
 docs = [
@@ -325,7 +325,7 @@ hits = client.query(
 )
 
 for hit in hits:
-    print(hit.text)
+    print(hit.textual_content)
 ```
 
 Output:

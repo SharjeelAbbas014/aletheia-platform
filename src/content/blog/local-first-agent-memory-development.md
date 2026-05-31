@@ -84,13 +84,13 @@ cargo --version
 Clone the repository and build in release mode. The release build is significantly faster and the binary is self-contained.
 
 ```bash
-git clone https://github.com/aletheia-platform/aletheia.git
+git clone https://github.com/SharjeelAbbas014/Aletheia.git
 cd aletheia
 
-# Build the local engine binary
-cargo build --release --bin aletheia-local
+# Build the engine binary
+cargo build --release
 
-# The binary will be at target/release/aletheia-local
+# The binary will be at target/release/aletheia
 # Add it to your PATH
 export PATH="$PWD/target/release:$PATH"
 ```
@@ -101,12 +101,12 @@ The engine starts with sensible defaults. No configuration file required for dev
 
 ```bash
 # Start the memory engine on localhost:3000
-aletheia-local serve --port 3000 --data-dir ./dev-data
+export TEMPORAL_MEMORY_API_KEY=my-key
+export TEMPORAL_MEMORY_DATA_DIR=./dev-data
+./aletheia
 
 # You should see:
-# Memory engine listening on http://127.0.0.1:3000
-# Data directory: ./dev-data
-# Ready.
+# INFO aletheia: Memory Engine live address=0.0.0.0:3000
 ```
 
 That is it. You now have a local memory engine running with the same API surface as the production service. The `--data-dir` flag points to a local directory where all data is stored as SQLite files. You can inspect them directly, copy them around, or delete them to start fresh.
@@ -135,37 +135,40 @@ pip install aletheia
 Create a file called `memory_demo.py`:
 
 ```python
-from aletheia import AletheiaDBClient
-import json
+from aletheia import AletheiaClient
 
 # Connect to your local engine
-client = AletheiaDBClient(base_url="http://127.0.0.1:3000")
+client = AletheiaClient.from_cloud(
+    base_url="http://127.0.0.1:3000",
+    api_key="my-key",
+)
 
 # Store a conversation
-conversation = [
-    {"role": "user", "content": "I'm working on a Rust project that processes CSV files."},
-    {"role": "assistant", "content": "Great! For CSV processing in Rust, the csv crate is the standard choice. Are you working with large files?"},
-    {"role": "user", "content": "Yeah, some files are around 2GB. I need to stream them rather than load everything into memory."},
-    {"role": "assistant", "content": "For 2GB files, streaming is definitely the way to go. Use csv::ReaderBuilder with a BufReader. This keeps memory usage constant regardless of file size."}
+conversations = [
+    "I'm working on a Rust project that processes CSV files.",
+    "Great! For CSV processing in Rust, the csv crate is the standard choice.",
+    "Yeah, some files are around 2GB. I need to stream them rather than load everything into memory.",
+    "For 2GB files, streaming is definitely the way to go.",
 ]
 
-result = client.memories.store(
-    conversation_id="rust-csv-help-001",
-    messages=conversation,
-    metadata={"topic": "rust", "task": "csv-processing"}
-)
+for i, text in enumerate(conversations):
+    client.ingest(
+        entity_id="user-1",
+        memory_id=f"rust-csv-{i}",
+        text=text,
+    )
 
-print(f"Stored {result.memories_count} memories")
-# Stored 4 memories
+print("Stored 4 memories")
 
 # Now retrieve memories relevant to a new query
-results = client.memories.retrieve(
-    query="How do I handle large CSV files in Rust?",
-    top_k=3
+hits = client.query(
+    "How do I handle large CSV files in Rust?",
+    entity_id="user-1",
+    top_k=3,
 )
 
-for memory in results:
-    print(f"[{memory.relevance_score:.2f}] {memory.content[:80]}...")
+for hit in hits:
+    print(f"[{hit.similarity:.2f}] {hit.textual_content[:80]}...")
 ```
 
 ### Run It
@@ -186,25 +189,21 @@ Real agents need to handle contradiction. If a user says "I switched from Python
 
 ```python
 # Store new information that contradicts earlier memories
-new_conversation = [
-    {"role": "user", "content": "I decided to use Go instead of Rust for the CSV tool. The csv package in Go is simpler."},
-    {"role": "assistant", "content": "Good choice for simplicity. The encoding/csv package in Go handles streaming well with a Scanner."}
-]
-
-result = client.memories.store(
-    conversation_id="rust-csv-help-002",
-    messages=new_conversation,
-    metadata={"topic": "go", "task": "csv-processing", "supersedes": "rust-csv-help-001"}
+client.ingest(
+    entity_id="user-1",
+    memory_id="go-csv-0",
+    text="I decided to use Go instead of Rust for the CSV tool.",
 )
 
-# Retrieve again — the Go memories should rank higher now
-results = client.memories.retrieve(
-    query="What language am I using for CSV processing?",
-    top_k=2
+# Retrieve again — the new memory should rank higher
+hits = client.query(
+    "What language am I using for CSV processing?",
+    entity_id="user-1",
+    top_k=2,
 )
 
-for memory in results:
-    print(f"[{memory.relevance_score:.2f}] {memory.content[:80]}...")
+for hit in hits:
+    print(f"[{hit.similarity:.2f}] {hit.textual_content[:80]}...")
 ```
 
 This pattern — storing metadata that links new memories to old ones — is how production agents handle evolving knowledge. Testing it locally with real data is how you catch ranking bugs before users do.
@@ -217,68 +216,37 @@ Create a file called `test_memory.py`:
 
 ```python
 import pytest
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 
 @pytest.fixture
 def client():
     """Each test gets a fresh engine instance."""
-    client = AletheiaDBClient(base_url="http://127.0.0.1:3000")
+    client = AletheiaClient.from_local(api_key="my-key")
     yield client
-    # Clean up between tests
-    client.memories.delete_all()
 
 class TestMemoryRetrieval:
     def test_basic_retrieval(self, client):
         """Stored memories should be retrievable."""
-        client.memories.store(
-            conversation_id="test-1",
-            messages=[{"role": "user", "content": "My birthday is March 15th."}]
+        client.ingest(
+            entity_id="test-user",
+            text="My birthday is March 15th.",
         )
-        results = client.memories.retrieve(query="When is my birthday?")
+        results = client.query("When is my birthday?", entity_id="test-user")
         assert len(results) > 0
-        assert "March 15" in results[0].content
+        assert "March 15" in results[0].textual_content
 
     def test_stale_memory_ranking(self, client):
         """Updated facts should rank above older ones."""
-        client.memories.store(
-            conversation_id="test-2a",
-            messages=[{"role": "user", "content": "I live in New York."}]
-        )
-        client.memories.store(
-            conversation_id="test-2b",
-            messages=[{"role": "user", "content": "I moved to San Francisco last month."}]
-        )
-        results = client.memories.retrieve(query="Where do I live?", top_k=1)
-        assert "San Francisco" in results[0].content
+        client.ingest(entity_id="test-user", text="I live in New York.")
+        client.ingest(entity_id="test-user", text="I moved to San Francisco.")
+        results = client.query("Where do I live?", entity_id="test-user", top_k=1)
+        assert "San Francisco" in results[0].textual_content
 
     def test_irrelevant_memories_excluded(self, client):
         """Unrelated memories should not appear in results."""
-        client.memories.store(
-            conversation_id="test-3",
-            messages=[{"role": "user", "content": "The capital of France is Paris."}]
-        )
-        results = client.memories.retrieve(query="What is my favorite color?")
-        # No memories should match
-        assert len(results) == 0 or results[0].relevance_score < 0.3
-
-    def test_multiple_topics(self, client):
-        """Different topics should be stored separately and retrieved independently."""
-        client.memories.store(
-            conversation_id="test-4a",
-            messages=[{"role": "user", "content": "I use PostgreSQL for my main database."}],
-            metadata={"topic": "database"}
-        )
-        client.memories.store(
-            conversation_id="test-4b",
-            messages=[{"role": "user", "content": "I use Redis for caching."}],
-            metadata={"topic": "caching"}
-        )
-
-        db_results = client.memories.retrieve(query="What database do I use?")
-        cache_results = client.memories.retrieve(query="What caching system do I use?")
-
-        assert "PostgreSQL" in db_results[0].content
-        assert "Redis" in cache_results[0].content
+        client.ingest(entity_id="test-user", text="The capital of France is Paris.")
+        results = client.query("What is my favorite color?", entity_id="test-user")
+        assert len(results) == 0 or results[0].similarity < 0.3
 ```
 
 Run the tests:
@@ -318,13 +286,15 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build the local engine
-        run: cargo build --release --bin aletheia-local
+      - name: Build the engine
+        run: cargo build --release
 
-      - name: Start local engine
+      - name: Start engine
         run: |
-          ./target/release/aletheia-local serve --port 3000 --data-dir ./ci-data &
-          sleep 2  # Wait for the engine to start
+          export TEMPORAL_MEMORY_API_KEY=ci-key
+          export TEMPORAL_MEMORY_DATA_DIR=./ci-data
+          ./target/release/aletheia &
+          sleep 5  # Wait for the engine to start
           curl --retry 5 --retry-delay 1 http://127.0.0.1:3000/health
 
       - name: Set up Python
@@ -341,7 +311,7 @@ jobs:
 
       - name: Stop engine
         if: always()
-        run: pkill aletheia-local || true
+        run: pkill aletheia || true
 ```
 
 The key insight is that the same binary you run locally is the one used in CI. There is no separate "test infrastructure" to maintain. The tests that pass on your laptop pass in CI because they are running against the same engine.
@@ -359,14 +329,11 @@ When retrieval quality degrades, the most common culprits are:
 Local debugging makes all three easier to investigate. You can query the raw stored data, inspect the chunk boundaries, and see exactly what the retrieval algorithm is working with.
 
 ```bash
-# Inspect the raw SQLite database directly
-sqlite3 ./dev-data/memory.db "SELECT id, content, created_at FROM memories LIMIT 10;"
+# Inspect the raw tenant database directly
+sqlite3 ./dev-data/tenants/default/aletheia.db "SELECT memory_id, textual_content, created_at_ms FROM observations LIMIT 10;"
 
-# Check embedding dimensions
-sqlite3 ./dev-data/memory.db "SELECT id, length(embedding) FROM memories LIMIT 5;"
-
-# Find all memories related to a specific conversation
-sqlite3 ./dev-data/memory.db "SELECT content FROM memories WHERE conversation_id = 'rust-csv-help-001';"
+# Check the vector index file
+ls -lh ./dev-data/vector.hnsw
 ```
 
 This level of access is not available with most cloud-hosted services. When you can see the raw data, you can diagnose problems in minutes instead of filing a support ticket and waiting hours.

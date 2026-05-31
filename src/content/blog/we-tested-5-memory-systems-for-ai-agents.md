@@ -70,7 +70,7 @@ LangChain Memory is not a standalone system. It is a set of abstractions you wir
 
 ### 5. AletheiaDB
 
-[AletheiaDB](https://github.com/anthropics/aletheia) is a temporal memory database designed specifically for AI agents. It treats time as a first-class concept in storage and retrieval.
+[AletheiaDB](https://github.com/SharjeelAbbas014/Aletheia) is a temporal memory database designed specifically for AI agents. It treats time as a first-class concept in storage and retrieval.
 
 AletheiaDB implements configurable decay curves per memory type, automatic fact supersession at the storage layer, and hybrid retrieval that combines semantic, lexical, and temporal signals. It is built for the exact problem we are testing: reliable memory for agents that operate over time.
 
@@ -501,8 +501,8 @@ history = ChatMessageHistory()
 memory = ConversationEntityMemory(chat_memory=history)
 
 # AletheiaDB (requires running AletheiaDB instance)
-import aletheia
-db = aletheia.connect("http://localhost:9000")
+from aletheia import AletheiaClient
+db = AletheiaClient.from_cloud(base_url="http://localhost:3000", api_key="test-key")
 ```
 
 ## Conclusion: Which System for Which Use Case

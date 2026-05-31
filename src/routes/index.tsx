@@ -135,8 +135,8 @@ const topTenFeatures = [
     body: "Fuses semantic, lexical, and neural reranking signals.",
   },
   {
-    title: "OpenAI-Compatible Proxy",
-    body: "Drop-in memory for any existing OpenAI agent.",
+    title: "OpenAI Proxy (Coming Soon)",
+    body: "Drop-in memory for any existing OpenAI agent. In development.",
   },
   {
     title: "Temporal Decay Policy",
@@ -571,8 +571,8 @@ const coreCapabilities = [
     delay: "300ms",
   },
   {
-    title: "OpenAI Proxy Path",
-    body: "Drop-in proxy gateway that automatically injects relevant context into OpenAI-compatible system instructions.",
+    title: "OpenAI Proxy Path (Coming Soon)",
+    body: "Drop-in proxy gateway that automatically injects relevant context into OpenAI-compatible system instructions. In development.",
     icon: "database",
     delay: "400ms",
   },
@@ -636,8 +636,8 @@ export const onRequest: RequestHandler = (event) => {
 
 const ecosystemItems = [
   {
-    title: "OpenAI Proxy",
-    body: "An OpenAI-compatible gateway that automatically injects memories into your agent's system prompt. Zero code changes required.",
+    title: "OpenAI Proxy (Coming Soon)",
+    body: "An OpenAI-compatible gateway that automatically injects memories into your agent's system prompt. Zero code changes required. In development.",
     icon: "database",
     link: "/docs/memory-proxy",
   },
@@ -975,7 +975,7 @@ export default component$(() => {
                 <Link
                   href="/signup"
                   onClick$={() => capture("cta_signup_clicked")}
-                  class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10"
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-black font-extrabold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10"
                 >
                   Get Started Free
                   <ArrowRightIcon class="w-4 h-4" />
@@ -1918,13 +1918,13 @@ export default component$(() => {
                     </span>
                   </div>
                   <div class="mt-2 flex flex-wrap justify-center gap-1">
-                    <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
+                    <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/25 text-white font-bold border border-primary/30">
                       HNSW
                     </span>
-                    <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
+                    <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/25 text-white font-bold border border-primary/30">
                       BM25
                     </span>
-                    <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
+                    <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/25 text-white font-bold border border-primary/30">
                       GRAPH
                     </span>
                   </div>
@@ -1967,7 +1967,7 @@ export default component$(() => {
                 <div class="flex gap-4">
                   <MaterialIcon name="filter_list" class=" text-primary" />
                   <div>
-                    <h5 class="font-bold text-sm">Intent-Aware Filtering</h5>
+                    <h4 class="font-bold text-sm text-white">Intent-Aware Filtering</h4>
                     <p class="text-xs text-tertiary mt-2">
                       Automatically detects if the user is asking for numbers,
                       preferences, or narrative history.
@@ -1977,7 +1977,7 @@ export default component$(() => {
                 <div class="flex gap-4">
                   <MaterialIcon name="rebase_edit" class=" text-primary" />
                   <div>
-                    <h5 class="font-bold text-sm">Neural Reranking</h5>
+                    <h4 class="font-bold text-sm text-white">Neural Reranking</h4>
                     <p class="text-xs text-tertiary mt-2">
                       Applies a secondary precision pass to ensure the top-k
                       candidates are semantically perfect.
@@ -1987,7 +1987,7 @@ export default component$(() => {
                 <div class="flex gap-4">
                   <MaterialIcon name="calculate" class=" text-primary" />
                   <div>
-                    <h5 class="font-bold text-sm">Deterministic Compute</h5>
+                    <h4 class="font-bold text-sm text-white">Deterministic Compute</h4>
                     <p class="text-xs text-tertiary mt-2">
                       Computes aggregates (sums, counts) before delivery,
                       preventing LLM arithmetic errors.
@@ -2157,7 +2157,7 @@ export default component$(() => {
                   <Link
                     href="/signup"
                     onClick$={() => capture("cta_signup_clicked")}
-                    class="px-6 py-3 bg-primary text-background font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/15 text-sm animate-pulse-slow"
+                    class="px-6 py-3 bg-primary text-black font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/15 text-sm animate-pulse-slow"
                   >
                     Get Started Free
                   </Link>
@@ -2274,7 +2274,7 @@ export default component$(() => {
                   <Link
                     href="/signup"
                     onClick$={() => capture("cta_signup_clicked")}
-                    class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-background transition-colors hover:opacity-90 shadow-md animate-pulse-slow"
+                    class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-black transition-colors hover:opacity-90 shadow-md animate-pulse-slow"
                   >
                     Get Started Free
                   </Link>
@@ -2282,7 +2282,7 @@ export default component$(() => {
                     href="/docs/platform"
                     class="glass-panel border border-white/5 rounded-xl px-5 py-2.5 text-xs font-bold text-tertiary transition-colors hover:text-on-surface"
                   >
-                    Learn More
+                    Explore Platform Documentation
                   </Link>
                 </div>
               </div>
@@ -2360,12 +2360,14 @@ export default component$(() => {
             <div class="flex gap-3">
               <Link
                 href="/docs"
+                aria-label="Documentation"
                 class="glass-panel border border-white/5 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
               >
                 <MaterialIcon name="hub" class="text-sm text-tertiary" />
               </Link>
               <Link
                 href="/blog"
+                aria-label="Blog"
                 class="glass-panel border border-white/5 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
               >
                 <MaterialIcon
@@ -2450,7 +2452,7 @@ export default component$(() => {
           </div>
         </div>
 
-        <div class="container mx-auto mt-16 border-t border-white/5 pt-8 text-center font-mono text-[9px] uppercase tracking-widest text-tertiary/45">
+        <div class="container mx-auto mt-16 border-t border-white/5 pt-8 text-center font-mono text-[9px] uppercase tracking-widest text-tertiary/75">
           © 2026 AletheiaDB Systems. All human memories preserved. Truth
           disclosed.
         </div>

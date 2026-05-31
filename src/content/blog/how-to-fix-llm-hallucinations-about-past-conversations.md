@@ -610,10 +610,10 @@ The three fixes above work. They solve fabricated facts, wrong timelines, and me
 The most common hallucination — "you said X, but actually you said Y" — happens because the retrieval layer returns both old and new facts with no mechanism to suppress the outdated one. AletheiaDB handles this at the engine level:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 from datetime import datetime
 
-client = AletheiaDBClient.from_local(auto_start=True)
+client = AletheiaClient.from_local()
 
 # User sets a preference
 client.ingest(
@@ -667,7 +667,7 @@ And because the engine ranks results by temporal recency in addition to semantic
 # AletheiaDB returns results with temporal + semantic ranking
 hits = client.query("What project am I working on?", entity_id="user-1")
 for hit in hits:
-    print(f"[{hit.timestamp}] {hit.text} (score: {hit.score})")
+    print(f"[{hit.created_at_ms}] {hit.textual_content} (score: {hit.similarity})")
 # Results are ordered by recency-weighted relevance, not just embedding similarity
 ```
 

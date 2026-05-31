@@ -228,9 +228,9 @@ The comparison above makes the case for a hybrid architecture. But building that
 AletheiaDB combines semantic vector search with BM25 lexical search by default. This means queries match on both meaning (like RAG) and exact keywords (like traditional search), with the engine fusing results:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 
-client = AletheiaDBClient.from_local(auto_start=True)
+client = AletheiaClient.from_local()
 
 # Ingest both documents and user facts — same API
 client.ingest(
@@ -330,11 +330,11 @@ AletheiaDB runs locally for development with zero configuration. When you're rea
 
 ```python
 # Local development
-client = AletheiaDBClient.from_local(auto_start=True)
+client = AletheiaClient.from_local()
 
 # Cloud production
-client = AletheiaDBClient.from_cloud(
-    "https://api.aletheia.com",
+client = AletheiaClient.from_cloud(
+    base_url="https://api.aletheia.com",
     api_key="YOUR_KEY",
 )
 
@@ -377,11 +377,11 @@ The hybrid pattern is increasingly common in production systems. [LangChain's me
 The most practical architecture keeps RAG and long-term memory as separate concerns that work together. Here is a concrete implementation:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 from datetime import datetime
 
 # --- Initialize AletheiaDB (handles both RAG and memory in one system) ---
-client = AletheiaDBClient.from_local(auto_start=True)
+client = AletheiaClient.from_local()
 
 # --- Ingest RAG documents ---
 client.ingest(

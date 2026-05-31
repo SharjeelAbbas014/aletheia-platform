@@ -13,6 +13,8 @@ image: /screen.png
 featured: true
 ---
 
+> **Note:** The OpenAI-compatible proxy described in this post is a **planned feature** currently in development. The proxy endpoint is not yet available in the AletheiaDB engine. This post describes the architecture and design — check back for implementation status.
+
 # How to Add Persistent Memory to Any OpenAI Agent (Without Rewriting Your Code)
 
 If you have an existing AI agent built on the OpenAI API, you have probably hit this wall: every conversation starts from scratch. The agent does not remember the user's name, preferences, or what happened five minutes ago—let alone last week.
@@ -33,6 +35,8 @@ By the end of this tutorial, you will have:
 - An understanding of when this approach fits versus alternatives
 
 This tutorial targets developers who already have working agents—customer support bots, coding assistants, data analysis tools—and want to layer on memory without disrupting what works today. We will use [AletheiaDB](https://aletheiadb.com) as the memory backend, but the proxy pattern applies to any OpenAI-compatible memory service.
+
+> **Note:** The interactive code examples below use `https://memory-proxy.example.com/v1` as a placeholder URL. When the proxy feature ships, the actual endpoint will be documented at `/docs/proxy`.
 
 ## Prerequisites
 

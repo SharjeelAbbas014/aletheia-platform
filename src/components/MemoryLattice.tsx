@@ -116,9 +116,9 @@ export const MemoryLattice = component$(() => {
             <div class="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_rgba(155,156,255,0.7)]" />
             Active Truth
          </div>
-         <div class="flex items-center gap-2 opacity-50">
-            <div class="w-3 h-3 rounded-full bg-error/20 border border-error" />
-            Superseded Memory
+         <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-error/20 border border-error opacity-60" />
+            <span class="text-tertiary">Superseded Memory</span>
          </div>
       </div>
     </div>

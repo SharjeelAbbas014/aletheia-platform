@@ -90,8 +90,8 @@ The memory engine compiles to a single binary. Here is the complete build proces
 Clone the repository and enter the project directory:
 
 ```bash
-git clone https://github.com/aletheia-platform/AletheiaDB.git
-cd AletheiaDB
+git clone https://github.com/SharjeelAbbas014/Aletheia.git
+cd aletheia
 ```
 
 Build in release mode for production use. The default debug build works for testing but runs significantly slower:
@@ -100,7 +100,7 @@ Build in release mode for production use. The default debug build works for test
 cargo build --release
 ```
 
-On a modern laptop (Apple M2, 16GB RAM), this completes in about 45 seconds. The first build takes longer because it compiles all dependencies from source. Subsequent builds only recompile changed files, usually finishing in under 5 seconds.
+On a modern laptop (Apple M2, 16GB RAM), the first build can take 10-20 minutes due to compiling dependencies like Candle and ONNX Runtime. Subsequent builds only recompile changed files, usually finishing in under 30 seconds.
 
 You will see compiler warnings during the build. These are expected — the project uses some nightly features and allows warnings for certain experimental modules. Focus on whether the build succeeds (exit code 0), not on the warnings.
 
@@ -108,10 +108,10 @@ After the build completes, the binary is at `target/release/aletheia`:
 
 ```bash
 ls -lh target/release/aletheia
-# -rwxr-xr-x  1 sharjeel  staff  12M May 28 00:00 target/release/aletheia
+# -rwxr-xr-x  1 sharjeel  staff  45M May 28 00:00 target/release/aletheia
 ```
 
-The binary is approximately 12MB. It includes the full memory engine, embedding support, and the HTTP server. No runtime dependencies — copy this single file to any Linux or macOS system and it runs.
+The binary is approximately 45MB. It includes the full memory engine, embedding support, and the HTTP server. No runtime dependencies — copy this single file to any Linux or macOS system and it runs.
 
 ## Running Locally
 
@@ -124,66 +124,46 @@ Start the engine with default settings:
 The output shows the server initializing and binding to a port:
 
 ```
-[2026-05-28T00:00:01Z INFO  aletheia] AletheiaDB v0.14.2 starting
-[2026-05-28T00:00:01Z INFO  aletheia] Loading database from ./data/aletheia.db
-[2026-05-28T00:00:01Z INFO  aletheia] Database initialized (3 tables, 0 rows)
-[2026-05-28T00:00:01Z INFO  aletheia] Embedding model loaded (ONNX, 22MB)
-[2026-05-28T00:00:01Z INFO  aletheia] HTTP server listening on 127.0.0.1:8420
-[2026-05-28T00:00:01Z INFO  aletheia] Ready for connections
+ INFO aletheia: Initializing Temporal Multi-Model Memory Engine...
+ INFO aletheia: Runtime data root
+ INFO aletheia: Initializing Semantic Pipeline (embedder + MiniLM + BERT-NER)...
+ INFO aletheia: Semantic embedder initialized model_id=BAAI/bge-small-en-v1.5 dims=384
+ INFO aletheia: Semantic device selected device=CPU executors=4
+ INFO aletheia: Initializing Vector Substrate (HNSW)...
+ INFO aletheia: Initializing Tenant Database Manager (Sharded SQLite)...
+ INFO aletheia: Initializing Platform Substrate...
+ INFO aletheia: Initializing Analytics Substrate (Numeric Vault)...
+ INFO aletheia: Memory Engine live address=0.0.0.0:3000
 ```
 
-The engine stores data in `./data/aletheia.db` by default. The first time you run it, this directory and database file are created automatically. On subsequent runs, existing data is loaded and preserved.
+The engine stores data in `./data` (or whatever `TEMPORAL_MEMORY_DATA_DIR` points to) by default. The first time you run it, this directory and database file are created automatically. On subsequent runs, existing data is loaded and preserved.
 
 Verify the server is running with a health check:
 
 ```bash
-curl http://127.0.0.1:8420/health
-# {"status":"ok","version":"0.14.2"}
+curl http://127.0.0.1:3000/health
+# {"status":"ok"}
 ```
 
 To stop the engine, press `Ctrl+C`. The server shuts down gracefully, flushing any pending writes to disk.
 
 ### Custom Configuration
 
-You can override defaults with command-line flags:
+The engine is configured entirely through environment variables:
 
-```bash
-./target/release/aletheia \
-  --host 0.0.0.0 \
-  --port 9000 \
-  --data-dir /var/lib/aletheia \
-  --embedding-model ./models/all-MiniLM-L6-v2.onnx
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TEMPORAL_MEMORY_HOST` / `ALETHEIA_HOST` | `0.0.0.0` | Bind address |
+| `PORT` / `TEMPORAL_MEMORY_PORT` | `3000` | Listen port |
+| `TEMPORAL_MEMORY_DATA_DIR` / `ALETHEIA_DATA_DIR` | `.` | Root data directory |
+| `TEMPORAL_MEMORY_API_KEY` / `ALETHEIA_API_KEY` | `XXX1111AAA` (debug) | API key for request auth |
+| `TEMPORAL_MEMORY_EMBEDDING_BACKEND` | `ort` | Embedding backend (`candle` or `ort`) |
+| `TEMPORAL_MEMORY_EMBEDDING_MODEL` | `BAAI/bge-small-en-v1.5` | HuggingFace model ID |
+| `TEMPORAL_MEMORY_DEVICE` | CPU | Device label (informational) |
+| `ALETHEIA_HNSW_CONNECTIVITY` | `16` | HNSW M parameter |
+| `ALETHEIA_HNSW_EF_SEARCH` | `64` | HNSW ef_search parameter |
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--host` | `127.0.0.1` | Bind address |
-| `--port` | `8420` | Listen port |
-| `--data-dir` | `./data` | Directory for SQLite database |
-| `--embedding-model` | Built-in | Path to ONNX embedding model |
-
-For persistent configuration, create a `aletheia.toml` file in the working directory:
-
-```toml
-[server]
-host = "127.0.0.1"
-port = 8420
-
-[storage]
-data_dir = "./data"
-wal_mode = true
-
-[embedding]
-model = "all-MiniLM-L6-v2"
-dimensions = 384
-batch_size = 64
-
-[retrieval]
-max_results = 10
-min_score = 0.35
-```
-
-The engine reads `aletheia.toml` automatically if it exists in the current directory.
+The engine also reads optional ranking config from `ranking_config.json` in the data directory.
 
 ## Connecting with the Python SDK
 
@@ -196,125 +176,85 @@ pip install aletheia
 Initialize the client:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 
-client = AletheiaDBClient(
-    host="127.0.0.1",
-    port=8420,
+# Run the engine locally (auto-downloads and manages the binary)
+client = AletheiaClient.from_local(
+    api_key="XXX1111AAA",
 )
 
+# Or connect to a running engine instance:
+# client = AletheiaClient.from_cloud(
+#     base_url="http://127.0.0.1:3000",
+#     api_key="XXX1111AAA",
+# )
+
 # Verify the connection
-info = client.server_info()
-print(f"Connected to the memory engine, version {info.version}")
-# Connected to the memory engine, version 0.14.2
+version = client.engine_version()
+print(f"Connected to the memory engine, version {version.engine_version}")
+# Connected to the memory engine, version 0.1.0
 ```
-
-The client communicates over HTTP. If your engine is on a different host or port, update the `host` and `port` parameters. For remote connections, the SDK handles reconnection automatically.
-
-For agents that need async support, use the async client:
-
-```python
-import asyncio
-from aletheia import AsyncAletheiaDBClient
-
-async def main():
-    client = AsyncAletheiaDBClient(host="127.0.0.1", port=8420)
-    info = await client.server_info()
-    print(f"Connected: {info.version}")
-    await client.close()
-
-asyncio.run(main())
-```
-
-The async client is built on `aiohttp` and works with `asyncio`-based agent frameworks like LangChain and AutoGen.
 
 ## Storing and Querying Memories
 
-The core operations are store, search, and delete. Here is how each works.
+The core operations are ingest, query, inspect, and delete. Here is how each works.
 
-### Storing a Memory
+### Ingesting a Memory
 
-A memory consists of content, a namespace (to separate users or contexts), and optional metadata:
+A memory consists of entity_id, text, and optional metadata:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 
-client = AletheiaDBClient(host="127.0.0.1", port=8420)
+client = AletheiaClient.from_local(api_key="XXX1111AAA")
 
-# Store a memory for a specific user
-memory = client.store(
-    content="User prefers dark mode and uses a screen reader",
-    namespace="user:sarah",
-    metadata={
-        "source": "conversation",
-        "session_id": "sess_abc123",
-        "timestamp": "2026-05-28T10:30:00Z",
-    },
+# Ingest a memory for a specific user
+client.ingest(
+    entity_id="user:sarah",
+    text="User prefers dark mode and uses a screen reader",
 )
 
-print(f"Stored memory: {memory.id}")
-# Stored memory: mem_7f3a2b1c
-
-# Store another memory
-client.store(
-    content="User works at Acme Corp as a software engineer",
-    namespace="user:sarah",
-    metadata={"source": "conversation"},
+# Ingest another memory
+client.ingest(
+    entity_id="user:sarah",
+    text="User works at Acme Corp as a software engineer",
 )
 ```
 
-Namespaces let you isolate memories by user, team, or project. When you search, you can scope queries to a specific namespace or search across all of them.
+The `entity_id` field scopes memories to individual users, teams, or projects. All queries are scoped by entity_id to ensure isolation.
 
 ### Querying Memories
 
-Search retrieves the most relevant memories for a given query. The engine uses vector similarity with built-in embedding:
+Query retrieves the most relevant memories for a given question. The engine uses hybrid vector+lexical retrieval with built-in ranking:
 
 ```python
-results = client.search(
-    query="What are the user's accessibility preferences?",
-    namespace="user:sarah",
-    limit=5,
+hits = client.query(
+    "What are the user's accessibility preferences?",
+    entity_id="user:sarah",
+    top_k=5,
 )
 
-for memory in results:
-    print(f"[{memory.score:.3f}] {memory.content}")
+for hit in hits:
+    print(f"[{hit.similarity:.3f}] {hit.textual_content}")
     # [0.912] User prefers dark mode and uses a screen reader
     # [0.421] User works at Acme Corp as a software engineer
 ```
 
-The `score` field is a similarity score between 0 and 1. Higher means more relevant. The engine returns results sorted by score, so the first result is always the most relevant match.
+The `similarity` field is a score between 0 and 1. Higher means more relevant. The engine returns results sorted by score.
 
-For more advanced queries, use metadata filters:
+### Inspecting and Deleting Memories
+
+Inspect a specific memory by its ID:
 
 ```python
-# Search only memories from a specific session
-results = client.search(
-    query="What did we discuss?",
-    namespace="user:sarah",
-    metadata_filter={"session_id": "sess_abc123"},
-    limit=5,
-)
+details = client.inspect_memory(memory_id="user:sarah::session-1::0")
+print(details)
 ```
 
-### Updating and Deleting Memories
-
-Update a memory's content when new information supersedes old:
+Delete a memory when it is no longer needed:
 
 ```python
-client.update(
-    memory_id="mem_7f3a2b1c",
-    content="User prefers light mode and uses a screen reader",
-    metadata={"source": "correction", "updated_at": "2026-05-28T11:00:00Z"},
-)
-```
-
-Delete memories when they are no longer needed:
-
-```python
-client.delete(memory_id="mem_7f3a2b1c")
-
-# Delete all memories in a namespace
-client.delete_namespace(namespace="user:sarah")
+result = client.delete_memory(memory_id="user:sarah::session-1::0")
 ```
 
 ### Integrating with an Agent Loop
@@ -322,18 +262,18 @@ client.delete_namespace(namespace="user:sarah")
 In a typical agent setup, you store memories after each interaction and retrieve relevant context before each response:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 
-client = AletheiaDBClient(host="127.0.0.1", port=8420)
+client = AletheiaClient.from_local(api_key="XXX1111AAA")
 
 def agent_respond(user_id: str, user_message: str) -> str:
     # 1. Retrieve relevant memories
-    memories = client.search(
-        query=user_message,
-        namespace=f"user:{user_id}",
-        limit=5,
+    hits = client.query(
+        user_message,
+        entity_id=user_id,
+        top_k=5,
     )
-    context = "\n".join(f"- {m.content}" for m in memories)
+    context = "\n".join(f"- {h.textual_content}" for h in hits)
 
     # 2. Build the prompt with memory context
     system_prompt = f"""You are a helpful assistant.
@@ -345,11 +285,7 @@ Relevant user context:
     # response = call_llm(system_prompt, user_message)
 
     # 4. Store the interaction as a new memory
-    client.store(
-        content=user_message,
-        namespace=f"user:{user_id}",
-        metadata={"source": "user_message"},
-    )
+    client.ingest(entity_id=user_id, text=user_message)
 
     return "response from your LLM"
 ```
@@ -380,11 +316,14 @@ COPY --from=builder /app/target/release/aletheia /usr/local/bin/
 RUN useradd -r -s /bin/false aletheia
 USER aletheia
 
-EXPOSE 8420
+EXPOSE 3000
 
 VOLUME ["/data"]
 
-CMD ["aletheia", "--data-dir", "/data"]
+ENV TEMPORAL_MEMORY_DATA_DIR=/data
+ENV TEMPORAL_MEMORY_HOST=0.0.0.0
+ENV TEMPORAL_MEMORY_PORT=3000
+CMD ["aletheia"]
 ```
 
 Build the image:
@@ -400,17 +339,18 @@ For a production-ready setup with persistent storage:
 ```yaml
 services:
   aletheia:
-    image: aletheia:latest
+    image: ghcr.io/sharjeel619/aletheia:latest
     container_name: aletheia
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8420:8420"
+      - "127.0.0.1:3000:3000"
     volumes:
       - aletheia-data:/data
     environment:
-      - RUST_LOG=info
+      - TEMPORAL_MEMORY_DATA_DIR=/data
+      - TEMPORAL_MEMORY_API_KEY=my-secret-key
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8420/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -430,22 +370,23 @@ Check the logs:
 
 ```bash
 docker compose logs -f
-# aletheia  | [2026-05-28T00:00:01Z INFO  aletheia] AletheiaDB v0.14.2 starting
-# aletheia  | [2026-05-28T00:00:01Z INFO  aletheia] HTTP server listening on 127.0.0.1:8420
-# aletheia  | [2026-05-28T00:00:01Z INFO  aletheia] Ready for connections
+# aletheia  |  INFO aletheia: Memory Engine live address=0.0.0.0:3000
 ```
 
-The `ports` binding uses `127.0.0.1:8420:8420` so the engine is only accessible from the local machine. For remote access, change this to `8420:8420` and add TLS in front (covered in the next section).
+The `ports` binding uses `127.0.0.1:3000:3000` so the engine is only accessible from the local machine. For remote access, change this to `3000:3000` and add TLS in front (covered in the next section).
 
 ### Connecting from Python to Docker
 
 No changes needed. The Python SDK connects to the same host and port:
 
 ```python
-from aletheia import AletheiaDBClient
+from aletheia import AletheiaClient
 
 # Works identically whether the engine runs locally or in Docker
-client = AletheiaDBClient(host="127.0.0.1", port=8420)
+client = AletheiaClient.from_cloud(
+    base_url="http://127.0.0.1:3000",
+    api_key="my-secret-key",
+)
 ```
 
 ## Production Hardening
@@ -481,14 +422,12 @@ Automate this with a cron job or a systemd timer. Keep at least 7 daily backups 
 The engine exposes a `/metrics` endpoint in Prometheus format:
 
 ```bash
-curl http://127.0.0.1:8420/metrics
-# aletheia_store_total 14523
-# aletheia_search_total 8901
-# aletheia_search_latency_ms_bucket{le="1"} 7200
-# aletheia_search_latency_ms_bucket{le="5"} 8800
-# aletheia_search_latency_ms_bucket{le="10"} 8900
-# aletheia_memory_count 3421
-# aletheia_db_size_bytes 52428800
+curl http://127.0.0.1:3000/metrics
+# aletheia_ingest_total 14523
+# aletheia_query_total 8901
+# aletheia_query_duration_seconds_bucket{le="0.005"} 7200
+# aletheia_query_duration_seconds_bucket{le="0.01"} 8800
+# aletheia_query_duration_seconds_bucket{le="0.05"} 8900
 ```
 
 Add this to your Prometheus scrape config and set up alerts for:
@@ -511,7 +450,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/memory.example.com/privkey.pem;
 
     location / {
-        proxy_pass http://127.0.0.1:8420;
+        proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -534,9 +473,9 @@ services:
       - caddy-data:/data
 
   aletheia:
-    image: aletheia:latest
+    image: ghcr.io/sharjeel619/aletheia:latest
     expose:
-      - "8420"
+      - "3000"
 
 volumes:
   caddy-data:
@@ -544,7 +483,7 @@ volumes:
 
 ```caddyfile
 memory.example.com {
-    reverse_proxy aletheia:8420
+    reverse_proxy aletheia:3000
 }
 ```
 
@@ -554,8 +493,8 @@ Restrict access to the engine. Even with TLS, you should limit who can connect:
 
 ```bash
 # Allow only your application servers
-ufw allow from 10.0.1.0/24 to any port 8420
-ufw deny 8420
+ufw allow from 10.0.1.0/24 to any port 3000
+ufw deny 3000
 ```
 
 ## Self-Hosted vs. Cloud: A Comparison
@@ -585,4 +524,4 @@ This guide covered the complete path from building the engine to deploying it in
 
 The memory engine you built today scales horizontally — run multiple instances behind a load balancer, each with its own SQLite database, and route users to specific instances by namespace. Or run a single instance on a Raspberry Pi for a personal AI assistant that lives in your home network.
 
-For more details, check the [documentation](https://github.com/aletheia-platform/AletheiaDB) and the [Python SDK reference](https://pypi.org/project/aletheia/). The source code is open — read it, modify it, contribute back.
+For more details, check the [GitHub repository](https://github.com/SharjeelAbbas014/Aletheia) and the [Python SDK reference](https://pypi.org/project/aletheia/). The source code is open — read it, modify it, contribute back.

@@ -29,7 +29,7 @@ export const Header = component$((props: HeaderProps) => {
             <div class="flex h-8 w-8 items-center justify-center">
               <img
                 src="/icon-64.png"
-                alt="AletheiaDB"
+                alt=""
                 width={20}
                 height={20}
                 loading="eager"

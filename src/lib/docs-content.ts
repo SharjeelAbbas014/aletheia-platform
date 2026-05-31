@@ -91,7 +91,10 @@ export const detailedDocsPages: DocsPage[] = [
             label: "Build and run",
             language: "bash",
             code: `cargo build --release
-./target/release/aletheia --bind 127.0.0.1:3000 --data-dir ./.tm-data`,
+export TEMPORAL_MEMORY_API_KEY=my-key
+export TEMPORAL_MEMORY_DATA_DIR=./.tm-data
+./target/release/aletheia
+# Listens on http://127.0.0.1:3000 by default`,
           },
         ],
       },
@@ -106,7 +109,7 @@ export const detailedDocsPages: DocsPage[] = [
             language: "bash",
             code: `curl -sS http://127.0.0.1:3000/ingest \\
   -H "content-type: application/json" \\
-  -d '{"entity_id":"user-123","textual_content":"I now drink tea instead of coffee."}'`,
+  -d '{"entity_id":"user-123","memory_id":"mem-001","timestamp":1700000000000,"textual_content":"I now drink tea instead of coffee."}'`,
           },
         ],
       },
@@ -624,7 +627,7 @@ t2: preferred_drink = tea      -> becomes current
             code: `curl -sS http://127.0.0.1:3000/ingest \\
   -H "content-type: application/json" \\
   -H "x-api-key: XXX1111AAA" \\
-  -d '{"entity_id":"user-123","textual_content":"I moved from NYC to LA."}'`,
+  -d '{"entity_id":"user-123","memory_id":"mem-001","timestamp":1700000000000,"textual_content":"I moved from NYC to LA."}'`,
           },
         ],
       },
@@ -679,7 +682,7 @@ t2: preferred_drink = tea      -> becomes current
   {
     slug: "api-query-temporal",
     eyebrow: "API",
-    title: "POST /query/temporal",
+    title: "GET /temporal/query",
     lead: "Temporal query constrains retrieval to explicit time windows for timeline-sensitive reasoning.",
     description: "API contract for temporal-windowed retrieval.",
     sections: [
@@ -694,15 +697,9 @@ t2: preferred_drink = tea      -> becomes current
         heading: "Window controls",
         codeBlocks: [
           {
-            label: "Temporal request",
-            language: "json",
-            code: `{
-  "entity_id": "user-123",
-  "textual_query": "where did I live?",
-  "window_start_ms": 1751328000000,
-  "window_end_ms": 1767225599000,
-  "limit": 10
-}`,
+            label: "Temporal request (GET)",
+            language: "bash",
+            code: `curl "http://127.0.0.1:3000/temporal/query?entity_id=user-123&textual_query=where+did+I+live&window_start_ms=1751328000000&window_end_ms=1767225599000&limit=10"`,
           },
         ],
         bullets: [
@@ -722,7 +719,7 @@ t2: preferred_drink = tea      -> becomes current
   {
     slug: "api-delete",
     eyebrow: "API",
-    title: "DELETE /memory",
+    title: "POST /memory/delete",
     lead: "Delete removes a memory from retrieval surfaces and records an audit trail for reconstruction.",
     description:
       "Deletion and index repair behavior for AletheiaDB memory records.",
@@ -730,7 +727,7 @@ t2: preferred_drink = tea      -> becomes current
       {
         heading: "Delete contract",
         paragraphs: [
-          "Deletion should identify memory by `memory_id` and scope context. The engine should remove vector/lexical references and write a deletion-log record for audits.",
+          "Deletion is sent as a POST request identifying the memory by `memory_id` and scope context. The engine removes vector/lexical references and writes a deletion-log record for audits.",
           "For fact memories, delete may trigger slot repair to recover latest valid predecessor.",
         ],
         codeBlocks: [
@@ -840,16 +837,16 @@ t2: preferred_drink = tea      -> becomes current
   {
     slug: "memory-proxy",
     eyebrow: "Ecosystem",
-    title: "The AletheiaDB Proxy",
+    title: "The AletheiaDB Proxy (Coming Soon)",
     lead: "An OpenAI-compatible gateway that automatically injects memory into your agent's system prompt.",
     description:
-      "Learn how to use the AletheiaDB Proxy to add long-term memory to any application with zero code changes.",
+      "Learn about the planned AletheiaDB Proxy for adding long-term memory to any application with zero code changes.",
     sections: [
       {
         heading: "Overview",
         paragraphs: [
-          "The AletheiaDB Proxy (Memory Router) acts as a middleware between your application and your LLM provider. It intercepts standard OpenAI-style chat completion requests, retrieves the most relevant memories for the specified user, and injects them into the system prompt before forwarding the request to the upstream model.",
-          "This allows you to add AletheiaDB's persistent memory to any existing agent or application by simply changing the `base_url`.",
+          "The AletheiaDB Proxy (Memory Router) is a planned feature that will act as a middleware between your application and your LLM provider. It will intercept standard OpenAI-style chat completion requests, retrieve the most relevant memories for the specified user, and inject them into the system prompt before forwarding the request to the upstream model.",
+          "This will allow you to add AletheiaDB's persistent memory to any existing agent or application by simply changing the `base_url`. The feature is currently in development.",
         ],
       },
       {
@@ -918,11 +915,11 @@ response = client.chat.completions.create(
           {
             label: "Create client",
             language: "ts",
-            code: `import { AletheiaDBClient } from "@aletheia/sdk";
+            code: `import { AletheiaClient } from "@aletheia/sdk";
 
-const client = new AletheiaDBClient({
-  baseUrl: process.env.ALETHEIADB_URL!,
-  apiKey: process.env.ALETHEIADB_API_KEY!
+const client = AletheiaClient.fromCloud({
+  baseUrl: process.env.ALETHEIA_URL!,
+  apiKey: process.env.ALETHEIA_API_KEY!
 });`,
           },
         ],
@@ -934,15 +931,14 @@ const client = new AletheiaDBClient({
             label: "Basic flow",
             language: "ts",
             code: `await client.ingest({
-  entityId: "user-123",
-  textualContent: "I switched to pour-over coffee last month."
+  entity_id: "user-123",
+  text: "I switched to pour-over coffee last month."
 });
 
-const results = await client.querySemantic({
-  entityId: "user-123",
-  textualQuery: "What coffee style do I use now?",
-  limit: 5
-});`,
+const results = await client.query(
+  "What coffee style do I use now?",
+  { entity_id: "user-123", limit: 5 }
+);`,
           },
         ],
       },
@@ -970,13 +966,14 @@ const results = await client.querySemantic({
           {
             label: "Initialize client",
             language: "python",
-            code: `from aletheia import AletheiaDBClient
+            code: `from aletheia import AletheiaClient
 
-client = AletheiaDBClient(
-    base_url="http://127.0.0.1:3000",
+client = AletheiaClient.from_local(
     api_key="XXX1111AAA",
-    timeout_s=10,
-)`,
+    timeout=10,
+)
+# or for cloud:
+# client = AletheiaClient.from_cloud(api_key="sk-...")`,
           },
         ],
         paragraphs: [
@@ -989,13 +986,13 @@ client = AletheiaDBClient(
           {
             label: "Batch ingestion",
             language: "python",
-            code: `batch = [
-    {"entity_id": "user-123", "textual_content": "I moved to LA."},
-    {"entity_id": "user-123", "textual_content": "I now prefer tea."},
-]
+            code: `from aletheia import IngestItem
 
-for item in batch:
-    client.ingest(**item)`,
+items = [
+    IngestItem(entity_id="user-123", text="I moved to LA."),
+    IngestItem(entity_id="user-123", text="I now prefer tea."),
+]
+client.ingest_many(items)`,
           },
         ],
         paragraphs: [
@@ -1045,8 +1042,8 @@ for item in batch:
             language: "bash",
             code: `docker run --rm -p 3000:3000 \\
   -v /srv/aletheia-data:/data \\
-  -e ALETHEIADB_DATA_DIR=/data \\
-  ghcr.io/aletheia/aletheia:latest`,
+  -e TEMPORAL_MEMORY_DATA_DIR=/data \\
+  ghcr.io/sharjeel619/aletheia:latest`,
           },
         ],
       },
@@ -1431,8 +1428,8 @@ reset first: true`,
         heading: "Getting Started",
         steps: [
           "Download the binary from the GitHub releases page or build from source: cargo build --release.",
-          "Set your API key: export ALETHEIADB_API_KEY=your-secret-key.",
-          "Choose an embedding model: export ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5.",
+          "Set your API key: export TEMPORAL_MEMORY_API_KEY=your-secret-key.",
+          "Choose an embedding model: export TEMPORAL_MEMORY_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5.",
           "Run: ./aletheia. The engine starts on port 3000 by default.",
           "Ingest your first memory: POST /ingest with a JSON payload containing text, entity_id, and timestamp.",
           "Query: POST /query with a textual_query and limit. The engine returns ranked, temporally-scored results.",
@@ -1441,7 +1438,7 @@ reset first: true`,
           {
             label: "Docker quick start",
             language: "bash",
-            code: "docker run -p 3000:3000 \\\n  -e ALETHEIADB_API_KEY=my-secret \\\n  -e ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -v ./data:/data \\\n  ghcr.io/sharjeel619/aletheia:latest",
+            code: "docker run -p 3000:3000 \\\n  -e TEMPORAL_MEMORY_API_KEY=my-secret \\\n  -e TEMPORAL_MEMORY_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -e TEMPORAL_MEMORY_DATA_DIR=/data \\\n  ghcr.io/sharjeel619/aletheia:latest",
           },
           {
             label: "First ingest",
@@ -1851,10 +1848,6 @@ reset first: true`,
               values: ["Walk the knowledge graph from an entity", "entity"],
             },
             {
-              label: "get_usage_stats",
-              values: ["Get cluster usage statistics", "None"],
-            },
-            {
               label: "get_memory",
               values: ["Retrieve a specific memory by ID", "memory_id"],
             },
@@ -1995,23 +1988,23 @@ reset first: true`,
           {
             label: "Quick start (binary)",
             language: "bash",
-            code: "curl -L https://github.com/SharjeelAbbas014/Aletheia/releases/latest/download/aletheia-x86_64-linux -o aletheia\nchmod +x aletheia\nexport ALETHEIADB_API_KEY=my-secret\nexport ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5\n./aletheia\n# Listening on http://localhost:3000",
+            code: "curl -L https://github.com/SharjeelAbbas014/Aletheia/releases/latest/download/aletheia-x86_64-linux -o aletheia\nchmod +x aletheia\nexport TEMPORAL_MEMORY_API_KEY=my-secret\nexport TEMPORAL_MEMORY_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5\n./aletheia\n# Listening on http://localhost:3000",
           },
           {
             label: "Docker",
             language: "bash",
-            code: "docker run -p 3000:3000 \\\n  -e ALETHEIADB_API_KEY=my-secret \\\n  -e ALETHEIADB_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -v ./data:/data \\\n  ghcr.io/sharjeel619/aletheia:latest",
+            code: "docker run -p 3000:3000 \\\n  -e TEMPORAL_MEMORY_API_KEY=my-secret \\\n  -e TEMPORAL_MEMORY_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5 \\\n  -e TEMPORAL_MEMORY_DATA_DIR=/data \\\n  ghcr.io/sharjeel619/aletheia:latest",
           },
         ],
       },
       {
         heading: "Configuration",
         steps: [
-          "Set ALETHEIADB_API_KEY: Any string used to authenticate all requests. Treat this like a database password.",
-          "Choose an embedding model: Set ALETHEIADB_EMBEDDING_MODEL to a HuggingFace model ID (e.g., BAAI/bge-small-en-v1.5). The model is downloaded on first run and cached locally.",
-          "Set the data directory: ALETHEIADB_DATA_DIR defaults to ./data. All database files (.redb) and the vector index (.hnsw) are stored here.",
-          "Bind address: ALETHEIADB_HOST (default 0.0.0.0) and ALETHEIADB_PORT (default 3000).",
-          "Enable GPU: Set ALETHEIADB_DEVICE=cuda if you have an NVIDIA GPU with CUDA installed.",
+          "Set TEMPORAL_MEMORY_API_KEY: Any string used to authenticate all requests. Treat this like a database password.",
+          "Choose an embedding model: Set TEMPORAL_MEMORY_EMBEDDING_MODEL to a HuggingFace model ID (e.g., BAAI/bge-small-en-v1.5). The model is downloaded on first run and cached locally.",
+          "Set the data directory: TEMPORAL_MEMORY_DATA_DIR defaults to the current directory. All database files (.redb) and the vector index (.hnsw) are stored here.",
+          "Bind address: TEMPORAL_MEMORY_HOST (default 0.0.0.0) and PORT / TEMPORAL_MEMORY_PORT (default 3000).",
+          "Enable GPU: Build with --features gpu-cuda and set TEMPORAL_MEMORY_DEVICE=cuda.",
         ],
         stats: [
           {
