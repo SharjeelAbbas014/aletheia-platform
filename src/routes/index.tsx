@@ -474,7 +474,8 @@ const memoryGapCards = [
     icon: "psychology",
     iconWrapClass: "bg-primary/10 border border-primary/20",
     iconClass: "text-primary",
-    panelClass: "border-primary/30 shadow-[0_0_50px_rgba(192,193,255,0.08)] bg-primary/[0.01]",
+    panelClass:
+      "border-primary/30 shadow-[0_0_50px_rgba(192,193,255,0.08)] bg-primary/[0.01]",
     items: [
       {
         title: "Fact Supersession (Temporal Truth)",
@@ -529,7 +530,8 @@ const userFlowCards = [
     icon: "psychology",
     iconWrapClass: "bg-primary text-background",
     iconClass: "text-background",
-    borderClass: "border-primary/30 shadow-[0_20px_40px_rgba(0,0,0,0.3)] bg-primary/[0.01]",
+    borderClass:
+      "border-primary/30 shadow-[0_20px_40px_rgba(0,0,0,0.3)] bg-primary/[0.01]",
     delay: "150ms",
     facts: ["Fact: Owns Mercedes", "Context: Initial Purchase"],
   },
@@ -955,7 +957,7 @@ export default component$(() => {
                   <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </span>
                 <span class="font-mono text-[10px] font-bold uppercase tracking-widest text-primary">
-                  v2.0 — Now Open Source
+                  v0.1.0 — Now Open Source
                 </span>
               </div>
 
@@ -1012,7 +1014,7 @@ export default component$(() => {
               </div>
               <div class="p-6 font-mono text-xs space-y-4">
                 <div class="flex items-center justify-between text-green-400">
-                  <span>● ENGINE: aletheiadb_core v2.0.1 [Active]</span>
+                  <span>● ENGINE: aletheiadb_core v0.1.0 [Active]</span>
                   <span class="animate-pulse">ONLINE</span>
                 </div>
 
@@ -1114,106 +1116,108 @@ export default component$(() => {
                 <div class="glass-panel relative rounded-2xl p-6 md:p-8 overflow-hidden">
                   <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(192,193,255,0.04),transparent_50%)]" />
                   <div class="relative z-10 space-y-6">
-                  <div class="flex items-center gap-3 border-b border-white/5 pb-4">
-                    <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                      <MaterialIcon name="input" class="text-xl" />
-                    </div>
-                    <div>
-                      <h4 class="text-lg font-bold font-headline text-on-surface">
-                        Ingestion Layer
-                      </h4>
-                      <p class="text-[9px] font-mono uppercase tracking-widest text-tertiary font-bold">
-                        Write Pipeline
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="rounded-xl border border-white/5 bg-black/25 p-5">
-                    <div class="flex items-center justify-between mb-3">
-                      <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-primary">
-                        Demo Memory Session Key
-                      </p>
-                      <button
-                        type="button"
-                        class="text-[9px] font-mono text-tertiary hover:text-primary transition-colors flex items-center gap-1 disabled:opacity-50"
-                        onClick$={regenerateKey}
-                      >
-                        <MaterialIcon
-                          name="published_with_changes"
-                          class="text-[10px]"
-                        />
-                        Regenerate
-                      </button>
-                    </div>
-                    <div class="relative flex items-center">
-                      <input
-                        type="text"
-                        class="w-full rounded-lg border border-white/5 bg-black/35 px-3 py-2 text-xs text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 font-mono"
-                        value={demoKey.value}
-                        onInput$={(_, currentTarget) => {
-                          const cleanKey = currentTarget.value.trim();
-                          demoKey.value = cleanKey;
-                          localStorage.setItem("aletheia_demo_key", cleanKey);
-                        }}
-                        placeholder="Enter custom session key..."
-                      />
-                    </div>
-                    <p class="mt-2 text-[10px] text-tertiary leading-relaxed">
-                      Memories are stored and queried using this unique key. It
-                      isolates your demo session and persists across reloads.
-                    </p>
-                  </div>
-
-                  <div class="space-y-3">
-                    <label class="block text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary">
-                      Raw Memory Input string
-                    </label>
-                    <textarea
-                      class="min-h-[120px] w-full rounded-xl border border-white/5 bg-black/35 px-4 py-3 text-xs md:text-sm text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 shadow-inner"
-                      placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
-                      value={heroMessage.value}
-                      onInput$={(_, currentTarget) => {
-                        heroMessage.value = currentTarget.value;
-                      }}
-                      required
-                    />
-                    <button
-                      type="button"
-                      class="obsidian-gradient w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-xs md:text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(192,193,255,0.25)] active:scale-[0.98] disabled:opacity-50 shadow-lg"
-                      disabled={heroDemoRunning.value}
-                      onClick$={() => runHeroDemo("store")}
-                    >
-                      {heroDemoRunning.value && heroDemoMode.value === "store"
-                        ? "Writing to disk..."
-                        : "Commit to Long-Term Memory"}
-                      <MaterialIcon
-                        name="published_with_changes"
-                        class="text-sm"
-                      />
-                    </button>
-
-                    <div class="grid grid-cols-2 gap-4 pt-1">
-                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
-                          Ingest Latency (Engine)
-                        </p>
-                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
-                          {heroDemoResult.value?.ingestLabel ?? "---"}
+                    <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+                      <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                        <MaterialIcon name="input" class="text-xl" />
+                      </div>
+                      <div>
+                        <h4 class="text-lg font-bold font-headline text-on-surface">
+                          Ingestion Layer
+                        </h4>
+                        <p class="text-[9px] font-mono uppercase tracking-widest text-tertiary font-bold">
+                          Write Pipeline
                         </p>
                       </div>
-                      <div class="rounded-xl border border-white/5 bg-black/25 p-3">
-                        <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
-                          Ingest Latency (Network RTT)
+                    </div>
+
+                    <div class="rounded-xl border border-white/5 bg-black/25 p-5">
+                      <div class="flex items-center justify-between mb-3">
+                        <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-primary">
+                          Demo Memory Session Key
                         </p>
-                        <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
-                          {heroDemoResult.value?.ingestRoundTripLabel ?? "---"}
-                        </p>
+                        <button
+                          type="button"
+                          class="text-[9px] font-mono text-tertiary hover:text-primary transition-colors flex items-center gap-1 disabled:opacity-50"
+                          onClick$={regenerateKey}
+                        >
+                          <MaterialIcon
+                            name="published_with_changes"
+                            class="text-[10px]"
+                          />
+                          Regenerate
+                        </button>
+                      </div>
+                      <div class="relative flex items-center">
+                        <input
+                          type="text"
+                          class="w-full rounded-lg border border-white/5 bg-black/35 px-3 py-2 text-xs text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 font-mono"
+                          value={demoKey.value}
+                          onInput$={(_, currentTarget) => {
+                            const cleanKey = currentTarget.value.trim();
+                            demoKey.value = cleanKey;
+                            localStorage.setItem("aletheia_demo_key", cleanKey);
+                          }}
+                          placeholder="Enter custom session key..."
+                        />
+                      </div>
+                      <p class="mt-2 text-[10px] text-tertiary leading-relaxed">
+                        Memories are stored and queried using this unique key.
+                        It isolates your demo session and persists across
+                        reloads.
+                      </p>
+                    </div>
+
+                    <div class="space-y-3">
+                      <label class="block text-[9px] font-mono font-bold uppercase tracking-widest text-tertiary">
+                        Raw Memory Input string
+                      </label>
+                      <textarea
+                        class="min-h-[120px] w-full rounded-xl border border-white/5 bg-black/35 px-4 py-3 text-xs md:text-sm text-on-surface outline-none transition-all placeholder:text-tertiary/40 focus:border-primary/45 shadow-inner"
+                        placeholder="I moved to Tokyo and I still prefer jasmine tea over coffee."
+                        value={heroMessage.value}
+                        onInput$={(_, currentTarget) => {
+                          heroMessage.value = currentTarget.value;
+                        }}
+                        required
+                      />
+                      <button
+                        type="button"
+                        class="obsidian-gradient w-full inline-flex items-center justify-center gap-2 rounded-xl py-3.5 text-xs md:text-sm font-bold text-white transition-all hover:shadow-[0_0_24px_rgba(192,193,255,0.25)] active:scale-[0.98] disabled:opacity-50 shadow-lg"
+                        disabled={heroDemoRunning.value}
+                        onClick$={() => runHeroDemo("store")}
+                      >
+                        {heroDemoRunning.value && heroDemoMode.value === "store"
+                          ? "Writing to disk..."
+                          : "Commit to Long-Term Memory"}
+                        <MaterialIcon
+                          name="published_with_changes"
+                          class="text-sm"
+                        />
+                      </button>
+
+                      <div class="grid grid-cols-2 gap-4 pt-1">
+                        <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                          <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                            Ingest Latency (Engine)
+                          </p>
+                          <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
+                            {heroDemoResult.value?.ingestLabel ?? "---"}
+                          </p>
+                        </div>
+                        <div class="rounded-xl border border-white/5 bg-black/25 p-3">
+                          <p class="text-[8px] font-mono font-bold uppercase tracking-wider text-tertiary">
+                            Ingest Latency (Network RTT)
+                          </p>
+                          <p class="mt-1 text-sm font-mono font-extrabold text-on-surface">
+                            {heroDemoResult.value?.ingestRoundTripLabel ??
+                              "---"}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
               {/* Right Side: Recall & Results */}
               <div class="space-y-6">
@@ -1623,7 +1627,7 @@ export default component$(() => {
                       Distillation Kernel
                     </div>
                     <div class="mt-1 font-mono text-[9px] text-tertiary">
-                      Rust Semantic Filter v2.0
+                      Rust Semantic Filter v0.1.0
                     </div>
                   </div>
 
@@ -1967,7 +1971,9 @@ export default component$(() => {
                 <div class="flex gap-4">
                   <MaterialIcon name="filter_list" class=" text-primary" />
                   <div>
-                    <h4 class="font-bold text-sm text-white">Intent-Aware Filtering</h4>
+                    <h4 class="font-bold text-sm text-white">
+                      Intent-Aware Filtering
+                    </h4>
                     <p class="text-xs text-tertiary mt-2">
                       Automatically detects if the user is asking for numbers,
                       preferences, or narrative history.
@@ -1977,7 +1983,9 @@ export default component$(() => {
                 <div class="flex gap-4">
                   <MaterialIcon name="rebase_edit" class=" text-primary" />
                   <div>
-                    <h4 class="font-bold text-sm text-white">Neural Reranking</h4>
+                    <h4 class="font-bold text-sm text-white">
+                      Neural Reranking
+                    </h4>
                     <p class="text-xs text-tertiary mt-2">
                       Applies a secondary precision pass to ensure the top-k
                       candidates are semantically perfect.
@@ -1987,7 +1995,9 @@ export default component$(() => {
                 <div class="flex gap-4">
                   <MaterialIcon name="calculate" class=" text-primary" />
                   <div>
-                    <h4 class="font-bold text-sm text-white">Deterministic Compute</h4>
+                    <h4 class="font-bold text-sm text-white">
+                      Deterministic Compute
+                    </h4>
                     <p class="text-xs text-tertiary mt-2">
                       Computes aggregates (sums, counts) before delivery,
                       preventing LLM arithmetic errors.
@@ -2100,8 +2110,6 @@ export default component$(() => {
             </div>
           </div>
         </section>
-
-
 
         <section id="calendly" class="px-6 py-16 md:py-24">
           <div class="container mx-auto">
